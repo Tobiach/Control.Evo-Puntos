@@ -1,12 +1,31 @@
 import { motion } from 'motion/react';
-import { ArrowRight, ShoppingCart, Sparkles, UtensilsCrossed } from 'lucide-react';
+import { ArrowRight, Smartphone, Presentation, ShoppingCart, Sparkles, UtensilsCrossed } from 'lucide-react';
 import { DATA_RUBROS, type Rubro } from '../data/mockClientes';
+
+export type Modo = 'demo' | 'app';
 
 interface Props {
   rubro: Rubro;
+  modo: Modo;
   onElegirRubro: (rubro: Rubro) => void;
+  onElegirModo: (modo: Modo) => void;
   onComenzar: () => void;
 }
+
+const MODOS: { modo: Modo; icono: typeof Smartphone; titulo: string; detalle: string }[] = [
+  {
+    modo: 'demo',
+    icono: Presentation,
+    titulo: 'Demo de venta',
+    detalle: 'Recorrido cliente, caja y dueño',
+  },
+  {
+    modo: 'app',
+    icono: Smartphone,
+    titulo: 'App del cliente',
+    detalle: 'La app real, día a día',
+  },
+];
 
 const OPCIONES = [
   {
@@ -27,7 +46,13 @@ const OPCIONES = [
   },
 ];
 
-export default function Bienvenida({ rubro, onElegirRubro, onComenzar }: Props) {
+export default function Bienvenida({
+  rubro,
+  modo,
+  onElegirRubro,
+  onElegirModo,
+  onComenzar,
+}: Props) {
   return (
     <div className="flex flex-1 flex-col justify-center gap-10 py-10">
       <div className="text-center">
@@ -82,13 +107,40 @@ export default function Bienvenida({ rubro, onElegirRubro, onComenzar }: Props) 
         </div>
       </div>
 
+      <div>
+        <p className="mb-3 text-center text-xs font-semibold tracking-widest text-texto-muted uppercase">
+          ¿Qué querés ver?
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {MODOS.map((opcion) => {
+            const activo = modo === opcion.modo;
+            const Icono = opcion.icono;
+            return (
+              <motion.button
+                key={opcion.modo}
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                onClick={() => onElegirModo(opcion.modo)}
+                className={`flex flex-col items-center gap-2 rounded-2xl border-2 bg-card px-3 py-5 text-center transition-shadow ${
+                  activo ? 'border-acento shadow-lg' : 'border-borde opacity-75'
+                }`}
+              >
+                <Icono size={24} className="text-acento" />
+                <span className="text-sm font-bold text-texto">{opcion.titulo}</span>
+                <span className="text-[11px] leading-tight text-texto-muted">{opcion.detalle}</span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
       <motion.button
         type="button"
         whileTap={{ scale: 0.97 }}
         onClick={onComenzar}
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-acento py-4 text-base font-bold text-on-acento active:bg-acento-hover"
       >
-        Ver cómo funciona
+        {modo === 'app' ? 'Entrar a la app' : 'Ver cómo funciona'}
         <ArrowRight size={19} strokeWidth={2.5} />
       </motion.button>
     </div>

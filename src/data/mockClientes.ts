@@ -2,6 +2,8 @@ export type Rubro = 'gastro' | 'super';
 
 export type NombreNivel = 'Nuevo' | 'Frecuente' | 'VIP';
 
+export type CategoriaRecompensa = 'Bebidas' | 'Comida' | 'Descuentos' | 'Regalos';
+
 export interface Nivel {
   nombre: NombreNivel;
   min: number;
@@ -10,6 +12,7 @@ export interface Nivel {
 export interface Recompensa {
   pts: number;
   descripcion: string;
+  categoria: CategoriaRecompensa;
 }
 
 export interface Cliente {
@@ -18,6 +21,13 @@ export interface Cliente {
   telefono: string;
   puntos: number;
   ultimaVisitaDias: number;
+}
+
+/** Visita mock del socio en la app del cliente. `diasAtras` = días desde hoy. */
+export interface Visita {
+  diasAtras: number;
+  monto: number;
+  puntos: number;
 }
 
 export interface MetricasSemana {
@@ -38,6 +48,10 @@ export interface RubroData {
   clientes: Cliente[];
   metricasSemana: MetricasSemana;
   mensajeWhatsApp: string;
+  /** Cliente que representa al usuario logueado en el modo "App del cliente". */
+  clienteAppId: string;
+  /** Historial de visitas de ese usuario para racha, gráficos e historial. */
+  historialApp: Visita[];
 }
 
 export const DIAS_INACTIVO = 20;
@@ -57,11 +71,13 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
       { nombre: 'VIP', min: 700 },
     ],
     recompensas: [
-      { pts: 150, descripcion: 'Cocktail de bienvenida' },
-      { pts: 300, descripcion: 'Postre de la casa' },
-      { pts: 500, descripcion: '2x1 en tragos de autor' },
-      { pts: 800, descripcion: 'Botella de vino reserva' },
-      { pts: 1200, descripcion: 'Cena para dos (30% off)' },
+      { pts: 150, descripcion: 'Cocktail de bienvenida', categoria: 'Bebidas' },
+      { pts: 200, descripcion: 'Entrada a elección', categoria: 'Comida' },
+      { pts: 300, descripcion: 'Postre de la casa', categoria: 'Comida' },
+      { pts: 450, descripcion: '10% off en tu cuenta', categoria: 'Descuentos' },
+      { pts: 500, descripcion: '2x1 en tragos de autor', categoria: 'Bebidas' },
+      { pts: 800, descripcion: 'Botella de vino reserva', categoria: 'Bebidas' },
+      { pts: 1200, descripcion: 'Cena para dos (30% off)', categoria: 'Descuentos' },
     ],
     clientes: [
       { id: 'g1', nombre: 'Martina Gómez', telefono: '11 5320-4471', puntos: 620, ultimaVisitaDias: 2 },
@@ -75,6 +91,16 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
     metricasSemana: { puntosAcreditados: 4820, subieronDeNivel: 3 },
     mensajeWhatsApp:
       'Hola! Probé la demo del Club de Puntos de Control.Evo y quiero implementarlo en mi bar/restaurante. ¿Cómo seguimos?',
+    clienteAppId: 'g1',
+    historialApp: [
+      { diasAtras: 2, monto: 5200, puntos: 52 },
+      { diasAtras: 6, monto: 3800, puntos: 38 },
+      { diasAtras: 11, monto: 6100, puntos: 61 },
+      { diasAtras: 15, monto: 2400, puntos: 24 },
+      { diasAtras: 20, monto: 4700, puntos: 47 },
+      { diasAtras: 27, monto: 8900, puntos: 89 },
+      { diasAtras: 34, monto: 3300, puntos: 33 },
+    ],
   },
   super: {
     rubro: 'super',
@@ -90,11 +116,13 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
       { nombre: 'VIP', min: 1000 },
     ],
     recompensas: [
-      { pts: 200, descripcion: 'Gaseosa 2L de regalo' },
-      { pts: 400, descripcion: '5% de descuento en la compra' },
-      { pts: 700, descripcion: '10% de descuento en la compra' },
-      { pts: 1000, descripcion: 'Vale de compra Gs. 100.000' },
-      { pts: 1500, descripcion: 'Canasta familiar de regalo' },
+      { pts: 150, descripcion: 'Pack de yerba 1kg', categoria: 'Regalos' },
+      { pts: 200, descripcion: 'Gaseosa 2L de regalo', categoria: 'Regalos' },
+      { pts: 400, descripcion: '5% de descuento en la compra', categoria: 'Descuentos' },
+      { pts: 550, descripcion: 'Combo desayuno', categoria: 'Comida' },
+      { pts: 700, descripcion: '10% de descuento en la compra', categoria: 'Descuentos' },
+      { pts: 1000, descripcion: 'Vale de compra Gs. 100.000', categoria: 'Descuentos' },
+      { pts: 1500, descripcion: 'Canasta familiar de regalo', categoria: 'Regalos' },
     ],
     clientes: [
       { id: 's1', nombre: 'Ramona Villalba', telefono: '0981 456 213', puntos: 860, ultimaVisitaDias: 1 },
@@ -108,5 +136,15 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
     metricasSemana: { puntosAcreditados: 6150, subieronDeNivel: 4 },
     mensajeWhatsApp:
       'Hola! Probé la demo del Club de Puntos de Control.Evo y quiero implementarlo en mi supermercado. ¿Cómo seguimos?',
+    clienteAppId: 's1',
+    historialApp: [
+      { diasAtras: 1, monto: 255000, puntos: 51 },
+      { diasAtras: 4, monto: 180000, puntos: 36 },
+      { diasAtras: 9, monto: 320000, puntos: 64 },
+      { diasAtras: 13, monto: 145000, puntos: 29 },
+      { diasAtras: 18, monto: 410000, puntos: 82 },
+      { diasAtras: 25, monto: 95000, puntos: 19 },
+      { diasAtras: 31, monto: 270000, puntos: 54 },
+    ],
   },
 };

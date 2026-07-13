@@ -1,14 +1,15 @@
 import { useLayoutEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
-import { DATA_RUBROS, type Cliente, type Rubro } from './data/mockClientes';
-import Bienvenida from './components/Bienvenida';
+import { DATA_RUBROS, type Cliente, type Recompensa, type Rubro } from './data/mockClientes';
+import Bienvenida, { type Modo } from './components/Bienvenida';
 import PasoCliente from './components/PasoCliente';
 import PasoCajero from './components/PasoCajero';
 import PasoDueno from './components/PasoDueno';
 import Cierre from './components/Cierre';
+import AppCliente from './components/appcliente/AppCliente';
 
-type Pantalla = 'bienvenida' | 'cliente' | 'cajero' | 'dueno' | 'cierre';
+type Pantalla = 'bienvenida' | 'cliente' | 'cajero' | 'dueno' | 'cierre' | 'app';
 
 const ORDEN: Pantalla[] = ['bienvenida', 'cliente', 'cajero', 'dueno', 'cierre'];
 const COLOR_BARRA: Record<Rubro, string> = { gastro: '#0D0D0D', super: '#F5F6FA' };
@@ -28,6 +29,7 @@ const variantes = {
 
 export default function App() {
   const [rubro, setRubro] = useState<Rubro>(rubroInicial);
+  const [modo, setModo] = useState<Modo>('demo');
   const [pantalla, setPantalla] = useState<Pantalla>('bienvenida');
   const [direccion, setDireccion] = useState(1);
   const [clientes, setClientes] = useState<Cliente[]>(() => clonarClientes(rubro));
@@ -60,6 +62,26 @@ export default function App() {
     setPantalla(destino);
   };
 
+  const comenzar = () => {
+    if (modo === 'app') {
+      setClienteActivoId(data.clienteAppId);
+      navegar('app');
+      return;
+    }
+    navegar('cliente');
+  };
+
+  const canjearRecompensa = (recompensa: Recompensa) => {
+    if (!clienteActivo) return;
+    setClientes((previos) =>
+      previos.map((cliente) =>
+        cliente.id === clienteActivo.id
+          ? { ...cliente, puntos: Math.max(0, cliente.puntos - recompensa.pts) }
+          : cliente,
+      ),
+    );
+  };
+
   const acreditarPuntos = (id: string, puntos: number) => {
     setClientes((previos) =>
       previos.map((cliente) =>
@@ -77,6 +99,18 @@ export default function App() {
     setPuntosSesion(0);
     navegar('bienvenida');
   };
+
+  if (pantalla === 'app' && clienteActivo) {
+    return (
+      <AppCliente
+        data={data}
+        cliente={clienteActivo}
+        clientes={clientes}
+        onCanjear={canjearRecompensa}
+        onSalir={reiniciar}
+      />
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-6">
@@ -118,8 +152,10 @@ export default function App() {
           {pantalla === 'bienvenida' && (
             <Bienvenida
               rubro={rubro}
+              modo={modo}
               onElegirRubro={elegirRubro}
-              onComenzar={() => navegar('cliente')}
+              onElegirModo={setModo}
+              onComenzar={comenzar}
             />
           )}
           {pantalla === 'cliente' && (
