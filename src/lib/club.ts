@@ -1,5 +1,6 @@
 import {
   DIAS_INACTIVO,
+  type CategoriaRecompensa,
   type Cliente,
   type Nivel,
   type Recompensa,
@@ -118,6 +119,55 @@ export function fechaDeVisita(diasAtras: number, locale: string): string {
     day: '2-digit',
     month: 'short',
   });
+}
+
+// ── Favoritos ───────────────────────────────────────────────────
+
+/** Categoría que el cliente más consumió en este negocio (según su historial). */
+export function categoriaFavorita(historial: Visita[]): CategoriaRecompensa | null {
+  const conteo = new Map<CategoriaRecompensa, number>();
+  for (const visita of historial) {
+    if (!visita.categoria) continue;
+    conteo.set(visita.categoria, (conteo.get(visita.categoria) ?? 0) + 1);
+  }
+  let favorita: CategoriaRecompensa | null = null;
+  let maximo = 0;
+  for (const [categoria, cantidad] of conteo) {
+    if (cantidad > maximo) {
+      maximo = cantidad;
+      favorita = categoria;
+    }
+  }
+  return favorita;
+}
+
+export interface SugerenciaFavorita {
+  categoria: CategoriaRecompensa;
+  recompensa: Recompensa;
+  faltan: number;
+  alcanzable: boolean;
+}
+
+/**
+ * Sugerencia de recompensa de la categoría favorita del cliente: la más cercana a alcanzar
+ * (o, si ya puede canjear todas, la más aspiracional de esa categoría).
+ */
+export function sugerenciaFavorita(
+  recompensas: Recompensa[],
+  historial: Visita[],
+  puntos: number,
+): SugerenciaFavorita | null {
+  const categoria = categoriaFavorita(historial);
+  if (!categoria) return null;
+  const deLaCategoria = recompensas.filter((recompensa) => recompensa.categoria === categoria);
+  if (deLaCategoria.length === 0) return null;
+  const noAlcanzadas = deLaCategoria
+    .filter((recompensa) => recompensa.pts > puntos)
+    .sort((a, b) => a.pts - b.pts);
+  const objetivo =
+    noAlcanzadas[0] ?? [...deLaCategoria].sort((a, b) => b.pts - a.pts)[0];
+  const faltan = Math.max(0, objetivo.pts - puntos);
+  return { categoria, recompensa: objetivo, faltan, alcanzable: faltan === 0 };
 }
 
 export function buscarClientes(clientes: Cliente[], consulta: string): Cliente[] {

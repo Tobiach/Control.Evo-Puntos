@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Lock } from 'lucide-react';
+import { Check, Lock, Wallet } from 'lucide-react';
 import type {
   CategoriaRecompensa,
   Cliente,
   Recompensa,
   RubroData,
 } from '../../data/mockClientes';
-import { formatPuntos } from '../../lib/club';
+import { formatMonto, formatPuntos } from '../../lib/club';
 
 interface Props {
   data: RubroData;
@@ -82,13 +82,30 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
               className="flex items-center justify-between gap-3 rounded-3xl border border-borde bg-card p-4"
             >
               <div className="min-w-0">
-                <span className="inline-block rounded-full bg-premio-suave px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
-                  {recompensa.categoria}
+                <span className="inline-flex flex-wrap items-center gap-1.5">
+                  <span className="inline-block rounded-full bg-premio-suave px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
+                    {recompensa.categoria}
+                  </span>
+                  {recompensa.costoDinero !== undefined && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-acento/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
+                      <Wallet size={10} /> Combo
+                    </span>
+                  )}
                 </span>
                 <p className="mt-1.5 text-sm leading-snug font-bold">{recompensa.descripcion}</p>
                 <p className="mt-0.5 font-titulo text-lg font-bold text-premio">
                   {formatPuntos(recompensa.pts)} pts
+                  {recompensa.costoDinero !== undefined && (
+                    <span className="ml-1 text-sm font-bold text-acento">
+                      + {formatMonto(data, recompensa.costoDinero)}
+                    </span>
+                  )}
                 </p>
+                {recompensa.costoDinero !== undefined && (
+                  <p className="text-[11px] font-semibold text-texto-muted">
+                    Canje con puntos + un poco de plata
+                  </p>
+                )}
                 {puede ? (
                   <p className="text-[11px] font-bold text-verde-ok">Ya podés canjear</p>
                 ) : (

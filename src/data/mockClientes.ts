@@ -13,6 +13,8 @@ export interface Recompensa {
   pts: number;
   descripcion: string;
   categoria: CategoriaRecompensa;
+  /** Combo: además de los puntos, se abona esta cantidad de plata al canjear (ARS). */
+  costoDinero?: number;
 }
 
 export interface Cliente {
@@ -21,6 +23,8 @@ export interface Cliente {
   telefono: string;
   puntos: number;
   ultimaVisitaDias: number;
+  /** Cumpleaños del socio en formato 'MM-DD' (para el saludo/beneficio de cumpleaños). */
+  nacimiento?: string;
 }
 
 /** Visita mock del socio en la app del cliente. `diasAtras` = días desde hoy. */
@@ -30,6 +34,8 @@ export interface Visita {
   puntos: number;
   /** El cliente probó un producto/categoría nueva en esta visita (misión "probá algo nuevo"). */
   nuevo?: boolean;
+  /** Categoría de lo consumido en la visita (para derivar "Tus favoritos"). */
+  categoria?: CategoriaRecompensa;
 }
 
 /** Franja horaria de baja demanda donde el negocio ofrece puntos x2 (beneficio informativo). */
@@ -78,6 +84,8 @@ export interface RubroData {
   eventos?: EventoNegocio[];
   /** Franja horaria valle con puntos x2 (aviso informativo). Sólo en la vista de un local. */
   horarioValle?: HorarioValle;
+  /** Beneficios NO monetarios del nivel más alto (VIP). Sólo en la vista de un local. */
+  beneficiosVip?: string[];
 }
 
 export const DIAS_INACTIVO = 20;
@@ -106,7 +114,7 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
       { pts: 1200, descripcion: 'Cena para dos (30% off)', categoria: 'Descuentos' },
     ],
     clientes: [
-      { id: 'g1', nombre: 'Martina Gómez', telefono: '11 5320-4471', puntos: 620, ultimaVisitaDias: 2 },
+      { id: 'g1', nombre: 'Martina Gómez', telefono: '11 5320-4471', puntos: 620, ultimaVisitaDias: 2, nacimiento: '07-13' },
       { id: 'g2', nombre: 'Lucas Fernández', telefono: '11 4482-9013', puntos: 740, ultimaVisitaDias: 5 },
       { id: 'g3', nombre: 'Sofía Paredes', telefono: '11 6205-7788', puntos: 130, ultimaVisitaDias: 1 },
       { id: 'g4', nombre: 'Diego Álvarez', telefono: '11 3390-1246', puntos: 470, ultimaVisitaDias: 26 },
@@ -151,7 +159,7 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
       { pts: 1500, descripcion: 'Canasta familiar de regalo', categoria: 'Regalos' },
     ],
     clientes: [
-      { id: 's1', nombre: 'Ramona Villalba', telefono: '0981 456 213', puntos: 860, ultimaVisitaDias: 1 },
+      { id: 's1', nombre: 'Ramona Villalba', telefono: '0981 456 213', puntos: 860, ultimaVisitaDias: 1, nacimiento: '07-13' },
       { id: 's2', nombre: 'Óscar Benítez', telefono: '0971 802 349', puntos: 1240, ultimaVisitaDias: 3 },
       { id: 's3', nombre: 'Nélida Cáceres', telefono: '0983 610 587', puntos: 320, ultimaVisitaDias: 6 },
       { id: 's4', nombre: 'Carlos Giménez', telefono: '0961 224 908', puntos: 540, ultimaVisitaDias: 28 },

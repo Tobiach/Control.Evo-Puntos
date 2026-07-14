@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Activity, ArrowLeft, Gift, Home, User, type LucideIcon } from 'lucide-react';
 import type { Cliente, Recompensa, RubroData } from '../../data/mockClientes';
+import {
+  avisosCliente,
+  dispararNotificacion,
+  type Aviso,
+  type PermisoNotif,
+} from '../../lib/notificaciones';
 import TabInicio from './TabInicio';
 import TabRecompensas from './TabRecompensas';
 import TabActividad from './TabActividad';
@@ -11,9 +17,12 @@ type Tab = 'inicio' | 'recompensas' | 'actividad' | 'perfil';
 
 interface Props {
   data: RubroData;
+  negocioId: string;
   cliente: Cliente;
   clientes: Cliente[];
+  permisoNotif: PermisoNotif;
   onCanjear: (recompensa: Recompensa) => void;
+  onRegalar: (cantidad: number) => void;
   onSalir: () => void;
   /** Si está presente, muestra el botón "← Volver al marketplace" arriba de todo. */
   onVolverMarketplace?: () => void;
@@ -26,18 +35,48 @@ const TABS: { id: Tab; label: string; icono: LucideIcon }[] = [
   { id: 'perfil', label: 'Perfil', icono: User },
 ];
 
+/** De noche (20 a 6 hs) atenuamos apenas la pantalla con un overlay sutil. */
+function esDeNoche(): boolean {
+  const hora = new Date().getHours();
+  return hora >= 20 || hora < 6;
+}
+
 export default function AppCliente({
   data,
+  negocioId,
   cliente,
   clientes,
+  permisoNotif,
   onCanjear,
+  onRegalar,
   onSalir,
   onVolverMarketplace,
 }: Props) {
   const [tab, setTab] = useState<Tab>('inicio');
+  const [cumpleForzado, setCumpleForzado] = useState(false);
+  const historial = data.historialApp;
+
+  const avisos = useMemo<Aviso[]>(
+    () => avisosCliente(data, cliente, historial, { cumpleForzado }),
+    [data, cliente, historial, cumpleForzado],
+  );
+
+  // Cuando hay permiso, cada aviso se dispara una vez como notificación nativa del SO.
+  const disparados = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (permisoNotif !== 'granted') return;
+    for (const aviso of avisos) {
+      const clave = `${negocioId}:${aviso.id}`;
+      if (disparados.current.has(clave)) continue;
+      disparados.current.add(clave);
+      dispararNotificacion(aviso.titulo, aviso.cuerpo);
+    }
+  }, [avisos, permisoNotif, negocioId]);
+
+  const noche = useMemo(esDeNoche, []);
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-fondo">
+    <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col bg-fondo">
       {onVolverMarketplace && (
         <div className="sticky top-0 z-30 bg-fondo/95 px-5 pt-4 pb-2 backdrop-blur">
           <motion.button
@@ -63,7 +102,9 @@ export default function AppCliente({
               <TabInicio
                 data={data}
                 cliente={cliente}
-                historial={data.historialApp}
+                historial={historial}
+                avisos={avisos}
+                permisoNotif={permisoNotif}
                 onVerRecompensas={() => setTab('recompensas')}
                 onSalir={onSalir}
               />
@@ -72,9 +113,20 @@ export default function AppCliente({
               <TabRecompensas data={data} cliente={cliente} onCanjear={onCanjear} />
             )}
             {tab === 'actividad' && (
-              <TabActividad data={data} cliente={cliente} historial={data.historialApp} />
+              <TabActividad data={data} cliente={cliente} historial={historial} />
             )}
-            {tab === 'perfil' && <TabPerfil data={data} cliente={cliente} clientes={clientes} />}
+            {tab === 'perfil' && (
+              <TabPerfil
+                data={data}
+                negocioId={negocioId}
+                cliente={cliente}
+                clientes={clientes}
+                historial={historial}
+                cumpleForzado={cumpleForzado}
+                onToggleCumple={() => setCumpleForzado((valor) => !valor)}
+                onRegalar={onRegalar}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -109,6 +161,13 @@ export default function AppCliente({
           );
         })}
       </nav>
+
+      {noche && (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 z-10 mx-auto max-w-md bg-[#070a16]/12"
+        />
+      )}
     </div>
   );
 }

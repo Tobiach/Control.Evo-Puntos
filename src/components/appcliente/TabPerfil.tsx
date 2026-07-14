@@ -1,13 +1,32 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Phone, Share2, Trophy, User } from 'lucide-react';
-import type { Cliente, RubroData } from '../../data/mockClientes';
-import { codigoReferido, formatPuntos } from '../../lib/club';
+import {
+  Cake,
+  Check,
+  Crown,
+  Gift,
+  Phone,
+  Share2,
+  Swords,
+  Trophy,
+  User,
+  Users,
+} from 'lucide-react';
+import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
+import { codigoReferido, formatPuntos, nivelDe } from '../../lib/club';
+import { compartir } from '../../lib/compartir';
+import { lanzarConfetti } from '../../lib/confetti';
+import { AMIGOS_MOCK, desafioSemanal, rankingGrupo } from '../../lib/social';
 
 interface Props {
   data: RubroData;
+  negocioId: string;
   cliente: Cliente;
   clientes: Cliente[];
+  historial: Visita[];
+  cumpleForzado: boolean;
+  onToggleCumple: () => void;
+  onRegalar: (cantidad: number) => void;
 }
 
 interface Puesto {
@@ -15,28 +34,54 @@ interface Puesto {
   posicion: number;
 }
 
-export default function TabPerfil({ data, cliente, clientes }: Props) {
+const MONTOS_REGALO = [50, 100, 200];
+
+const ESTADO_DESAFIO: Record<string, { texto: string; clase: string }> = {
+  'en-curso': { texto: 'En curso', clase: 'bg-premio-suave text-acento' },
+  cumplido: { texto: 'Cumplido', clase: 'bg-verde-ok/15 text-verde-ok' },
+  fallado: { texto: 'Fallado', clase: 'bg-rojo/15 text-rojo' },
+};
+
+export default function TabPerfil({
+  data,
+  negocioId,
+  cliente,
+  clientes,
+  historial,
+  cumpleForzado,
+  onToggleCumple,
+  onRegalar,
+}: Props) {
   const codigo = codigoReferido(cliente);
   const [copiado, setCopiado] = useState(false);
   const [enRanking, setEnRanking] = useState(false);
 
-  const compartir = async () => {
+  const grupo = rankingGrupo(negocioId, historial, cliente.nombre);
+  const desafio = desafioSemanal(negocioId, historial);
+  const nivelActual = nivelDe(data.niveles, cliente.puntos);
+  const nivelMax = data.niveles[data.niveles.length - 1];
+  const esVip = nivelActual.nombre === nivelMax.nombre;
+
+  // Regalar puntos
+  const [amigoRegalo, setAmigoRegalo] = useState(AMIGOS_MOCK[0].id);
+  const [montoRegalo, setMontoRegalo] = useState(MONTOS_REGALO[0]);
+  const [regalado, setRegalado] = useState<{ amigo: string; monto: number } | null>(null);
+
+  const compartirInvitacion = async () => {
     const texto = `¡Sumate al Club de Puntos de ${data.nombreNegocio}! Usá mi código ${codigo} y ganamos 50 pts cada uno.`;
-    if (typeof navigator.share === 'function') {
-      try {
-        await navigator.share({ text: texto });
-        return;
-      } catch {
-        // El usuario canceló o el navegador no completó la acción: caemos al portapapeles.
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(codigo);
+    const copio = await compartir(texto, codigo);
+    if (copio) {
       setCopiado(true);
       window.setTimeout(() => setCopiado(false), 2000);
-    } catch {
-      // Sin acceso al portapapeles: no hacemos nada para no romper la demo.
     }
+  };
+
+  const confirmarRegalo = () => {
+    if (montoRegalo > cliente.puntos) return;
+    const amigo = AMIGOS_MOCK.find((a) => a.id === amigoRegalo) ?? AMIGOS_MOCK[0];
+    onRegalar(montoRegalo);
+    setRegalado({ amigo: amigo.nombre, monto: montoRegalo });
+    lanzarConfetti();
   };
 
   const ranking = [...clientes].sort((a, b) => b.puntos - a.puntos);
@@ -69,6 +114,153 @@ export default function TabPerfil({ data, cliente, clientes }: Props) {
         </div>
       </section>
 
+      {esVip && data.beneficiosVip && data.beneficiosVip.length > 0 && (
+        <section>
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-bold tracking-widest text-premio uppercase">
+            <Crown size={13} /> Beneficios {nivelMax.nombre}
+          </p>
+          <div className="flex flex-col gap-2 rounded-3xl border border-borde bg-premio-suave p-4">
+            <p className="text-sm font-bold text-acento">
+              Sos nivel {nivelMax.nombre} en {data.nombreNegocio}
+            </p>
+            {data.beneficiosVip.map((beneficio) => (
+              <div key={beneficio} className="flex items-start gap-2 text-sm">
+                <Check size={16} className="mt-0.5 shrink-0 text-acento" />
+                <span className="leading-snug">{beneficio}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section>
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-bold tracking-widest text-texto-muted uppercase">
+          <Users size={13} /> Tu grupo esta semana
+        </p>
+        <div className="flex flex-col gap-2 rounded-3xl border border-borde bg-card p-4">
+          {grupo.map((puesto, indice) => (
+            <div
+              key={puesto.id}
+              className={`flex items-center justify-between rounded-2xl px-3.5 py-2.5 ${
+                puesto.esYo ? 'bg-premio-suave' : 'bg-fondo'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <span
+                  className={`font-titulo text-sm font-bold ${
+                    indice === 0 ? 'text-premio' : 'text-texto-muted'
+                  }`}
+                >
+                  #{indice + 1}
+                </span>
+                <span className={`text-sm font-semibold ${puesto.esYo ? 'text-acento' : ''}`}>
+                  {puesto.emoji} {puesto.nombre}
+                  {puesto.esYo && ' · vos'}
+                </span>
+              </span>
+              <span className="text-xs font-bold text-texto-muted">
+                {formatPuntos(puesto.puntos)} pts
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-bold tracking-widest text-texto-muted uppercase">
+          <Swords size={13} /> Desafío entre amigos
+        </p>
+        <div className="rounded-3xl border border-borde bg-card p-4">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm leading-snug font-semibold">
+              {desafio.emoji} {desafio.descripcion}
+            </p>
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide uppercase ${
+                ESTADO_DESAFIO[desafio.estado].clase
+              }`}
+            >
+              {ESTADO_DESAFIO[desafio.estado].texto}
+            </span>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-xs">
+            <span className="font-bold text-texto">
+              {desafio.progreso}/{desafio.objetivo} visitas
+            </span>
+            {desafio.estado === 'en-curso' && (
+              <span className="text-texto-muted">Quedan {desafio.diasRestantes} días</span>
+            )}
+          </div>
+          <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-borde">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${(desafio.progreso / desafio.objetivo) * 100}%` }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
+              className="h-full rounded-full bg-acento"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-bold tracking-widest text-texto-muted uppercase">
+          <Gift size={13} /> Regalar puntos
+        </p>
+        <div className="rounded-3xl border border-borde bg-card p-4">
+          <p className="text-sm text-texto-muted">
+            Regalale puntos a un amigo. Tenés{' '}
+            <span className="font-bold text-texto">{formatPuntos(cliente.puntos)} pts</span>.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {AMIGOS_MOCK.map((amigo) => (
+              <button
+                key={amigo.id}
+                type="button"
+                onClick={() => setAmigoRegalo(amigo.id)}
+                className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
+                  amigoRegalo === amigo.id
+                    ? 'bg-acento text-on-acento'
+                    : 'border border-borde bg-fondo text-texto-muted'
+                }`}
+              >
+                {amigo.emoji} {amigo.nombre}
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 flex gap-2">
+            {MONTOS_REGALO.map((monto) => {
+              const alcanza = monto <= cliente.puntos;
+              return (
+                <button
+                  key={monto}
+                  type="button"
+                  disabled={!alcanza}
+                  onClick={() => setMontoRegalo(monto)}
+                  className={`flex-1 rounded-2xl py-2 text-sm font-bold transition-colors ${
+                    montoRegalo === monto && alcanza
+                      ? 'bg-acento text-on-acento'
+                      : alcanza
+                        ? 'border border-borde bg-fondo text-texto'
+                        : 'bg-borde text-texto-muted opacity-50'
+                  }`}
+                >
+                  {monto} pts
+                </button>
+              );
+            })}
+          </div>
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.97 }}
+            disabled={montoRegalo > cliente.puntos}
+            onClick={confirmarRegalo}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover disabled:opacity-50"
+          >
+            <Gift size={16} /> Regalar {montoRegalo} pts
+          </motion.button>
+        </div>
+      </section>
+
       <section>
         <p className="mb-2 text-xs font-bold tracking-widest text-texto-muted uppercase">
           Invitá un amigo
@@ -87,7 +279,7 @@ export default function TabPerfil({ data, cliente, clientes }: Props) {
           <motion.button
             type="button"
             whileTap={{ scale: 0.97 }}
-            onClick={compartir}
+            onClick={compartirInvitacion}
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover"
           >
             {copiado ? (
@@ -174,6 +366,55 @@ export default function TabPerfil({ data, cliente, clientes }: Props) {
           </AnimatePresence>
         </div>
       </section>
+
+      {import.meta.env.DEV && (
+        <button
+          type="button"
+          onClick={onToggleCumple}
+          className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-borde bg-card py-2.5 text-xs font-bold text-texto-muted"
+        >
+          <Cake size={14} /> {cumpleForzado ? 'Desactivar' : 'Simular'} “hoy es mi cumpleaños” (debug)
+        </button>
+      )}
+
+      <AnimatePresence>
+        {regalado && (
+          <motion.div
+            className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setRegalado(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.85, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 20 }}
+              onClick={(evento) => evento.stopPropagation()}
+              className="w-full max-w-xs rounded-3xl border border-borde bg-card p-6 text-center shadow-2xl"
+            >
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-acento text-on-acento">
+                <Gift size={30} strokeWidth={2.4} />
+              </div>
+              <h2 className="font-titulo text-xl font-bold">¡Regalo enviado!</h2>
+              <p className="mt-1 text-sm text-texto-muted">
+                Le regalaste{' '}
+                <span className="font-bold text-acento">{regalado.monto} pts</span> a{' '}
+                <span className="font-bold text-texto">{regalado.amigo}</span> en{' '}
+                {data.nombreNegocio}.
+              </p>
+              <button
+                type="button"
+                onClick={() => setRegalado(null)}
+                className="mt-5 w-full rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover"
+              >
+                Listo
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,12 +1,23 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { CalendarHeart, ChevronLeft, Flame, Gift, PartyPopper, Sparkles, Zap } from 'lucide-react';
+import {
+  BellRing,
+  CalendarHeart,
+  ChevronLeft,
+  Flame,
+  Gift,
+  Heart,
+  PartyPopper,
+  Sparkles,
+  Zap,
+} from 'lucide-react';
 import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
 import {
   formatPuntos,
   progresoNivel,
   proximaRecompensa,
   rachaSemanas,
+  sugerenciaFavorita,
   vencimientoPuntos,
 } from '../../lib/club';
 import {
@@ -17,12 +28,18 @@ import {
   temporadaMensual,
   textoHorarioValle,
 } from '../../lib/misiones';
+import type { Aviso, PermisoNotif } from '../../lib/notificaciones';
 import { lanzarConfetti } from '../../lib/confetti';
+import RecompensaSorpresa from './RecompensaSorpresa';
+
+const PTS_POR_SORPRESA = 200;
 
 interface Props {
   data: RubroData;
   cliente: Cliente;
   historial: Visita[];
+  avisos: Aviso[];
+  permisoNotif: PermisoNotif;
   onVerRecompensas: () => void;
   onSalir: () => void;
 }
@@ -49,7 +66,15 @@ function useConteoAnimado(valor: number, duracionMs = 900): number {
   return mostrado;
 }
 
-export default function TabInicio({ data, cliente, historial, onVerRecompensas, onSalir }: Props) {
+export default function TabInicio({
+  data,
+  cliente,
+  historial,
+  avisos,
+  permisoNotif,
+  onVerRecompensas,
+  onSalir,
+}: Props) {
   const { actual, siguiente, pct } = progresoNivel(data.niveles, cliente.puntos);
   const racha = rachaSemanas(historial);
   const venc = vencimientoPuntos(cliente);
@@ -61,6 +86,20 @@ export default function TabInicio({ data, cliente, historial, onVerRecompensas, 
   const semanal = rachaSemanal(historial);
   const evento = eventoActivo(data);
   const puntosMostrados = useConteoAnimado(cliente.puntos);
+  const favorito = sugerenciaFavorita(data.recompensas, historial, cliente.puntos);
+
+  // Recompensa sorpresa: se habilita cada 200 pts acumulados desde la última usada.
+  const [sorpresasUsadas, setSorpresasUsadas] = useState(0);
+  const sorpresasDisponibles = Math.floor(cliente.puntos / PTS_POR_SORPRESA);
+  const sorpresaDisponible = sorpresasUsadas < sorpresasDisponibles;
+  const faltanSorpresa = Math.max(
+    0,
+    (sorpresasUsadas + 1) * PTS_POR_SORPRESA - cliente.puntos,
+  );
+
+  // Avisos que no tienen ya su propio bloque visual en esta pantalla (fallback sin permiso).
+  const avisosFallback = avisos.filter((aviso) => !aviso.yaVisibleEnInicio);
+  const mostrarPanelAvisos = permisoNotif !== 'granted' && avisosFallback.length > 0;
 
   useEffect(() => {
     if (temporada.completa) lanzarConfetti();
@@ -117,6 +156,34 @@ export default function TabInicio({ data, cliente, historial, onVerRecompensas, 
           </div>
         </div>
       </div>
+
+      {mostrarPanelAvisos && (
+        <div className="flex flex-col gap-2">
+          {avisosFallback.map((aviso) => (
+            <motion.div
+              key={aviso.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-3 rounded-2xl border border-borde bg-card px-4 py-3"
+            >
+              <span className="mt-0.5 text-lg">{aviso.emoji}</span>
+              <div>
+                <p className="text-sm font-bold text-texto">{aviso.titulo}</p>
+                <p className="text-xs leading-snug text-texto-muted">{aviso.cuerpo}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {permisoNotif === 'granted' && (
+        <div className="flex items-center gap-2 rounded-2xl border border-borde bg-card px-4 py-2.5 text-xs">
+          <BellRing size={15} className="shrink-0 text-acento" />
+          <span className="font-semibold text-texto-muted">
+            Notificaciones activadas — te avisamos por vencimientos, rachas y sorpresas.
+          </span>
+        </div>
+      )}
 
       {evento && (
         <div className="flex items-start gap-3 rounded-2xl border border-borde bg-premio-suave px-4 py-3">
@@ -223,6 +290,30 @@ export default function TabInicio({ data, cliente, historial, onVerRecompensas, 
           </p>
         </div>
       )}
+
+      {favorito && (
+        <div className="rounded-3xl border border-borde bg-card p-4">
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
+            <Heart size={13} className="text-acento" /> Tus favoritos
+          </p>
+          <p className="mt-2 text-sm leading-snug">
+            Lo tuyo es <span className="font-bold text-acento">{favorito.categoria}</span>. Te
+            sugerimos: <span className="font-bold text-texto">{favorito.recompensa.descripcion}</span>
+          </p>
+          <p className="mt-1 text-xs text-texto-muted">
+            {favorito.alcanzable
+              ? '¡Ya lo podés canjear!'
+              : `Te faltan ${formatPuntos(favorito.faltan)} pts`}
+          </p>
+        </div>
+      )}
+
+      <RecompensaSorpresa
+        key={sorpresasUsadas}
+        disponible={sorpresaDisponible}
+        faltan={faltanSorpresa}
+        onUsar={() => setSorpresasUsadas((valor) => valor + 1)}
+      />
     </div>
   );
 }

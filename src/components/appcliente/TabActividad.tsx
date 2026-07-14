@@ -98,7 +98,7 @@ export default function TabActividad({ data, cliente, historial }: Props) {
         </div>
       </div>
 
-      <Insignias insignias={insignias} />
+      <Insignias insignias={insignias} nombreNegocio={data.nombreNegocio} />
 
       <div>
         <p className="mb-2 text-sm font-bold">Historial de visitas</p>

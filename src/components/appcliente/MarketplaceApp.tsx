@@ -13,6 +13,7 @@ import {
   type Negocio,
   type RelacionNegocio,
 } from '../../data/negocios';
+import { usePermisoNotificaciones } from '../../lib/notificaciones';
 import AppCliente from './AppCliente';
 import Marketplace from './Marketplace';
 
@@ -36,6 +37,7 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   historialApp: relacion?.historial ?? [],
   eventos: negocio.eventos,
   horarioValle: negocio.horarioValle,
+  beneficiosVip: negocio.beneficiosVip,
 });
 
 export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
@@ -43,6 +45,8 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
   const [relaciones, setRelaciones] = useState<Record<string, RelacionNegocio>>(() => ({
     ...RELACIONES_INICIALES,
   }));
+  // Pide el permiso real de notificaciones al entrar a la app del cliente (una sola vez).
+  const permisoNotif = usePermisoNotificaciones();
 
   const negocio = NEGOCIOS.find((n) => n.id === negocioId) ?? null;
   const relacion = negocio ? relaciones[negocio.id] : undefined;
@@ -74,6 +78,18 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
     });
   };
 
+  const regalarPuntos = (cantidad: number) => {
+    if (!negocio) return;
+    setRelaciones((previas) => {
+      const actual = previas[negocio.id];
+      if (!actual) return previas;
+      return {
+        ...previas,
+        [negocio.id]: { ...actual, puntos: Math.max(0, actual.puntos - cantidad) },
+      };
+    });
+  };
+
   const volverAlMarketplace = () => setNegocioId(null);
 
   let vistaNegocio = null;
@@ -92,9 +108,12 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
     vistaNegocio = (
       <AppCliente
         data={dataNegocio}
+        negocioId={negocio.id}
         cliente={clienteNegocio}
         clientes={clientesNegocio}
+        permisoNotif={permisoNotif}
         onCanjear={canjear}
+        onRegalar={regalarPuntos}
         onSalir={volverAlMarketplace}
         onVolverMarketplace={volverAlMarketplace}
       />

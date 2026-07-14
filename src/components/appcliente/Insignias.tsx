@@ -1,23 +1,36 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Lock } from 'lucide-react';
+import { Check, Lock, Share2 } from 'lucide-react';
 import type { Insignia } from '../../lib/misiones';
 import { lanzarConfetti } from '../../lib/confetti';
+import { compartir } from '../../lib/compartir';
 
 interface Props {
   insignias: Insignia[];
+  /** Nombre del negocio, para el texto del logro compartido. */
+  nombreNegocio: string;
 }
 
 /** Tarjetas coleccionables del negocio: conseguidas a color, bloqueadas en gris. */
-export default function Insignias({ insignias }: Props) {
+export default function Insignias({ insignias, nombreNegocio }: Props) {
   const conseguidas = insignias.filter((insignia) => insignia.conseguida).length;
+  const [copiada, setCopiada] = useState<string | null>(null);
 
-  const celebrar = (insignia: Insignia, evento: React.MouseEvent<HTMLButtonElement>) => {
+  const celebrar = (insignia: Insignia, caja: DOMRect) => {
     if (!insignia.conseguida) return;
-    const caja = evento.currentTarget.getBoundingClientRect();
     lanzarConfetti({
       x: (caja.left + caja.width / 2) / window.innerWidth,
       y: (caja.top + caja.height / 2) / window.innerHeight,
     });
+  };
+
+  const compartirLogro = async (insignia: Insignia) => {
+    const texto = `¡Conseguí la insignia "${insignia.nombre}" en el Club de Puntos de ${nombreNegocio}! 🏅`;
+    const copiado = await compartir(texto);
+    if (copiado) {
+      setCopiada(insignia.id);
+      window.setTimeout(() => setCopiada((actual) => (actual === insignia.id ? null : actual)), 2000);
+    }
   };
 
   return (
@@ -32,18 +45,14 @@ export default function Insignias({ insignias }: Props) {
         {insignias.map((insignia, indice) => {
           const Icono = insignia.icono;
           return (
-            <motion.button
+            <motion.div
               key={insignia.id}
-              type="button"
-              onClick={(evento) => celebrar(insignia, evento)}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: indice * 0.05 }}
-              whileTap={insignia.conseguida ? { scale: 0.96 } : undefined}
+              onClick={(evento) => celebrar(insignia, evento.currentTarget.getBoundingClientRect())}
               className={`flex flex-col items-start gap-2 rounded-3xl border p-4 text-left ${
-                insignia.conseguida
-                  ? 'border-borde bg-card'
-                  : 'border-borde bg-card/40 opacity-70'
+                insignia.conseguida ? 'border-borde bg-card' : 'border-borde bg-card/40 opacity-70'
               }`}
             >
               <span
@@ -62,16 +71,32 @@ export default function Insignias({ insignias }: Props) {
                   {insignia.conseguida ? insignia.descripcion : insignia.progreso}
                 </p>
               </div>
-              <span
-                className={`mt-auto rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${
-                  insignia.conseguida
-                    ? 'bg-premio-suave text-acento'
-                    : 'bg-borde text-texto-muted'
-                }`}
-              >
-                {insignia.conseguida ? 'Conseguida' : 'Bloqueada'}
-              </span>
-            </motion.button>
+              {insignia.conseguida ? (
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(evento) => {
+                    evento.stopPropagation();
+                    void compartirLogro(insignia);
+                  }}
+                  className="mt-auto flex items-center gap-1.5 rounded-full bg-premio-suave px-2.5 py-1 text-[10px] font-bold tracking-wide text-acento uppercase"
+                >
+                  {copiada === insignia.id ? (
+                    <>
+                      <Check size={12} /> Copiado
+                    </>
+                  ) : (
+                    <>
+                      <Share2 size={12} /> Compartir
+                    </>
+                  )}
+                </motion.button>
+              ) : (
+                <span className="mt-auto rounded-full bg-borde px-2 py-0.5 text-[10px] font-bold tracking-wide text-texto-muted uppercase">
+                  Bloqueada
+                </span>
+              )}
+            </motion.div>
           );
         })}
       </div>
