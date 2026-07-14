@@ -23,7 +23,7 @@ const MODOS: { modo: Modo; icono: typeof Smartphone; titulo: string; detalle: st
     modo: 'app',
     icono: Smartphone,
     titulo: 'App del cliente',
-    detalle: 'La app real, día a día',
+    detalle: 'Marketplace de locales y tus puntos',
   },
 ];
 

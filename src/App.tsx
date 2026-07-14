@@ -1,13 +1,13 @@
 import { useLayoutEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
-import { DATA_RUBROS, type Cliente, type Recompensa, type Rubro } from './data/mockClientes';
+import { DATA_RUBROS, type Cliente, type Rubro } from './data/mockClientes';
 import Bienvenida, { type Modo } from './components/Bienvenida';
 import PasoCliente from './components/PasoCliente';
 import PasoCajero from './components/PasoCajero';
 import PasoDueno from './components/PasoDueno';
 import Cierre from './components/Cierre';
-import AppCliente from './components/appcliente/AppCliente';
+import MarketplaceApp from './components/appcliente/MarketplaceApp';
 
 type Pantalla = 'bienvenida' | 'cliente' | 'cajero' | 'dueno' | 'cierre' | 'app';
 
@@ -71,17 +71,6 @@ export default function App() {
     navegar('cliente');
   };
 
-  const canjearRecompensa = (recompensa: Recompensa) => {
-    if (!clienteActivo) return;
-    setClientes((previos) =>
-      previos.map((cliente) =>
-        cliente.id === clienteActivo.id
-          ? { ...cliente, puntos: Math.max(0, cliente.puntos - recompensa.pts) }
-          : cliente,
-      ),
-    );
-  };
-
   const acreditarPuntos = (id: string, puntos: number) => {
     setClientes((previos) =>
       previos.map((cliente) =>
@@ -101,15 +90,7 @@ export default function App() {
   };
 
   if (pantalla === 'app' && clienteActivo) {
-    return (
-      <AppCliente
-        data={data}
-        cliente={clienteActivo}
-        clientes={clientes}
-        onCanjear={canjearRecompensa}
-        onSalir={reiniciar}
-      />
-    );
+    return <MarketplaceApp data={data} cliente={clienteActivo} onSalir={reiniciar} />;
   }
 
   return (

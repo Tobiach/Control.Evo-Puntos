@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Activity, Gift, Home, User, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowLeft, Gift, Home, User, type LucideIcon } from 'lucide-react';
 import type { Cliente, Recompensa, RubroData } from '../../data/mockClientes';
 import TabInicio from './TabInicio';
 import TabRecompensas from './TabRecompensas';
@@ -15,6 +15,8 @@ interface Props {
   clientes: Cliente[];
   onCanjear: (recompensa: Recompensa) => void;
   onSalir: () => void;
+  /** Si está presente, muestra el botón "← Volver al marketplace" arriba de todo. */
+  onVolverMarketplace?: () => void;
 }
 
 const TABS: { id: Tab; label: string; icono: LucideIcon }[] = [
@@ -24,11 +26,30 @@ const TABS: { id: Tab; label: string; icono: LucideIcon }[] = [
   { id: 'perfil', label: 'Perfil', icono: User },
 ];
 
-export default function AppCliente({ data, cliente, clientes, onCanjear, onSalir }: Props) {
+export default function AppCliente({
+  data,
+  cliente,
+  clientes,
+  onCanjear,
+  onSalir,
+  onVolverMarketplace,
+}: Props) {
   const [tab, setTab] = useState<Tab>('inicio');
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-fondo">
+      {onVolverMarketplace && (
+        <div className="sticky top-0 z-30 bg-fondo/95 px-5 pt-4 pb-2 backdrop-blur">
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.96 }}
+            onClick={onVolverMarketplace}
+            className="flex items-center gap-1.5 rounded-full border border-borde bg-card px-4 py-2 text-xs font-bold text-texto"
+          >
+            <ArrowLeft size={14} strokeWidth={2.5} /> Volver al marketplace
+          </motion.button>
+        </div>
+      )}
       <main className="flex-1 overflow-y-auto pb-28">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
