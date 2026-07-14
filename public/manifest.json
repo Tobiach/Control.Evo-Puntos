@@ -1,0 +1,23 @@
+{
+  "//": "Iconos placeholder (public/icons/icon.svg) — reemplazar por el logo real cuando exista.",
+  "name": "Control.Evo — Club de Puntos",
+  "short_name": "Club de Puntos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D0D0D",
+  "theme_color": "#0D0D0D",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}

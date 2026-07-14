@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- ICONO PLACEHOLDER — reemplazar por el logo real cuando exista -->
+  <rect width="512" height="512" rx="112" fill="#C9973A"/>
+  <path d="M256 108l35.3 71.5 78.9 11.5-57.1 55.6 13.5 78.6L256 359.3l-70.6 37.1 13.5-78.6-57.1-55.6 78.9-11.5z" fill="#0D0D0D"/>
+  <text x="256" y="452" font-family="Inter, Arial, sans-serif" font-size="96" font-weight="800" fill="#0D0D0D" text-anchor="middle">CE</text>
+</svg>
