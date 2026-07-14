@@ -53,26 +53,65 @@ function traducirError(mensaje: string, contexto: 'ingresar' | 'registrar'): str
     : 'No pudimos iniciar sesión. Intentá de nuevo.';
 }
 
-// ── Cliente (socio del club): teléfono + contraseña ──────────────
+// ── Cliente (socio del club): email + contraseña ─────────────────
+// El teléfono sigue siendo el documento único del club (lo usa el cajero sin auth), pero el
+// login del cliente final es por email: el proveedor de teléfono de Supabase Auth está
+// deshabilitado (requeriría un proveedor SMS de pago tipo Twilio + verificación por OTP).
+// Tras el signUp/login, `vincularCliente` asocia esta cuenta a su fila en `clientes` por
+// teléfono — reclama la fila si el cajero ya cobró antes a ese número, o crea una nueva.
 
-export async function registrarCliente(telefono: string, password: string): Promise<ResultadoAuth> {
+const CLAVE_PENDIENTE = 'celp_vinculo_pendiente';
+
+export async function registrarCliente(
+  email: string,
+  password: string,
+  telefono: string,
+  nombre: string,
+): Promise<ResultadoAuth> {
   if (!supabase) return { ok: false, error: 'sin-conexion' };
-  const { data, error } = await supabase.auth.signUp({
-    phone: normalizarTelefono(telefono),
-    password,
-  });
+  const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
   if (error) return { ok: false, error: traducirError(error.message, 'registrar') };
+
+  // Si Supabase exige confirmar el email, todavía no hay sesión para llamar a la RPC
+  // (necesita auth.uid()). Guardamos el teléfono en este dispositivo para vincularlo
+  // automáticamente en el primer login posterior a la confirmación.
+  const telefonoNormalizado = normalizarTelefono(telefono);
+  if (!data.session) {
+    localStorage.setItem(CLAVE_PENDIENTE, JSON.stringify({ telefono: telefonoNormalizado, nombre }));
+    return { ok: true, session: null };
+  }
+
+  const vinculo = await vincularCliente(telefonoNormalizado, nombre);
+  if (!vinculo.ok) return vinculo;
   return { ok: true, session: data.session };
 }
 
-export async function ingresarCliente(telefono: string, password: string): Promise<ResultadoAuth> {
+export async function ingresarCliente(email: string, password: string): Promise<ResultadoAuth> {
   if (!supabase) return { ok: false, error: 'sin-conexion' };
-  const { data, error } = await supabase.auth.signInWithPassword({
-    phone: normalizarTelefono(telefono),
-    password,
-  });
+  const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
   if (error) return { ok: false, error: traducirError(error.message, 'ingresar') };
+
+  // Si quedó un vínculo pendiente de un registro anterior en este mismo dispositivo
+  // (esperando confirmación de email), lo completamos ahora que ya hay sesión.
+  const pendiente = localStorage.getItem(CLAVE_PENDIENTE);
+  if (pendiente) {
+    try {
+      const { telefono, nombre } = JSON.parse(pendiente) as { telefono: string; nombre: string };
+      await vincularCliente(telefono, nombre);
+    } finally {
+      localStorage.removeItem(CLAVE_PENDIENTE);
+    }
+  }
+
   return { ok: true, session: data.session };
+}
+
+/** Vincula (o crea) la fila de `clientes` de la cuenta logueada con su teléfono. */
+async function vincularCliente(telefono: string, nombre: string): Promise<ResultadoAuth> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.rpc('vincular_cliente', { p_telefono: telefono, p_nombre: nombre });
+  if (error) return { ok: false, error: 'No pudimos vincular tu teléfono. Intentá de nuevo.' };
+  return { ok: true, session: null };
 }
 
 // ── Dueño de negocio: email + contraseña ─────────────────────────

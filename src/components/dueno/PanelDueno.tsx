@@ -42,6 +42,7 @@ const NEGOCIO_VACIO: DatosNegocioForm = {
   lng: null,
   horarioValle: null,
   beneficiosVip: [],
+  pinCajero: null,
 };
 
 const SECCIONES: { clave: Seccion; etiqueta: string; icono: typeof Store }[] = [

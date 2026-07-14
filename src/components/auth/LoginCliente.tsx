@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ChevronLeft, Loader2, Lock, Phone, Sparkles } from 'lucide-react';
+import { AtSign, ChevronLeft, Loader2, Lock, Phone, Sparkles, User } from 'lucide-react';
 import type { Cliente, RubroData } from '../../data/mockClientes';
 import { buscarClientes, formatPuntos } from '../../lib/club';
 import {
   ingresarCliente,
   registrarCliente,
   supabaseEnabled,
+  validarEmail,
   validarPassword,
   validarTelefono,
 } from '../../lib/auth';
@@ -46,7 +47,7 @@ export default function LoginCliente({ data, clientes, onEntrar, onVolver }: Pro
   );
 }
 
-// ── Modo real: teléfono + contraseña con Supabase Auth ───────────
+// ── Modo real: email + contraseña con Supabase Auth (teléfono como dato de perfil) ──
 
 function FormularioCliente({
   onEntrar,
@@ -56,47 +57,81 @@ function FormularioCliente({
   clienteAppId: string;
 }) {
   const [esRegistro, setEsRegistro] = useState(false);
+  const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
+  const [confirmacionPendiente, setConfirmacionPendiente] = useState(false);
 
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
-    const falloTelefono = validarTelefono(telefono);
+    const falloEmail = validarEmail(email);
     const falloPassword = validarPassword(password);
-    if (falloTelefono || falloPassword) {
-      setError(falloTelefono ?? falloPassword);
+    const falloTelefono = esRegistro ? validarTelefono(telefono) : null;
+    if (falloEmail || falloPassword || falloTelefono) {
+      setError(falloEmail ?? falloTelefono ?? falloPassword);
       return;
     }
     setError(null);
+    setConfirmacionPendiente(false);
     setCargando(true);
     const resultado = esRegistro
-      ? await registrarCliente(telefono, password)
-      : await ingresarCliente(telefono, password);
+      ? await registrarCliente(email, password, telefono, nombre)
+      : await ingresarCliente(email, password);
     setCargando(false);
     if (!resultado.ok) {
       setError(resultado.error);
       return;
     }
-    // Fase 2: la auth queda lista. La carga del socio real desde la tabla `clientes`
-    // llega con la migración de datos; hasta entonces la app muestra el socio del rubro.
+    if (esRegistro && !resultado.session) {
+      setConfirmacionPendiente(true);
+      return;
+    }
     onEntrar(clienteAppId);
   };
 
   return (
     <form onSubmit={enviar} className="flex flex-col gap-3">
+      {esRegistro && (
+        <label className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
+          <User size={18} className="shrink-0 text-acento" />
+          <input
+            value={nombre}
+            onChange={(evento) => setNombre(evento.target.value)}
+            placeholder="Tu nombre"
+            autoComplete="name"
+            className="w-full bg-transparent text-base font-medium outline-none placeholder:text-texto-muted/60"
+          />
+        </label>
+      )}
+
       <label className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
-        <Phone size={18} className="shrink-0 text-acento" />
+        <AtSign size={18} className="shrink-0 text-acento" />
         <input
-          type="tel"
-          value={telefono}
-          onChange={(evento) => setTelefono(evento.target.value)}
-          placeholder="Tu teléfono"
-          autoComplete="tel"
+          type="email"
+          value={email}
+          onChange={(evento) => setEmail(evento.target.value)}
+          placeholder="tu@email.com"
+          autoComplete="email"
           className="w-full bg-transparent text-base font-medium outline-none placeholder:text-texto-muted/60"
         />
       </label>
+
+      {esRegistro && (
+        <label className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
+          <Phone size={18} className="shrink-0 text-acento" />
+          <input
+            type="tel"
+            value={telefono}
+            onChange={(evento) => setTelefono(evento.target.value)}
+            placeholder="Tu teléfono"
+            autoComplete="tel"
+            className="w-full bg-transparent text-base font-medium outline-none placeholder:text-texto-muted/60"
+          />
+        </label>
+      )}
 
       <label className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
         <Lock size={18} className="shrink-0 text-acento" />
@@ -111,6 +146,12 @@ function FormularioCliente({
       </label>
 
       {error && <p className="px-1 text-sm font-semibold text-rojo">{error}</p>}
+      {confirmacionPendiente && (
+        <p className="rounded-2xl border border-acento bg-premio-suave px-4 py-3 text-sm font-semibold text-acento">
+          Creamos tu cuenta. Te enviamos un email a {email} — abrilo y confirmá antes de
+          ingresar (revisá spam si no lo ves).
+        </p>
+      )}
 
       <motion.button
         type="submit"
@@ -127,6 +168,7 @@ function FormularioCliente({
         onClick={() => {
           setEsRegistro((previo) => !previo);
           setError(null);
+          setConfirmacionPendiente(false);
         }}
         className="self-center py-1 text-xs font-semibold text-texto-muted underline underline-offset-4"
       >

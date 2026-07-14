@@ -24,6 +24,7 @@ export default function LoginDueno({ onVolver }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
+  const [confirmacionPendiente, setConfirmacionPendiente] = useState(false);
 
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
@@ -34,13 +35,22 @@ export default function LoginDueno({ onVolver }: Props) {
       return;
     }
     setError(null);
+    setConfirmacionPendiente(false);
     setEnviando(true);
     const resultado = esRegistro
       ? await registrarDueno(email, password)
       : await ingresarDueno(email, password);
     setEnviando(false);
-    if (!resultado.ok) setError(resultado.error);
-    // En éxito, `useSesion` detecta la sesión y se muestra el panel.
+    if (!resultado.ok) {
+      setError(resultado.error);
+      return;
+    }
+    if (esRegistro && !resultado.session) {
+      // Cuenta creada, pero Supabase exige confirmar el email antes de dar sesión.
+      setConfirmacionPendiente(true);
+      return;
+    }
+    // En éxito con sesión inmediata, `useSesion` la detecta y se muestra el panel.
   };
 
   // Dueño logueado de verdad → panel real, con persistencia en Supabase.
@@ -114,6 +124,12 @@ export default function LoginDueno({ onVolver }: Props) {
           </label>
 
           {error && <p className="px-1 text-sm font-semibold text-rojo">{error}</p>}
+          {confirmacionPendiente && (
+            <p className="rounded-2xl border border-acento bg-premio-suave px-4 py-3 text-sm font-semibold text-acento">
+              Creamos tu cuenta. Te enviamos un email a {email} — abrilo y confirmá antes de
+              ingresar (revisá spam si no lo ves).
+            </p>
+          )}
 
           <motion.button
             type="submit"

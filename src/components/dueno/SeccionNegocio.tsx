@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LocateFixed, Loader2, MapPin, Plus, Store, X } from 'lucide-react';
+import { Check, Copy, KeyRound, LocateFixed, Loader2, MapPin, Plus, Store, X } from 'lucide-react';
 import type { Rubro } from '../../data/mockClientes';
 import type { DatosNegocioForm } from '../../lib/panelDueno';
 import type { Coordenadas } from '../../lib/geo';
@@ -36,7 +36,20 @@ const claseInput =
 export default function SeccionNegocio({ negocio, onCambiar }: Props) {
   const [geo, setGeo] = useState<EstadoGeo>({ estado: 'inactivo' });
   const [nuevoVip, setNuevoVip] = useState('');
+  const [copiado, setCopiado] = useState(false);
   const valle = negocio.horarioValle;
+
+  const copiarCodigo = async () => {
+    if (!negocio.id) return;
+    await navigator.clipboard.writeText(negocio.id);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+
+  const setPin = (texto: string) => {
+    const digitos = texto.replace(/\D/g, '').slice(0, 4);
+    onCambiar({ pinCajero: digitos || null });
+  };
 
   const pedirUbicacion = () => {
     if (!('geolocation' in navigator)) {
@@ -102,6 +115,45 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
           placeholder="Café Nardo"
           className={claseInput}
         />
+      </Campo>
+
+      <Campo etiqueta="Código de tu negocio (para el cajero)">
+        {negocio.id ? (
+          <button
+            type="button"
+            onClick={copiarCodigo}
+            className="flex w-full items-center justify-between rounded-2xl border border-borde bg-card px-4 py-3.5 text-left"
+          >
+            <span className="font-mono text-sm font-bold">{negocio.id}</span>
+            {copiado ? (
+              <Check size={18} className="shrink-0 text-verde-ok" />
+            ) : (
+              <Copy size={18} className="shrink-0 text-texto-muted" />
+            )}
+          </button>
+        ) : (
+          <p className="rounded-2xl border border-borde bg-card px-4 py-3.5 text-sm text-texto-muted">
+            Se genera al guardar el negocio por primera vez.
+          </p>
+        )}
+      </Campo>
+
+      <Campo etiqueta="PIN de cajero (4 dígitos)">
+        <label className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
+          <KeyRound size={18} className="shrink-0 text-acento" />
+          <input
+            inputMode="numeric"
+            value={negocio.pinCajero ?? ''}
+            onChange={(e) => setPin(e.target.value)}
+            placeholder="Ej: 1234"
+            className="w-full bg-transparent text-base font-medium tracking-widest outline-none placeholder:text-texto-muted/60 placeholder:tracking-normal"
+          />
+        </label>
+        {!negocio.pinCajero && (
+          <p className="mt-1 px-1 text-xs font-semibold text-rojo">
+            Sin PIN, tu cajero no va a poder entrar a cobrar.
+          </p>
+        )}
       </Campo>
 
       <div className="grid grid-cols-[1fr_auto] gap-3">

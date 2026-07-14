@@ -17,6 +17,8 @@ export interface DatosNegocioForm {
   lng: number | null;
   horarioValle: HorarioValle | null;
   beneficiosVip: string[];
+  /** PIN de 4 dígitos para que el cajero entre a cobrar sin cuenta de Auth. `null` = sin configurar. */
+  pinCajero: string | null;
 }
 
 export interface MetricasNegocio {
@@ -37,6 +39,7 @@ interface FilaNegocio {
   lng: number | null;
   horario_valle: HorarioValle | null;
   beneficios_vip: string[] | null;
+  pin_cajero: string | null;
 }
 
 interface FilaRecompensa {
@@ -70,6 +73,7 @@ function filaANegocio(fila: FilaNegocio): DatosNegocioForm {
     lng: fila.lng,
     horarioValle: fila.horario_valle,
     beneficiosVip: fila.beneficios_vip ?? [],
+    pinCajero: fila.pin_cajero,
   };
 }
 
@@ -94,7 +98,7 @@ export async function cargarNegocioDelDueno(
   if (!supabase) return { ok: false, error: 'sin-conexion' };
   const { data, error } = await supabase
     .from('negocios')
-    .select('id, nombre, categoria, rubro, emoji, lat, lng, horario_valle, beneficios_vip')
+    .select('id, nombre, categoria, rubro, emoji, lat, lng, horario_valle, beneficios_vip, pin_cajero')
     .eq('dueno_user_id', duenoUserId)
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
@@ -137,6 +141,7 @@ export async function guardarNegocioYRecompensas(
       lng: negocio.lng,
       horario_valle: negocio.horarioValle,
       beneficios_vip: negocio.beneficiosVip,
+      pin_cajero: negocio.pinCajero,
     },
     { onConflict: 'id' },
   );
