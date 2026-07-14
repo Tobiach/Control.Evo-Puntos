@@ -58,8 +58,12 @@ export function recompensaMasCercana(
 
 export const esInactivo = (cliente: Cliente) => cliente.ultimaVisitaDias >= DIAS_INACTIVO;
 
+/** Fórmula base de puntos: 1 punto cada `montoPorPunto` de moneda local. */
+export const calcularPuntos = (montoPorPunto: number, monto: number) =>
+  Math.floor(monto / montoPorPunto);
+
 export const puntosPorMonto = (data: RubroData, monto: number) =>
-  Math.floor(monto / data.montoPorPunto);
+  calcularPuntos(data.montoPorPunto, monto);
 
 export const formatMonto = (data: RubroData, monto: number) =>
   `${data.monedaPrefijo} ${monto.toLocaleString(data.locale)}`;

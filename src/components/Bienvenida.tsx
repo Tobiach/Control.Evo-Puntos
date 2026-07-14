@@ -11,6 +11,7 @@ interface Props {
   onElegirModo: (modo: Modo) => void;
   onComenzar: () => void;
   onDueno: () => void;
+  onCajero: () => void;
 }
 
 const MODOS: { modo: Modo; icono: typeof Smartphone; titulo: string; detalle: string }[] = [
@@ -54,6 +55,7 @@ export default function Bienvenida({
   onElegirModo,
   onComenzar,
   onDueno,
+  onCajero,
 }: Props) {
   return (
     <div className="flex flex-1 flex-col justify-center gap-10 py-10">
@@ -146,13 +148,22 @@ export default function Bienvenida({
         <ArrowRight size={19} strokeWidth={2.5} />
       </motion.button>
 
-      <button
-        type="button"
-        onClick={onDueno}
-        className="-mt-4 self-center py-1 text-xs font-semibold text-texto-muted underline underline-offset-4"
-      >
-        ¿Sos dueño de un negocio?
-      </button>
+      <div className="-mt-4 flex flex-col items-center gap-2">
+        <button
+          type="button"
+          onClick={onDueno}
+          className="py-1 text-xs font-semibold text-texto-muted underline underline-offset-4"
+        >
+          ¿Sos dueño de un negocio?
+        </button>
+        <button
+          type="button"
+          onClick={onCajero}
+          className="py-1 text-xs font-semibold text-texto-muted underline underline-offset-4"
+        >
+          ¿Trabajás en la caja?
+        </button>
+      </div>
     </div>
   );
 }

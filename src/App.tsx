@@ -10,6 +10,7 @@ import Cierre from './components/Cierre';
 import MarketplaceApp from './components/appcliente/MarketplaceApp';
 import LoginCliente from './components/auth/LoginCliente';
 import LoginDueno from './components/auth/LoginDueno';
+import LoginCajero from './components/cajero/LoginCajero';
 
 type Pantalla =
   | 'bienvenida'
@@ -19,7 +20,8 @@ type Pantalla =
   | 'cierre'
   | 'app'
   | 'auth-cliente'
-  | 'auth-dueno';
+  | 'auth-dueno'
+  | 'auth-cajero';
 
 const ORDEN: Pantalla[] = ['bienvenida', 'cliente', 'cajero', 'dueno', 'cierre'];
 const COLOR_BARRA: Record<Rubro, string> = { gastro: '#0D0D0D', super: '#F5F6FA' };
@@ -152,6 +154,7 @@ export default function App() {
               onElegirModo={setModo}
               onComenzar={comenzar}
               onDueno={() => navegar('auth-dueno')}
+              onCajero={() => navegar('auth-cajero')}
             />
           )}
           {pantalla === 'cliente' && (
@@ -183,6 +186,9 @@ export default function App() {
             />
           )}
           {pantalla === 'auth-dueno' && <LoginDueno onVolver={() => navegar('bienvenida')} />}
+          {pantalla === 'auth-cajero' && (
+            <LoginCajero data={data} onVolver={() => navegar('bienvenida')} />
+          )}
         </motion.main>
       </AnimatePresence>
 
