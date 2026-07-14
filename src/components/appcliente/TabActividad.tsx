@@ -8,6 +8,8 @@ import {
   progresoNivel,
   ultimos7Dias,
 } from '../../lib/club';
+import { insigniasDeNegocio } from '../../lib/misiones';
+import Insignias from './Insignias';
 
 interface Props {
   data: RubroData;
@@ -23,6 +25,7 @@ export default function TabActividad({ data, cliente, historial }: Props) {
   const dias = ultimos7Dias(historial);
   const maxPuntos = Math.max(1, ...dias.map((dia) => dia.puntos));
   const offset = CIRCUNFERENCIA - (pct / 100) * CIRCUNFERENCIA;
+  const insignias = insigniasDeNegocio(data, historial);
 
   return (
     <div className="flex flex-col gap-6 px-5 pt-6">
@@ -94,6 +97,8 @@ export default function TabActividad({ data, cliente, historial }: Props) {
           ))}
         </div>
       </div>
+
+      <Insignias insignias={insignias} />
 
       <div>
         <p className="mb-2 text-sm font-bold">Historial de visitas</p>

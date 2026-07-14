@@ -28,6 +28,28 @@ export interface Visita {
   diasAtras: number;
   monto: number;
   puntos: number;
+  /** El cliente probó un producto/categoría nueva en esta visita (misión "probá algo nuevo"). */
+  nuevo?: boolean;
+}
+
+/** Franja horaria de baja demanda donde el negocio ofrece puntos x2 (beneficio informativo). */
+export interface HorarioValle {
+  /** Hora de inicio en formato 'HH:MM'. */
+  desde: string;
+  /** Hora de fin en formato 'HH:MM'. */
+  hasta: string;
+  /** Días de la semana en que aplica (0 = domingo … 6 = sábado). */
+  dias: number[];
+}
+
+/** Evento/promoción con fecha que el dueño cargó: visitar dentro del rango desbloquea un extra. */
+export interface EventoNegocio {
+  nombre: string;
+  /** Fecha ISO (yyyy-mm-dd) de inicio, inclusive. */
+  fechaInicio: string;
+  /** Fecha ISO (yyyy-mm-dd) de fin, inclusive. */
+  fechaFin: string;
+  recompensaExtra: string;
 }
 
 export interface MetricasSemana {
@@ -52,6 +74,10 @@ export interface RubroData {
   clienteAppId: string;
   /** Historial de visitas de ese usuario para racha, gráficos e historial. */
   historialApp: Visita[];
+  /** Eventos con fecha del negocio (misiones por evento). Sólo en la vista de un local. */
+  eventos?: EventoNegocio[];
+  /** Franja horaria valle con puntos x2 (aviso informativo). Sólo en la vista de un local. */
+  horarioValle?: HorarioValle;
 }
 
 export const DIAS_INACTIVO = 20;

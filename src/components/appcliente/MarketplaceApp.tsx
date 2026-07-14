@@ -34,6 +34,8 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   montoPorPunto: 100,
   recompensas: negocio.recompensas,
   historialApp: relacion?.historial ?? [],
+  eventos: negocio.eventos,
+  horarioValle: negocio.horarioValle,
 });
 
 export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
