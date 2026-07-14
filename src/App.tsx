@@ -8,8 +8,18 @@ import PasoCajero from './components/PasoCajero';
 import PasoDueno from './components/PasoDueno';
 import Cierre from './components/Cierre';
 import MarketplaceApp from './components/appcliente/MarketplaceApp';
+import LoginCliente from './components/auth/LoginCliente';
+import LoginDueno from './components/auth/LoginDueno';
 
-type Pantalla = 'bienvenida' | 'cliente' | 'cajero' | 'dueno' | 'cierre' | 'app';
+type Pantalla =
+  | 'bienvenida'
+  | 'cliente'
+  | 'cajero'
+  | 'dueno'
+  | 'cierre'
+  | 'app'
+  | 'auth-cliente'
+  | 'auth-dueno';
 
 const ORDEN: Pantalla[] = ['bienvenida', 'cliente', 'cajero', 'dueno', 'cierre'];
 const COLOR_BARRA: Record<Rubro, string> = { gastro: '#0D0D0D', super: '#F5F6FA' };
@@ -64,11 +74,15 @@ export default function App() {
 
   const comenzar = () => {
     if (modo === 'app') {
-      setClienteActivoId(data.clienteAppId);
-      navegar('app');
+      navegar('auth-cliente');
       return;
     }
     navegar('cliente');
+  };
+
+  const entrarApp = (clienteId: string) => {
+    setClienteActivoId(clienteId);
+    navegar('app');
   };
 
   const acreditarPuntos = (id: string, puntos: number) => {
@@ -137,6 +151,7 @@ export default function App() {
               onElegirRubro={elegirRubro}
               onElegirModo={setModo}
               onComenzar={comenzar}
+              onDueno={() => navegar('auth-dueno')}
             />
           )}
           {pantalla === 'cliente' && (
@@ -159,6 +174,15 @@ export default function App() {
             <PasoDueno data={data} clientes={clientes} puntosSesion={puntosSesion} />
           )}
           {pantalla === 'cierre' && <Cierre data={data} onReiniciar={reiniciar} />}
+          {pantalla === 'auth-cliente' && (
+            <LoginCliente
+              data={data}
+              clientes={clientes}
+              onEntrar={entrarApp}
+              onVolver={() => navegar('bienvenida')}
+            />
+          )}
+          {pantalla === 'auth-dueno' && <LoginDueno onVolver={() => navegar('bienvenida')} />}
         </motion.main>
       </AnimatePresence>
 

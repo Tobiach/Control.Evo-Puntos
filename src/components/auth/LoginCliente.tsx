@@ -1,0 +1,200 @@
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { ChevronLeft, Loader2, Lock, Phone, Sparkles } from 'lucide-react';
+import type { Cliente, RubroData } from '../../data/mockClientes';
+import { buscarClientes, formatPuntos } from '../../lib/club';
+import {
+  ingresarCliente,
+  registrarCliente,
+  supabaseEnabled,
+  validarPassword,
+  validarTelefono,
+} from '../../lib/auth';
+
+interface Props {
+  data: RubroData;
+  clientes: Cliente[];
+  /** Entra a la app del cliente con el socio elegido (demo) o el logueado (real). */
+  onEntrar: (clienteId: string) => void;
+  onVolver: () => void;
+}
+
+export default function LoginCliente({ data, clientes, onEntrar, onVolver }: Props) {
+  return (
+    <div className="flex flex-1 flex-col gap-5 py-6">
+      <header className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onVolver}
+          aria-label="Volver"
+          className="rounded-full border border-borde bg-card p-2 text-texto-muted"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <div>
+          <h2 className="text-2xl font-black tracking-tight">Entrá a tu club</h2>
+          <p className="text-sm text-texto-muted">Accedé a tus puntos en {data.nombreNegocio}.</p>
+        </div>
+      </header>
+
+      {supabaseEnabled ? (
+        <FormularioCliente onEntrar={onEntrar} clienteAppId={data.clienteAppId} />
+      ) : (
+        <SelectorDemo data={data} clientes={clientes} onEntrar={onEntrar} />
+      )}
+    </div>
+  );
+}
+
+// ── Modo real: teléfono + contraseña con Supabase Auth ───────────
+
+function FormularioCliente({
+  onEntrar,
+  clienteAppId,
+}: {
+  onEntrar: (clienteId: string) => void;
+  clienteAppId: string;
+}) {
+  const [esRegistro, setEsRegistro] = useState(false);
+  const [telefono, setTelefono] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(false);
+
+  const enviar = async (evento: React.FormEvent) => {
+    evento.preventDefault();
+    const falloTelefono = validarTelefono(telefono);
+    const falloPassword = validarPassword(password);
+    if (falloTelefono || falloPassword) {
+      setError(falloTelefono ?? falloPassword);
+      return;
+    }
+    setError(null);
+    setCargando(true);
+    const resultado = esRegistro
+      ? await registrarCliente(telefono, password)
+      : await ingresarCliente(telefono, password);
+    setCargando(false);
+    if (!resultado.ok) {
+      setError(resultado.error);
+      return;
+    }
+    // Fase 2: la auth queda lista. La carga del socio real desde la tabla `clientes`
+    // llega con la migración de datos; hasta entonces la app muestra el socio del rubro.
+    onEntrar(clienteAppId);
+  };
+
+  return (
+    <form onSubmit={enviar} className="flex flex-col gap-3">
+      <label className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
+        <Phone size={18} className="shrink-0 text-acento" />
+        <input
+          type="tel"
+          value={telefono}
+          onChange={(evento) => setTelefono(evento.target.value)}
+          placeholder="Tu teléfono"
+          autoComplete="tel"
+          className="w-full bg-transparent text-base font-medium outline-none placeholder:text-texto-muted/60"
+        />
+      </label>
+
+      <label className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
+        <Lock size={18} className="shrink-0 text-acento" />
+        <input
+          type="password"
+          value={password}
+          onChange={(evento) => setPassword(evento.target.value)}
+          placeholder="Contraseña"
+          autoComplete={esRegistro ? 'new-password' : 'current-password'}
+          className="w-full bg-transparent text-base font-medium outline-none placeholder:text-texto-muted/60"
+        />
+      </label>
+
+      {error && <p className="px-1 text-sm font-semibold text-rojo">{error}</p>}
+
+      <motion.button
+        type="submit"
+        whileTap={{ scale: 0.97 }}
+        disabled={cargando}
+        className="mt-1 flex w-full items-center justify-center gap-2 rounded-2xl bg-acento py-4 text-base font-bold text-on-acento active:bg-acento-hover disabled:opacity-60"
+      >
+        {cargando && <Loader2 size={18} className="animate-spin" />}
+        {esRegistro ? 'Crear mi cuenta' : 'Ingresar'}
+      </motion.button>
+
+      <button
+        type="button"
+        onClick={() => {
+          setEsRegistro((previo) => !previo);
+          setError(null);
+        }}
+        className="self-center py-1 text-xs font-semibold text-texto-muted underline underline-offset-4"
+      >
+        {esRegistro ? '¿Ya tenés cuenta? Ingresá' : '¿Primera vez? Creá tu cuenta'}
+      </button>
+    </form>
+  );
+}
+
+// ── Modo demo (sin backend): elegir entre los socios mock ────────
+
+function SelectorDemo({
+  data,
+  clientes,
+  onEntrar,
+}: {
+  data: RubroData;
+  clientes: Cliente[];
+  onEntrar: (clienteId: string) => void;
+}) {
+  const [telefono, setTelefono] = useState('');
+  const sugerencias = buscarClientes(clientes, telefono);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2 rounded-2xl bg-premio-suave px-4 py-3 text-xs font-semibold text-acento">
+        <Sparkles size={15} strokeWidth={2.5} />
+        Modo demo — elegí un socio para entrar a la app.
+      </div>
+
+      <label className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
+        <Phone size={18} className="shrink-0 text-acento" />
+        <input
+          type="tel"
+          value={telefono}
+          onChange={(evento) => setTelefono(evento.target.value)}
+          placeholder={`Ej: ${data.clientes[0].telefono}`}
+          className="w-full bg-transparent text-base font-medium outline-none placeholder:text-texto-muted/60"
+        />
+      </label>
+
+      <div className="flex flex-col gap-2">
+        <AnimatePresence initial={false}>
+          {sugerencias.map((cliente) => (
+            <motion.button
+              key={cliente.id}
+              type="button"
+              layout
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onEntrar(cliente.id)}
+              className="flex items-center justify-between rounded-xl border border-borde bg-fondo-medio px-4 py-3 text-left"
+            >
+              <span>
+                <span className="block text-sm font-bold">{cliente.nombre}</span>
+                <span className="block text-xs text-texto-muted">{cliente.telefono}</span>
+              </span>
+              <span className="text-xs font-bold text-premio">
+                {formatPuntos(cliente.puntos)} pts
+              </span>
+            </motion.button>
+          ))}
+        </AnimatePresence>
+        {sugerencias.length === 0 && (
+          <p className="rounded-xl border border-borde bg-fondo-medio px-4 py-3 text-sm text-texto-muted">
+            No hay socios con ese teléfono en la demo.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}

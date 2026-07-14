@@ -10,6 +10,7 @@ interface Props {
   onElegirRubro: (rubro: Rubro) => void;
   onElegirModo: (modo: Modo) => void;
   onComenzar: () => void;
+  onDueno: () => void;
 }
 
 const MODOS: { modo: Modo; icono: typeof Smartphone; titulo: string; detalle: string }[] = [
@@ -52,6 +53,7 @@ export default function Bienvenida({
   onElegirRubro,
   onElegirModo,
   onComenzar,
+  onDueno,
 }: Props) {
   return (
     <div className="flex flex-1 flex-col justify-center gap-10 py-10">
@@ -143,6 +145,14 @@ export default function Bienvenida({
         {modo === 'app' ? 'Entrar a la app' : 'Ver cómo funciona'}
         <ArrowRight size={19} strokeWidth={2.5} />
       </motion.button>
+
+      <button
+        type="button"
+        onClick={onDueno}
+        className="-mt-4 self-center py-1 text-xs font-semibold text-texto-muted underline underline-offset-4"
+      >
+        ¿Sos dueño de un negocio?
+      </button>
     </div>
   );
 }
