@@ -1,5 +1,6 @@
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { Loader2 } from 'lucide-react';
 import {
   DATA_RUBROS,
   type Cliente,
@@ -14,6 +15,9 @@ import {
   type RelacionNegocio,
 } from '../../data/negocios';
 import { usePermisoNotificaciones } from '../../lib/notificaciones';
+import { supabaseEnabled } from '../../lib/supabase';
+import { useSesion } from '../../hooks/useSesion';
+import { cargarAppCliente, canjearRecompensa, type ClienteApp } from '../../lib/panelCliente';
 import AppCliente from './AppCliente';
 import Marketplace from './Marketplace';
 
@@ -41,14 +45,46 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
 });
 
 export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
+  const { sesion } = useSesion();
+  const usarReal = supabaseEnabled && !!sesion;
+
   const [negocioId, setNegocioId] = useState<string | null>(null);
+  // Con backend real, negocios y relaciones vienen de Supabase; sin backend, del mock.
+  const [negocios, setNegocios] = useState<Negocio[]>(NEGOCIOS);
   const [relaciones, setRelaciones] = useState<Record<string, RelacionNegocio>>(() => ({
     ...RELACIONES_INICIALES,
   }));
+  const [clienteReal, setClienteReal] = useState<ClienteApp | null>(null);
+  const [cargando, setCargando] = useState(usarReal);
   // Pide el permiso real de notificaciones al entrar a la app del cliente (una sola vez).
   const permisoNotif = usePermisoNotificaciones();
 
-  const negocio = NEGOCIOS.find((n) => n.id === negocioId) ?? null;
+  const userId = sesion?.user.id;
+  useEffect(() => {
+    if (!usarReal || !userId) return;
+    let activo = true;
+    setCargando(true);
+    cargarAppCliente(userId).then((res) => {
+      if (!activo) return;
+      if (res.ok) {
+        setNegocios(res.valor.negocios);
+        setRelaciones(res.valor.relaciones);
+        setClienteReal(res.valor.cliente);
+      }
+      setCargando(false);
+    });
+    return () => {
+      activo = false;
+    };
+  }, [usarReal, userId]);
+
+  // En modo real usamos el nombre/teléfono/id reales del cliente logueado.
+  const clienteEfectivo: Cliente =
+    usarReal && clienteReal
+      ? { id: clienteReal.id, nombre: clienteReal.nombre, telefono: clienteReal.telefono, puntos: 0, ultimaVisitaDias: 0 }
+      : cliente;
+
+  const negocio = negocios.find((n) => n.id === negocioId) ?? null;
   const relacion = negocio ? relaciones[negocio.id] : undefined;
 
   // Dentro de un negocio manda el tema de ESE negocio; en el marketplace, el del rubro base.
@@ -68,16 +104,27 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
 
   const canjear = (recompensa: Recompensa) => {
     if (!negocio) return;
-    setRelaciones((previas) => {
-      const actual = previas[negocio.id];
-      if (!actual) return previas;
-      return {
-        ...previas,
-        [negocio.id]: { ...actual, puntos: Math.max(0, actual.puntos - recompensa.pts) },
-      };
+    const actual = relaciones[negocio.id];
+    if (!actual) return;
+    const puntosPrevios = actual.puntos;
+    // Optimista: descontamos ya en pantalla.
+    setRelaciones((previas) => ({
+      ...previas,
+      [negocio.id]: { ...actual, puntos: Math.max(0, puntosPrevios - recompensa.pts) },
+    }));
+    if (!usarReal) return;
+    // Real: confirmamos contra el servidor y ajustamos al saldo verdadero (o revertimos).
+    canjearRecompensa(negocio.id, recompensa.pts).then((res) => {
+      setRelaciones((previas) => {
+        const rel = previas[negocio.id];
+        if (!rel) return previas;
+        const puntos = res.ok ? res.valor.puntosRestantes : puntosPrevios;
+        return { ...previas, [negocio.id]: { ...rel, puntos } };
+      });
     });
   };
 
+  // Regalar puntos es parte de lo social: sigue siendo demo local (no persiste en Supabase).
   const regalarPuntos = (cantidad: number) => {
     if (!negocio) return;
     setRelaciones((previas) => {
@@ -92,18 +139,27 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
 
   const volverAlMarketplace = () => setNegocioId(null);
 
+  if (cargando) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-3 bg-fondo text-texto-muted">
+        <Loader2 size={28} className="animate-spin text-acento" />
+        <p className="text-sm font-semibold">Cargando tus puntos…</p>
+      </div>
+    );
+  }
+
   let vistaNegocio = null;
   if (negocio) {
     const dataNegocio = dataDeNegocio(negocio, relacion);
     const clienteNegocio: Cliente = {
-      ...cliente,
+      ...clienteEfectivo,
       puntos: relacion?.puntos ?? 0,
       ultimaVisitaDias: relacion?.ultimaVisitaDias ?? 0,
     };
     // Ranking del local: la persona logueada con SUS puntos de este negocio + socios mock.
     const clientesNegocio: Cliente[] = [
       clienteNegocio,
-      ...dataNegocio.clientes.filter((c) => c.id !== cliente.id),
+      ...dataNegocio.clientes.filter((c) => c.id !== clienteEfectivo.id),
     ];
     vistaNegocio = (
       <AppCliente
@@ -131,9 +187,9 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
       >
         {vistaNegocio ?? (
           <Marketplace
-            negocios={NEGOCIOS}
+            negocios={negocios}
             relaciones={relaciones}
-            nombreCliente={cliente.nombre}
+            nombreCliente={clienteEfectivo.nombre}
             onAbrirNegocio={(elegido) => setNegocioId(elegido.id)}
             onSalir={onSalir}
           />
