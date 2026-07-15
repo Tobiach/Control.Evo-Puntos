@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DATA_RUBROS, type Visita } from '../data/mockClientes';
+import { RELACIONES_INICIALES } from '../data/negocios';
 import {
   buscarClientes,
   calcularPuntos,
@@ -8,6 +9,7 @@ import {
   progresoNivel,
   proximaRecompensa,
   puntosPorMonto,
+  rachaDias,
   sugerenciaFavorita,
 } from './club';
 
@@ -67,6 +69,33 @@ describe('proximaRecompensa', () => {
 
   it('devuelve null cuando ya alcanza todas', () => {
     expect(proximaRecompensa(gastro.recompensas, 5000)).toBeNull();
+  });
+});
+
+describe('rachaDias', () => {
+  it('cuenta la tira más larga de días consecutivos con visita', () => {
+    // Café Nardo: días 1,2,3 seguidos → racha diaria de 3.
+    expect(rachaDias(RELACIONES_INICIALES['cafe-nardo'].historial)).toBe(3);
+  });
+
+  it('da 1 cuando no hay días consecutivos', () => {
+    // Cervecería: visitas espaciadas por semana → ningún día pegado a otro.
+    expect(rachaDias(RELACIONES_INICIALES['cerveceria-soler'].historial)).toBe(1);
+  });
+
+  it('toma la mejor tira aunque no incluya el día de hoy', () => {
+    const historial: Visita[] = [
+      { diasAtras: 0, monto: 0, puntos: 0 },
+      { diasAtras: 4, monto: 0, puntos: 0 },
+      { diasAtras: 5, monto: 0, puntos: 0 },
+      { diasAtras: 6, monto: 0, puntos: 0 },
+    ];
+    expect(rachaDias(historial)).toBe(3); // días 4-5-6
+  });
+
+  it('ignora días repetidos y cuenta 0 sin historial', () => {
+    expect(rachaDias([{ diasAtras: 2, monto: 0, puntos: 0 }, { diasAtras: 2, monto: 0, puntos: 0 }])).toBe(1);
+    expect(rachaDias([])).toBe(0);
   });
 });
 

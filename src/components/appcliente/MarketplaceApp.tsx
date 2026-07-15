@@ -41,6 +41,7 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   historialApp: relacion?.historial ?? [],
   eventos: negocio.eventos,
   horarioValle: negocio.horarioValle,
+  promos: negocio.promos,
   beneficiosVip: negocio.beneficiosVip,
 });
 
@@ -55,6 +56,8 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
     ...RELACIONES_INICIALES,
   }));
   const [clienteReal, setClienteReal] = useState<ClienteApp | null>(null);
+  // Última tirada de la ruleta semanal por negocio (mismo patrón in-memory que `relaciones`).
+  const [tiradasRuleta, setTiradasRuleta] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(usarReal);
   // Pide el permiso real de notificaciones al entrar a la app del cliente (una sola vez).
   const permisoNotif = usePermisoNotificaciones();
@@ -137,6 +140,11 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
     });
   };
 
+  const girarRuleta = () => {
+    if (!negocio) return;
+    setTiradasRuleta((previas) => ({ ...previas, [negocio.id]: Date.now() }));
+  };
+
   const volverAlMarketplace = () => setNegocioId(null);
 
   if (cargando) {
@@ -168,6 +176,8 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
         cliente={clienteNegocio}
         clientes={clientesNegocio}
         permisoNotif={permisoNotif}
+        ultimaRuletaTs={tiradasRuleta[negocio.id]}
+        onGirarRuleta={girarRuleta}
         onCanjear={canjear}
         onRegalar={regalarPuntos}
         onSalir={volverAlMarketplace}

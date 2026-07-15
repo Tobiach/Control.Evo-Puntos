@@ -5,6 +5,7 @@ import type { Rubro } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import { formatPuntos } from '../../lib/club';
 import { distanciaKm, formatDistancia, mesesDesde, type Coordenadas } from '../../lib/geo';
+import { META_PROMO } from '../../lib/promos';
 import MapaNegocios from './MapaNegocios';
 
 type Filtro = 'todos' | Rubro | 'cerca';
@@ -297,6 +298,24 @@ function TarjetaNegocio({
           </span>
         )}
       </div>
+
+      {negocio.promos && negocio.promos.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-4 pt-3">
+          {negocio.promos.slice(0, 3).map((promo) => {
+            const meta = META_PROMO[promo.tipo];
+            const Icono = meta.icono;
+            return (
+              <span
+                key={promo.titulo}
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold"
+                style={{ background: `${meta.color}22`, color: meta.color }}
+              >
+                <Icono size={11} strokeWidth={2.5} /> {promo.titulo}
+              </span>
+            );
+          })}
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-1.5 px-4 pt-3">
         {negocio.recompensas.slice(0, 3).map((recompensa) => (

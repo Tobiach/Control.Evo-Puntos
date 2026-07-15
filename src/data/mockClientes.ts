@@ -58,6 +58,17 @@ export interface EventoNegocio {
   recompensaExtra: string;
 }
 
+/** Tipo de promo permanente del local (no es canjeable con puntos: es un beneficio siempre activo). */
+export type TipoPromo = '2x1' | 'horario' | 'delivery-gratis' | 'descuento';
+
+/** Promo estructurada del negocio: se muestra como badge/banner destacado. */
+export interface Promo {
+  tipo: TipoPromo;
+  titulo: string;
+  /** Aclaración opcional (condición, horario, mínimo de compra, etc.). */
+  detalle?: string;
+}
+
 export interface MetricasSemana {
   puntosAcreditados: number;
   subieronDeNivel: number;
@@ -84,6 +95,8 @@ export interface RubroData {
   eventos?: EventoNegocio[];
   /** Franja horaria valle con puntos x2 (aviso informativo). Sólo en la vista de un local. */
   horarioValle?: HorarioValle;
+  /** Promos permanentes del local (2x1, delivery gratis, etc.). Sólo en la vista de un local. */
+  promos?: Promo[];
   /** Beneficios NO monetarios del nivel más alto (VIP). Sólo en la vista de un local. */
   beneficiosVip?: string[];
 }

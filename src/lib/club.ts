@@ -91,6 +91,23 @@ export function rachaSemanas(visitas: Visita[]): number {
   return racha;
 }
 
+/**
+ * Racha de check-in: la tira más larga de días consecutivos distintos con al menos una visita.
+ * A diferencia de la racha semanal, cuenta días seguidos (hook de gamificación diario).
+ */
+export function rachaDias(visitas: Visita[]): number {
+  if (visitas.length === 0) return 0;
+  const dias = new Set(visitas.map((visita) => visita.diasAtras));
+  let mejor = 0;
+  for (const dia of dias) {
+    if (dias.has(dia - 1)) continue; // arranca sólo desde el primer día de cada tira
+    let largo = 1;
+    while (dias.has(dia + largo)) largo += 1;
+    if (largo > mejor) mejor = largo;
+  }
+  return mejor;
+}
+
 /** Días y fecha en que vencen los puntos, contando 60 días desde la última visita. */
 export function vencimientoPuntos(cliente: Cliente): { dias: number; fecha: Date } {
   const dias = Math.max(0, DIAS_VENCIMIENTO - cliente.ultimaVisitaDias);

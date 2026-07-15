@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import {
   BellRing,
+  CalendarCheck,
   CalendarHeart,
   ChevronLeft,
   Flame,
@@ -16,10 +17,12 @@ import {
   formatPuntos,
   progresoNivel,
   proximaRecompensa,
+  rachaDias,
   rachaSemanas,
   sugerenciaFavorita,
   vencimientoPuntos,
 } from '../../lib/club';
+import { META_PROMO } from '../../lib/promos';
 import {
   eventoActivo,
   insigniasDeNegocio,
@@ -31,6 +34,7 @@ import {
 import type { Aviso, PermisoNotif } from '../../lib/notificaciones';
 import { lanzarConfetti } from '../../lib/confetti';
 import RecompensaSorpresa from './RecompensaSorpresa';
+import RuletaSemanal from './RuletaSemanal';
 
 const PTS_POR_SORPRESA = 200;
 
@@ -40,6 +44,9 @@ interface Props {
   historial: Visita[];
   avisos: Aviso[];
   permisoNotif: PermisoNotif;
+  /** Timestamp de la última tirada de ruleta en este negocio (cooldown de 7 días). */
+  ultimaRuletaTs?: number;
+  onGirarRuleta: () => void;
   onVerRecompensas: () => void;
   onSalir: () => void;
 }
@@ -72,11 +79,14 @@ export default function TabInicio({
   historial,
   avisos,
   permisoNotif,
+  ultimaRuletaTs,
+  onGirarRuleta,
   onVerRecompensas,
   onSalir,
 }: Props) {
   const { actual, siguiente, pct } = progresoNivel(data.niveles, cliente.puntos);
   const racha = rachaSemanas(historial);
+  const rachaDia = rachaDias(historial);
   const venc = vencimientoPuntos(cliente);
   const recompensa = proximaRecompensa(data.recompensas, cliente.puntos);
   const primerNombre = cliente.nombre.split(' ')[0];
@@ -130,9 +140,16 @@ export default function TabInicio({
               {formatPuntos(puntosMostrados)}
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-premio-suave px-3 py-1.5 text-sm font-bold text-acento">
-            <Flame size={15} strokeWidth={2.5} /> {racha} {racha === 1 ? 'sem' : 'sems'}
-          </span>
+          <div className="flex flex-col items-end gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-premio-suave px-3 py-1.5 text-sm font-bold text-acento">
+              <Flame size={15} strokeWidth={2.5} /> {racha} {racha === 1 ? 'sem' : 'sems'}
+            </span>
+            {rachaDia >= 2 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-borde bg-card px-3 py-1 text-xs font-bold text-premio">
+                <CalendarCheck size={14} strokeWidth={2.5} /> {rachaDia} días seguidos
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="mt-5">
@@ -255,6 +272,36 @@ export default function TabInicio({
         </div>
       )}
 
+      {data.promos && data.promos.length > 0 && (
+        <div className="rounded-3xl border border-borde bg-card p-4">
+          <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
+            Promos del local
+          </p>
+          <div className="mt-2.5 flex flex-col gap-2.5">
+            {data.promos.map((promo) => {
+              const meta = META_PROMO[promo.tipo];
+              const Icono = meta.icono;
+              return (
+                <div key={promo.titulo} className="flex items-start gap-2.5">
+                  <span
+                    className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                    style={{ background: `${meta.color}1A`, color: meta.color }}
+                  >
+                    <Icono size={15} strokeWidth={2.5} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold leading-tight text-texto">{promo.titulo}</p>
+                    {promo.detalle && (
+                      <p className="mt-0.5 text-xs text-texto-muted">{promo.detalle}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {venc.dias < 15 && (
         <div className="flex items-center gap-2.5 rounded-2xl bg-premio-suave px-4 py-3 text-sm">
           <span className="text-base">⏳</span>
@@ -307,6 +354,8 @@ export default function TabInicio({
           </p>
         </div>
       )}
+
+      <RuletaSemanal ultimaTiradaTs={ultimaRuletaTs} onGirar={onGirarRuleta} />
 
       <RecompensaSorpresa
         key={sorpresasUsadas}

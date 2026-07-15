@@ -21,6 +21,9 @@ interface Props {
   cliente: Cliente;
   clientes: Cliente[];
   permisoNotif: PermisoNotif;
+  /** Timestamp de la última tirada de ruleta en este negocio (cooldown de 7 días). */
+  ultimaRuletaTs?: number;
+  onGirarRuleta: () => void;
   onCanjear: (recompensa: Recompensa) => void;
   onRegalar: (cantidad: number) => void;
   onSalir: () => void;
@@ -47,6 +50,8 @@ export default function AppCliente({
   cliente,
   clientes,
   permisoNotif,
+  ultimaRuletaTs,
+  onGirarRuleta,
   onCanjear,
   onRegalar,
   onSalir,
@@ -105,6 +110,8 @@ export default function AppCliente({
                 historial={historial}
                 avisos={avisos}
                 permisoNotif={permisoNotif}
+                ultimaRuletaTs={ultimaRuletaTs}
+                onGirarRuleta={onGirarRuleta}
                 onVerRecompensas={() => setTab('recompensas')}
                 onSalir={onSalir}
               />

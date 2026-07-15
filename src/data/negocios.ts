@@ -1,6 +1,7 @@
 import type {
   EventoNegocio,
   HorarioValle,
+  Promo,
   Recompensa,
   Rubro,
   Visita,
@@ -38,6 +39,8 @@ export interface Negocio {
   eventos?: EventoNegocio[];
   /** Franja horaria valle con puntos x2, informada al cliente como beneficio. */
   horarioValle?: HorarioValle;
+  /** Promos permanentes del local (2x1, delivery gratis, descuento, horario). */
+  promos?: Promo[];
   /** Beneficios NO monetarios reservados al nivel más alto (VIP) de ESTE local. */
   beneficiosVip?: string[];
 }
@@ -75,6 +78,10 @@ export const NEGOCIOS: Negocio[] = [
       },
     ],
     horarioValle: { desde: '15:00', hasta: '17:00', dias: [1, 2, 3] },
+    promos: [
+      { tipo: '2x1', titulo: '2x1 en café con leche', detalle: 'Todas las mañanas hasta las 11' },
+      { tipo: 'delivery-gratis', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $6.000' },
+    ],
     beneficiosVip: ['Mesa preferencial sin espera', 'Probás el café de origen antes que nadie'],
   },
   {
@@ -92,6 +99,10 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 350, descripcion: '2x1 en tragos de autor', categoria: 'Bebidas' },
       { pts: 600, descripcion: 'Tabla para compartir', categoria: 'Comida' },
     ],
+    promos: [
+      { tipo: 'horario', titulo: 'Happy hour', detalle: 'Todos los días de 19 a 21' },
+      { tipo: '2x1', titulo: '2x1 en cerveza tirada', detalle: 'Miércoles toda la noche' },
+    ],
     beneficiosVip: ['Reserva de barra los fines de semana', 'Catas de autor por invitación'],
   },
   {
@@ -108,7 +119,6 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 150, descripcion: 'Pinta IPA de la casa', categoria: 'Bebidas' },
       { pts: 280, descripcion: 'Papas con cheddar', categoria: 'Comida' },
       { pts: 300, descripcion: 'Tabla de picada + 2 pintas', categoria: 'Comida', costoDinero: 4000 },
-      { pts: 500, descripcion: '2x1 en pintas', categoria: 'Bebidas' },
       { pts: 900, descripcion: 'Growler 1L de regalo', categoria: 'Regalos' },
     ],
     eventos: [
@@ -120,6 +130,10 @@ export const NEGOCIOS: Negocio[] = [
       },
     ],
     horarioValle: { desde: '18:00', hasta: '20:00', dias: [2, 3] },
+    promos: [
+      { tipo: '2x1', titulo: '2x1 en pintas', detalle: 'De lunes a miércoles' },
+      { tipo: 'descuento', titulo: '20% en growlers', detalle: 'Llevando tu propio envase' },
+    ],
     beneficiosVip: ['Acceso al patio cervecero exclusivo', 'Primera cata de cada tirada nueva'],
   },
   {
@@ -172,6 +186,10 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 250, descripcion: 'Pizza grande + vino', categoria: 'Comida', costoDinero: 3000 },
       { pts: 550, descripcion: 'Pizza de autor de regalo', categoria: 'Regalos' },
     ],
+    promos: [
+      { tipo: 'delivery-gratis', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $8.000' },
+      { tipo: '2x1', titulo: '2x1 en fainá', detalle: 'Todos los lunes' },
+    ],
     beneficiosVip: ['Elegís la pizza del mes de la carta', 'Horno a leña reservado para tu grupo'],
   },
   {
@@ -209,6 +227,10 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 650, descripcion: '10% off en la compra', categoria: 'Descuentos' },
       { pts: 1000, descripcion: 'Vale de compra $10.000', categoria: 'Descuentos' },
     ],
+    promos: [
+      { tipo: 'delivery-gratis', titulo: 'Envío gratis', detalle: 'En compras desde $15.000' },
+      { tipo: 'descuento', titulo: '15% en frescos', detalle: 'Los miércoles de feria' },
+    ],
     beneficiosVip: ['Caja rápida exclusiva sin fila', 'Ofertas de la semana antes que el resto'],
   },
   {
@@ -245,6 +267,160 @@ export const NEGOCIOS: Negocio[] = [
     ],
     beneficiosVip: ['Reservás la fruta de estación fresca', 'Cajón de verdura seleccionado para vos'],
   },
+  {
+    id: 'gelateria-honduras',
+    nombre: 'Gelatería Honduras',
+    categoria: 'Heladería',
+    rubro: 'gastro',
+    emoji: '🍨',
+    lat: -34.5869,
+    lng: -58.4271,
+    clientesActivos: 154,
+    fechaAlta: '2026-04-02',
+    recompensas: [
+      { pts: 110, descripcion: 'Cucurucho de 2 gustos', categoria: 'Comida' },
+      { pts: 240, descripcion: 'Kilo de helado artesanal', categoria: 'Comida', costoDinero: 4200 },
+      { pts: 420, descripcion: 'Postre helado del día', categoria: 'Comida' },
+    ],
+    promos: [
+      { tipo: '2x1', titulo: '2x1 en cuartos', detalle: 'Martes y jueves' },
+      { tipo: 'delivery-gratis', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $5.000' },
+    ],
+    beneficiosVip: ['Probás los gustos nuevos antes que nadie', 'Cucurucho extra en tu cumple'],
+  },
+  {
+    id: 'confiteria-gorriti',
+    nombre: 'Confitería Gorriti',
+    categoria: 'Panadería',
+    rubro: 'gastro',
+    emoji: '🥐',
+    lat: -34.5908,
+    lng: -58.4258,
+    clientesActivos: 88,
+    fechaAlta: '2026-05-28',
+    recompensas: [
+      { pts: 90, descripcion: 'Media docena de medialunas', categoria: 'Comida' },
+      { pts: 180, descripcion: 'Café + tostado de campo', categoria: 'Comida' },
+      { pts: 360, descripcion: 'Torta a elección 20% off', categoria: 'Descuentos' },
+    ],
+    horarioValle: { desde: '16:00', hasta: '18:00', dias: [1, 2, 3, 4] },
+    promos: [
+      { tipo: 'horario', titulo: 'Merienda con 20% off', detalle: 'De 16 a 18, de lunes a jueves' },
+    ],
+    beneficiosVip: ['Reservás tu docena del finde', 'Elegís el relleno de la torta del mes'],
+  },
+  {
+    id: 'sushi-uriarte',
+    nombre: 'Sushi Uriarte',
+    categoria: 'Sushi',
+    rubro: 'gastro',
+    emoji: '🍣',
+    lat: -34.5847,
+    lng: -58.4292,
+    clientesActivos: 132,
+    fechaAlta: '2026-04-21',
+    recompensas: [
+      { pts: 200, descripcion: 'Roll de la casa', categoria: 'Comida' },
+      { pts: 380, descripcion: 'Combinado de 15 piezas', categoria: 'Comida', costoDinero: 5200 },
+      { pts: 650, descripcion: '15% off en tu pedido', categoria: 'Descuentos' },
+    ],
+    promos: [
+      { tipo: 'delivery-gratis', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $12.000' },
+      { tipo: 'descuento', titulo: '25% take away', detalle: 'Retirando por el local, de lunes a miércoles' },
+    ],
+    beneficiosVip: ['Roll de autor fuera de carta', 'Reserva de barra frente al itamae'],
+  },
+  {
+    id: 'vineria-godoy-cruz',
+    nombre: 'Vinería Godoy Cruz',
+    categoria: 'Wine bar',
+    rubro: 'gastro',
+    emoji: '🍷',
+    lat: -34.5798,
+    lng: -58.4283,
+    clientesActivos: 67,
+    fechaAlta: '2026-06-11',
+    recompensas: [
+      { pts: 220, descripcion: 'Copa de vino de autor', categoria: 'Bebidas' },
+      { pts: 400, descripcion: 'Tabla de quesos + copa', categoria: 'Comida', costoDinero: 3800 },
+      { pts: 720, descripcion: 'Botella reserva 25% off', categoria: 'Descuentos' },
+    ],
+    eventos: [
+      {
+        nombre: 'Semana del Malbec',
+        fechaInicio: fechaRelativa(-1),
+        fechaFin: fechaRelativa(5),
+        recompensaExtra: 'Cata guiada de 3 etiquetas',
+      },
+    ],
+    promos: [
+      { tipo: 'descuento', titulo: '2da copa al 50%', detalle: 'De lunes a jueves' },
+    ],
+    beneficiosVip: ['Catas privadas por invitación', 'Primer acceso a las etiquetas nuevas'],
+  },
+  {
+    id: 'verduleria-serrano',
+    nombre: 'Verdulería Serrano',
+    categoria: 'Verdulería',
+    rubro: 'super',
+    emoji: '🥬',
+    lat: -34.5885,
+    lng: -58.4348,
+    clientesActivos: 79,
+    fechaAlta: '2026-05-12',
+    recompensas: [
+      { pts: 120, descripcion: 'Cajón de frutas de estación', categoria: 'Regalos' },
+      { pts: 260, descripcion: '10% off en verdura', categoria: 'Descuentos' },
+      { pts: 460, descripcion: 'Bolsón orgánico semanal', categoria: 'Regalos' },
+    ],
+    horarioValle: { desde: '08:00', hasta: '10:00', dias: [1, 2, 3, 4, 5] },
+    promos: [
+      { tipo: 'horario', titulo: 'Feria de la mañana', detalle: 'Frescos con 15% off de 8 a 10' },
+      { tipo: 'delivery-gratis', titulo: 'Envío al barrio sin cargo', detalle: 'En compras desde $8.000' },
+    ],
+    beneficiosVip: ['Te apartamos lo más fresco del día', 'Bolsón armado a tu gusto'],
+  },
+  {
+    id: 'rotiseria-armenia',
+    nombre: 'Rotisería Armenia',
+    categoria: 'Rotisería',
+    rubro: 'super',
+    emoji: '🍗',
+    lat: -34.5925,
+    lng: -58.4267,
+    clientesActivos: 173,
+    fechaAlta: '2026-03-30',
+    recompensas: [
+      { pts: 150, descripcion: 'Porción de pollo al spiedo', categoria: 'Comida' },
+      { pts: 300, descripcion: 'Combo familiar (pollo + papas)', categoria: 'Comida', costoDinero: 4500 },
+      { pts: 540, descripcion: '10% off en tu pedido', categoria: 'Descuentos' },
+    ],
+    promos: [
+      { tipo: 'delivery-gratis', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $9.000' },
+      { tipo: '2x1', titulo: '2x1 en empanadas', detalle: 'Los domingos al mediodía' },
+    ],
+    beneficiosVip: ['Reservás la bandeja del finde', 'Guarnición extra en cada combo'],
+  },
+  {
+    id: 'kiosco-gurruchaga',
+    nombre: 'Kiosco 24 Gurruchaga',
+    categoria: 'Kiosco',
+    rubro: 'super',
+    emoji: '🌙',
+    lat: -34.5865,
+    lng: -58.4291,
+    clientesActivos: 96,
+    fechaAlta: '2026-06-04',
+    recompensas: [
+      { pts: 80, descripcion: 'Gaseosa línea 500ml', categoria: 'Regalos' },
+      { pts: 200, descripcion: 'Combo golosinas de regalo', categoria: 'Regalos' },
+      { pts: 380, descripcion: '8% off en tu compra', categoria: 'Descuentos' },
+    ],
+    promos: [
+      { tipo: 'descuento', titulo: '10% off de madrugada', detalle: 'Todos los días de 0 a 6' },
+    ],
+    beneficiosVip: ['Fiado de confianza para socios', 'Te guardamos el cigarrillo/vape de tu marca'],
+  },
 ];
 
 /**
@@ -257,12 +433,12 @@ export const RELACIONES_INICIALES: Record<string, RelacionNegocio> = {
   'cafe-nardo': {
     puntos: 320,
     ultimaVisitaDias: 1,
-    // 4 visitas en los últimos 7 días → racha semanal desbloqueada.
+    // 4 visitas en los últimos 7 días → racha semanal; días 1-2-3 seguidos → racha diaria de 3.
     historial: [
       { diasAtras: 1, monto: 2800, puntos: 28, nuevo: true, categoria: 'Bebidas' },
+      { diasAtras: 2, monto: 4100, puntos: 41, nuevo: true, categoria: 'Bebidas' },
       { diasAtras: 3, monto: 3400, puntos: 34, categoria: 'Bebidas' },
       { diasAtras: 5, monto: 2200, puntos: 22, categoria: 'Comida' },
-      { diasAtras: 6, monto: 4100, puntos: 41, nuevo: true, categoria: 'Bebidas' },
       { diasAtras: 13, monto: 2600, puntos: 26, categoria: 'Bebidas' },
       { diasAtras: 19, monto: 3900, puntos: 39, categoria: 'Comida' },
       { diasAtras: 26, monto: 2200, puntos: 22, categoria: 'Bebidas' },
