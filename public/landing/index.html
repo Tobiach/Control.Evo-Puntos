@@ -190,32 +190,6 @@
   .feature-card h3 { font-size: 16.5px; margin-bottom: 8px; }
   .feature-card p { color: var(--texto-muted); font-size: 14px; }
 
-  /* ---- Pricing ---- */
-  .precios { background: #fff; }
-  .precios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; max-width: 1080px; margin: 0 auto; align-items: stretch; }
-  @media (max-width: 900px) { .precios-grid { grid-template-columns: 1fr; max-width: 420px; } }
-  .plan-card {
-    border: 1px solid var(--borde); border-radius: var(--radio-card); padding: 32px 26px;
-    display: flex; flex-direction: column;
-  }
-  .plan-card.destacado {
-    border: 2px solid var(--secundario); position: relative;
-    box-shadow: 0 20px 40px -24px rgba(212,166,74,0.35);
-  }
-  .plan-badge {
-    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
-    background: var(--secundario); color: var(--primario); font-size: 12px; font-weight: 800;
-    padding: 5px 14px; border-radius: 999px;
-  }
-  .plan-nombre { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; color: var(--texto-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .plan-precio { font-family: 'Space Grotesk', sans-serif; font-size: 36px; font-weight: 800; margin: 10px 0 2px; }
-  .plan-precio span { font-size: 15px; font-weight: 500; color: var(--texto-muted); }
-  .plan-setup { font-size: 13px; color: var(--texto-muted); margin-bottom: 6px; }
-  .plan-tagline { font-size: 14px; color: var(--texto-muted); margin-bottom: 20px; }
-  .plan-lista { list-style: none; display: flex; flex-direction: column; gap: 11px; margin-bottom: 26px; flex: 1; }
-  .plan-lista li { display: flex; gap: 10px; font-size: 14px; align-items: flex-start; }
-  .plan-lista svg { flex-shrink: 0; margin-top: 2px; color: var(--success); }
-
   /* ---- FAQ ---- */
   .faq { background: var(--neutro-claro); }
   .faq-lista { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
@@ -269,7 +243,6 @@
     <div class="nav-links">
       <a href="#funciones">Funciones</a>
       <a href="#como-funciona">Cómo funciona</a>
-      <a href="#precios">Precios</a>
       <a href="#preguntas">Preguntas</a>
     </div>
     <div class="nav-cta">
@@ -429,57 +402,6 @@
   </div>
 </section>
 
-<!-- ============ PRECIOS ============ -->
-<section class="precios" id="precios">
-  <div class="encabezado-seccion">
-    <div class="kicker">Precios</div>
-    <h2>Elegí el plan de tu negocio</h2>
-    <p>Setup una vez + mensual fijo. Sin comisión sobre tus ventas.</p>
-  </div>
-  <div class="precios-grid">
-    <div class="plan-card">
-      <div class="plan-nombre">Inicial</div>
-      <div class="plan-precio">USD 15 <span>/mes</span></div>
-      <div class="plan-setup">+ USD 100 de setup único</div>
-      <div class="plan-tagline">Tu club de puntos, andando en días.</div>
-      <ul class="plan-lista">
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>1 negocio</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Hasta 5 recompensas</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Cajero con PIN</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Panel con métricas básicas</li>
-      </ul>
-      <a href="#contacto" class="btn btn-outline">Sumar mi negocio</a>
-    </div>
-    <div class="plan-card destacado">
-      <span class="plan-badge">Más elegido</span>
-      <div class="plan-nombre">Pro</div>
-      <div class="plan-precio">USD 29 <span>/mes</span></div>
-      <div class="plan-setup">+ USD 150 de setup único</div>
-      <div class="plan-tagline">Todo para hacer crecer tu club.</div>
-      <ul class="plan-lista">
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Todo lo de Inicial</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Visible en el marketplace</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Recompensas ilimitadas</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Rachas, misiones e insignias</li>
-      </ul>
-      <a href="#contacto" class="btn btn-primario">Sumar mi negocio</a>
-    </div>
-    <div class="plan-card">
-      <div class="plan-nombre">Business</div>
-      <div class="plan-precio">A medida</div>
-      <div class="plan-setup">&nbsp;</div>
-      <div class="plan-tagline">Para negocios con más de una sucursal.</div>
-      <ul class="plan-lista">
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Todo lo de Pro</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Multi-sucursal</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Onboarding asistido</li>
-        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Reportes a medida</li>
-      </ul>
-      <a href="#contacto" class="btn btn-outline">Hablemos</a>
-    </div>
-  </div>
-</section>
-
 <!-- ============ FAQ ============ -->
 <section class="faq" id="preguntas">
   <div class="encabezado-seccion">
@@ -535,7 +457,6 @@
       <h4>Producto</h4>
       <ul>
         <li><a href="#funciones">Funciones</a></li>
-        <li><a href="#precios">Precios</a></li>
         <li><a href="#preguntas">Preguntas</a></li>
         <li><a href="https://controlevo-puntos.vercel.app">Ver demo</a></li>
       </ul>
