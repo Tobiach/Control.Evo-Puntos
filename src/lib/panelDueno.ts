@@ -29,6 +29,9 @@ export interface MetricasNegocio {
 export type ResultadoPanel<T> = { ok: true; valor: T } | { ok: false; error: string };
 
 // Forma cruda de las filas de Supabase (el cliente no está tipado con el schema).
+// El PIN vive en la tabla aparte `negocio_pin` (ver 0005_seguridad_pin_cajero.sql):
+// la policy pública de `negocios` filtra filas, no columnas, así que un PIN dentro de
+// esta tabla habría quedado legible por cualquiera con la key pública.
 interface FilaNegocio {
   id: string;
   nombre: string | null;
@@ -39,7 +42,6 @@ interface FilaNegocio {
   lng: number | null;
   horario_valle: HorarioValle | null;
   beneficios_vip: string[] | null;
-  pin_cajero: string | null;
 }
 
 interface FilaRecompensa {
@@ -62,7 +64,7 @@ export function generarSlug(nombre: string): string {
   return base ? `${base}-${sufijo}` : `negocio-${sufijo}`;
 }
 
-function filaANegocio(fila: FilaNegocio): DatosNegocioForm {
+function filaANegocio(fila: FilaNegocio, pinCajero: string | null): DatosNegocioForm {
   return {
     id: fila.id,
     nombre: fila.nombre ?? '',
@@ -73,7 +75,7 @@ function filaANegocio(fila: FilaNegocio): DatosNegocioForm {
     lng: fila.lng,
     horarioValle: fila.horario_valle,
     beneficiosVip: fila.beneficios_vip ?? [],
-    pinCajero: fila.pin_cajero,
+    pinCajero,
   };
 }
 
@@ -98,13 +100,22 @@ export async function cargarNegocioDelDueno(
   if (!supabase) return { ok: false, error: 'sin-conexion' };
   const { data, error } = await supabase
     .from('negocios')
-    .select('id, nombre, categoria, rubro, emoji, lat, lng, horario_valle, beneficios_vip, pin_cajero')
+    .select('id, nombre, categoria, rubro, emoji, lat, lng, horario_valle, beneficios_vip')
     .eq('dueno_user_id', duenoUserId)
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
   if (!data) return { ok: true, valor: null };
 
-  const negocio = filaANegocio(data as FilaNegocio);
+  const filaNegocio = data as FilaNegocio;
+  // Consulta aparte: solo el dueño puede leer el PIN de su propio negocio (RLS en `negocio_pin`).
+  const { data: filaPin, error: errPin } = await supabase
+    .from('negocio_pin')
+    .select('pin_cajero')
+    .eq('negocio_id', filaNegocio.id)
+    .maybeSingle();
+  if (errPin) return { ok: false, error: errPin.message };
+
+  const negocio = filaANegocio(filaNegocio, (filaPin as { pin_cajero: string } | null)?.pin_cajero ?? null);
   const { data: recs, error: errRecs } = await supabase
     .from('recompensas')
     .select('pts, descripcion, categoria, costo_dinero')
@@ -141,11 +152,21 @@ export async function guardarNegocioYRecompensas(
       lng: negocio.lng,
       horario_valle: negocio.horarioValle,
       beneficios_vip: negocio.beneficiosVip,
-      pin_cajero: negocio.pinCajero,
     },
     { onConflict: 'id' },
   );
   if (error) return { ok: false, error: error.message };
+
+  // El PIN vive en `negocio_pin` (tabla sin lectura pública, ver 0005_seguridad_pin_cajero.sql).
+  if (negocio.pinCajero) {
+    const { error: errPin } = await supabase
+      .from('negocio_pin')
+      .upsert({ negocio_id: id, pin_cajero: negocio.pinCajero }, { onConflict: 'negocio_id' });
+    if (errPin) return { ok: false, error: errPin.message };
+  } else {
+    const { error: errPin } = await supabase.from('negocio_pin').delete().eq('negocio_id', id);
+    if (errPin) return { ok: false, error: errPin.message };
+  }
 
   // Reemplazo completo: la lista de recompensas es chica y así queda idempotente.
   const { error: errDel } = await supabase.from('recompensas').delete().eq('negocio_id', id);
