@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { COLUMNAS_CARTA, mapearItemCarta, type FilaItemCarta, type ItemCarta } from './carta';
 import type { CategoriaRecompensa, HorarioValle, Recompensa, Rubro } from '../data/mockClientes';
 
 // Capa de datos del panel del dueño. Todo null-safe: sin backend conectado
@@ -224,6 +225,82 @@ export async function guardarNegocioYRecompensas(
   }
 
   return { ok: true, valor: { id } };
+}
+
+// ============================================================
+// CARTA DIGITAL — CRUD por item (ver 0007_carta_digital.sql)
+// A diferencia de las recompensas (reemplazo completo en cada guardado), la carta puede
+// tener muchos items, así que se editan/borran de a uno con inserts/updates/deletes puntuales.
+// ============================================================
+
+/** Datos de un item que llegan del formulario del panel. `id = null` = item nuevo. */
+export interface ItemCartaInput {
+  id: number | null;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  categoria: string;
+  fotoUrl: string | null;
+  disponible: boolean;
+  orden: number;
+}
+
+/** Trae todos los items de la carta del negocio (incluye los no disponibles, para el panel). */
+export async function cargarCartaDelNegocio(negocioId: string): Promise<ResultadoPanel<ItemCarta[]>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase
+    .from('carta_items')
+    .select(COLUMNAS_CARTA)
+    .eq('negocio_id', negocioId)
+    .order('orden', { ascending: true })
+    .order('id', { ascending: true });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: (data ?? []).map((f) => mapearItemCarta(f as FilaItemCarta)) };
+}
+
+/** Inserta (si `id = null`) o actualiza un item de la carta. Devuelve el item ya guardado. */
+export async function guardarItemCarta(
+  negocioId: string,
+  item: ItemCartaInput,
+): Promise<ResultadoPanel<ItemCarta>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const fila = {
+    negocio_id: negocioId,
+    nombre: item.nombre,
+    descripcion: item.descripcion.trim() || null,
+    precio: item.precio,
+    categoria: item.categoria.trim() || null,
+    foto_url: item.fotoUrl?.trim() || null,
+    disponible: item.disponible,
+    orden: item.orden,
+  };
+
+  if (item.id != null) {
+    const { data, error } = await supabase
+      .from('carta_items')
+      .update(fila)
+      .eq('id', item.id)
+      .select(COLUMNAS_CARTA)
+      .single();
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, valor: mapearItemCarta(data as FilaItemCarta) };
+  }
+
+  const { data, error } = await supabase
+    .from('carta_items')
+    .insert(fila)
+    .select(COLUMNAS_CARTA)
+    .single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: mapearItemCarta(data as FilaItemCarta) };
+}
+
+/** Borra un item de la carta por id. */
+export async function borrarItemCarta(id: number): Promise<ResultadoPanel<void>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.from('carta_items').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: undefined };
 }
 
 /** Métricas reales del negocio: clientes con relación y puntos acreditados. */

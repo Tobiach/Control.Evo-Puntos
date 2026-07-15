@@ -10,6 +10,7 @@ import {
   Play,
   Save,
   Store,
+  UtensilsCrossed,
   Users,
 } from 'lucide-react';
 import type { Recompensa } from '../../data/mockClientes';
@@ -25,10 +26,11 @@ import {
 } from '../../lib/panelDueno';
 import SeccionNegocio from './SeccionNegocio';
 import SeccionRecompensas from './SeccionRecompensas';
+import SeccionCarta from './SeccionCarta';
 import SeccionMetricas from './SeccionMetricas';
 import SeccionClientes from './SeccionClientes';
 
-type Seccion = 'negocio' | 'recompensas' | 'clientes' | 'metricas';
+type Seccion = 'negocio' | 'recompensas' | 'carta' | 'clientes' | 'metricas';
 
 type Aviso = { tipo: 'ok' | 'error'; texto: string } | null;
 
@@ -64,6 +66,7 @@ const NEGOCIO_VACIO: DatosNegocioForm = {
 const SECCIONES: { clave: Seccion; etiqueta: string; icono: typeof Store }[] = [
   { clave: 'negocio', etiqueta: 'Negocio', icono: Store },
   { clave: 'recompensas', etiqueta: 'Premios', icono: Gift },
+  { clave: 'carta', etiqueta: 'Carta', icono: UtensilsCrossed },
   { clave: 'clientes', etiqueta: 'Clientes', icono: Users },
   { clave: 'metricas', etiqueta: 'Métricas', icono: BarChart3 },
 ];
@@ -254,6 +257,7 @@ export default function PanelDueno(props: Props) {
             )}
           </div>
         )}
+        {seccion === 'carta' && <SeccionCarta negocioId={negocio.id} esPreview={esPreview} />}
         {seccion === 'clientes' && (
           <SeccionClientes clientes={clientes} cargando={cargandoClientes} esPreview={esPreview} />
         )}
