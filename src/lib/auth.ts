@@ -35,7 +35,10 @@ export function validarEmail(email: string): string | null {
 
 // ── Traducción de errores crudos de Supabase a mensajes humanos ──
 
-function traducirError(mensaje: string, contexto: 'ingresar' | 'registrar'): string {
+function traducirError(
+  mensaje: string,
+  contexto: 'ingresar' | 'registrar' | 'recuperar' | 'actualizar',
+): string {
   const texto = mensaje.toLowerCase();
   if (texto.includes('invalid login credentials')) return 'Los datos no coinciden. Revisalos e intentá de nuevo.';
   if (texto.includes('already registered') || texto.includes('already exists')) {
@@ -45,12 +48,25 @@ function traducirError(mensaje: string, contexto: 'ingresar' | 'registrar'): str
   if (texto.includes('rate limit') || texto.includes('too many')) {
     return 'Demasiados intentos. Esperá un momento y probá de nuevo.';
   }
+  if (texto.includes('should be different') || texto.includes('same as the old')) {
+    return 'La nueva contraseña tiene que ser distinta de la anterior.';
+  }
+  if (texto.includes('auth session missing') || texto.includes('session') || texto.includes('expired')) {
+    return 'El link de recuperación expiró o ya se usó. Pedí uno nuevo.';
+  }
   if (texto.includes('network') || texto.includes('fetch')) {
     return 'No pudimos conectar. Revisá tu internet e intentá de nuevo.';
   }
-  return contexto === 'registrar'
-    ? 'No pudimos crear la cuenta. Intentá de nuevo.'
-    : 'No pudimos iniciar sesión. Intentá de nuevo.';
+  switch (contexto) {
+    case 'registrar':
+      return 'No pudimos crear la cuenta. Intentá de nuevo.';
+    case 'recuperar':
+      return 'No pudimos enviar el link. Intentá de nuevo.';
+    case 'actualizar':
+      return 'No pudimos guardar la contraseña. Intentá de nuevo.';
+    default:
+      return 'No pudimos iniciar sesión. Intentá de nuevo.';
+  }
 }
 
 // ── Cliente (socio del club): email + contraseña ─────────────────
@@ -131,6 +147,40 @@ export async function ingresarDueno(email: string, password: string): Promise<Re
   });
   if (error) return { ok: false, error: traducirError(error.message, 'ingresar') };
   return { ok: true, session: data.session };
+}
+
+// ── Recuperar contraseña (olvidé mi contraseña) ──────────────────
+// Estándar del SDK: `resetPasswordForEmail` manda un mail con un link que vuelve a la app
+// con una sesión de recuperación activa (Supabase parsea el hash del link solo, gracias a
+// `detectSessionInUrl`). El `redirectTo` lleva el query param `?modo=restablecer`, que
+// sobrevive al hash que agrega Supabase y `App.tsx` usa para mostrar `RestablecerPassword`.
+// Ahí el usuario carga la nueva clave con `actualizarPassword` — no vuelve a pedir el email.
+
+/** Ruta a la que Supabase redirige tras tocar el link del mail (ver `App.tsx`). */
+export const RUTA_RESTABLECER = '/?modo=restablecer';
+
+/** True si la URL actual corresponde al flujo de restablecimiento (link de recuperación). */
+export function esModoRecuperacion(): boolean {
+  if (typeof window === 'undefined') return false;
+  const query = new URLSearchParams(window.location.search).get('modo') === 'restablecer';
+  const hash = window.location.hash.includes('type=recovery');
+  return query || hash;
+}
+
+export async function solicitarRecuperacion(email: string): Promise<ResultadoAuth> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: `${window.location.origin}${RUTA_RESTABLECER}`,
+  });
+  if (error) return { ok: false, error: traducirError(error.message, 'recuperar') };
+  return { ok: true, session: null };
+}
+
+export async function actualizarPassword(nuevaPassword: string): Promise<ResultadoAuth> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase.auth.updateUser({ password: nuevaPassword });
+  if (error) return { ok: false, error: traducirError(error.message, 'actualizar') };
+  return { ok: true, session: data.user ? await obtenerSesion() : null };
 }
 
 // ── Manejo de sesión (SDK estándar, sin persistencia casera) ─────

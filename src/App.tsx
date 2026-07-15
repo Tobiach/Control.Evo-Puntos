@@ -11,6 +11,8 @@ import MarketplaceApp from './components/appcliente/MarketplaceApp';
 import LoginCliente from './components/auth/LoginCliente';
 import LoginDueno from './components/auth/LoginDueno';
 import LoginCajero from './components/cajero/LoginCajero';
+import RestablecerPassword from './components/auth/RestablecerPassword';
+import { esModoRecuperacion, supabaseEnabled } from './lib/auth';
 
 type Pantalla =
   | 'bienvenida'
@@ -47,6 +49,8 @@ export default function App() {
   const [clientes, setClientes] = useState<Cliente[]>(() => clonarClientes(rubro));
   const [clienteActivoId, setClienteActivoId] = useState<string | null>(null);
   const [puntosSesion, setPuntosSesion] = useState(0);
+  // El usuario llegó desde el link de "olvidé mi contraseña" (?modo=restablecer + hash de Supabase).
+  const [recuperando, setRecuperando] = useState(() => supabaseEnabled && esModoRecuperacion());
 
   const data = DATA_RUBROS[rubro];
   const clienteActivo = clientes.find((cliente) => cliente.id === clienteActivoId) ?? null;
@@ -104,6 +108,19 @@ export default function App() {
     setPuntosSesion(0);
     navegar('bienvenida');
   };
+
+  if (recuperando) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-6">
+        <RestablecerPassword
+          onListo={() => {
+            setRecuperando(false);
+            navegar('bienvenida');
+          }}
+        />
+      </div>
+    );
+  }
 
   if (pantalla === 'app' && clienteActivo) {
     return <MarketplaceApp data={data} cliente={clienteActivo} onSalir={reiniciar} />;
