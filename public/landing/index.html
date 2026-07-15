@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Control.Evo Puntos — El club de fidelización para tu negocio</title>
+<meta name="description" content="Puntos automáticos en cada cobro, recompensas que vos controlás y un panel simple para vos, tu cajero y tus clientes. Sin apps para instalar." />
+<meta property="og:title" content="Control.Evo Puntos — El club de fidelización para tu negocio" />
+<meta property="og:description" content="Convertí cada compra en una razón para volver. Puntos automáticos, sin apps, sin fricción." />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#0F172A" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --primario: #0F172A;
+    --secundario: #D4A64A;
+    --acento: #0EA5A4;
+    --neutro-oscuro: #09090B;
+    --neutro-claro: #F8FAFC;
+    --success: #16A34A;
+    --warning: #F59E0B;
+    --error: #DC2626;
+    --info: #2563EB;
+    --borde: rgba(148, 163, 184, 0.18);
+    --texto-muted: #64748B;
+    --radio: 16px;
+    --radio-btn: 14px;
+    --radio-card: 18px;
+    --radio-input: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--neutro-claro);
+    color: var(--primario);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .titulo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--primario);
+  }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; }
+  .contenedor { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  .muted { color: var(--texto-muted); }
+
+  /* ---- Banner superior ---- */
+  .banner-top {
+    background: var(--primario);
+    color: #fff;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+  .banner-top strong { color: var(--secundario); }
+  .banner-top a { text-decoration: underline; text-underline-offset: 3px; margin-left: 6px; font-weight: 600; }
+
+  /* ---- Nav ---- */
+  nav {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(248,250,252,0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--borde);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; max-width: 1120px; margin: 0 auto; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 19px; display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--secundario); }
+  .nav-links { display: flex; gap: 28px; font-size: 14.5px; font-weight: 500; color: var(--texto-muted); }
+  .nav-links a:hover { color: var(--primario); }
+  .nav-cta { display: flex; gap: 10px; align-items: center; }
+  @media (max-width: 860px) { .nav-links { display: none; } }
+
+  /* ---- Botones ---- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: var(--radio-btn);
+    font-weight: 700; font-size: 15px; font-family: 'Inter', sans-serif;
+    border: none; cursor: pointer; transition: transform 120ms ease, opacity 150ms ease;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primario { background: var(--secundario); color: var(--primario); }
+  .btn-primario:hover { opacity: 0.92; }
+  .btn-outline { background: transparent; color: var(--primario); border: 1px solid var(--borde); }
+  .btn-outline:hover { background: #fff; }
+  .btn-ghost { background: transparent; color: var(--primario); font-weight: 600; padding: 13px 14px; }
+  .btn-chico { padding: 9px 16px; font-size: 13.5px; border-radius: 10px; }
+
+  /* ---- Hero ---- */
+  .hero {
+    background: var(--primario); color: #fff;
+    padding: 88px 24px 64px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 900px 500px at 80% -10%, rgba(212,166,74,0.16), transparent 60%);
+    pointer-events: none;
+  }
+  .hero-grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; position: relative; }
+  @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } }
+  .badge-suave {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(14,165,164,0.14); color: #5EEAD4;
+    padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .hero h1 { font-size: 44px; line-height: 1.08; margin-bottom: 18px; }
+  @media (max-width: 560px) { .hero h1 { font-size: 32px; } }
+  .hero p.sub { font-size: 17px; color: #CBD5E1; max-width: 480px; margin-bottom: 28px; }
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .hero-nota { font-size: 13px; color: #94A3B8; }
+  .hero-mock {
+    background: #12213D; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px; padding: 22px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+  }
+  .mock-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .mock-tag { font-size: 12px; color: #94A3B8; font-weight: 600; }
+  .mock-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radio-card); padding: 20px; margin-bottom: 12px;
+  }
+  .mock-puntos { font-family: 'Space Grotesk', sans-serif; font-size: 34px; font-weight: 800; color: var(--secundario); }
+  .mock-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); margin: 12px 0; overflow: hidden; }
+  .mock-bar-fill { height: 100%; width: 68%; background: var(--acento); border-radius: 999px; }
+  .mock-fila { display: flex; justify-content: space-between; font-size: 13px; color: #CBD5E1; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+
+  /* ---- Secciones generales ---- */
+  section { padding: 80px 24px; }
+  .encabezado-seccion { text-align: center; max-width: 620px; margin: 0 auto 48px; }
+  .encabezado-seccion h2 { font-size: 32px; margin-bottom: 12px; }
+  .encabezado-seccion p { color: var(--texto-muted); font-size: 16px; }
+  .kicker { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--acento); margin-bottom: 10px; }
+
+  /* ---- Beneficios en número ---- */
+  .beneficios { background: #fff; }
+  .beneficios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; max-width: 1120px; margin: 0 auto; }
+  @media (max-width: 800px) { .beneficios-grid { grid-template-columns: 1fr; } }
+  .beneficio-card { padding: 32px 28px; border: 1px solid var(--borde); border-radius: var(--radio-card); text-align: center; }
+  .beneficio-num { font-family: 'Space Grotesk', sans-serif; font-size: 42px; font-weight: 800; color: var(--primario); }
+  .beneficio-titulo { font-weight: 700; margin: 8px 0 6px; }
+  .beneficio-desc { color: var(--texto-muted); font-size: 14px; }
+
+  /* ---- Ejemplo de negocios (placeholder rotulado) ---- */
+  .ejemplo { background: var(--neutro-claro); }
+  .ejemplo-aviso {
+    text-align: center; font-size: 13px; color: var(--texto-muted);
+    background: #fff; border: 1px dashed var(--borde); border-radius: 999px;
+    padding: 8px 18px; display: inline-flex; margin: 0 auto 32px; gap: 6px;
+  }
+  .ejemplo-wrap { text-align: center; }
+  .logos-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+  .logo-card {
+    display: flex; align-items: center; gap: 10px;
+    background: #fff; border: 1px solid var(--borde); border-radius: var(--radio-card);
+    padding: 16px 22px; font-weight: 700; font-size: 14.5px;
+  }
+  .logo-emoji { font-size: 22px; }
+
+  /* ---- Cómo funciona ---- */
+  .pasos { background: #fff; }
+  .pasos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1120px; margin: 0 auto; }
+  @media (max-width: 800px) { .pasos-grid { grid-template-columns: 1fr; } }
+  .paso-card { border: 1px solid var(--borde); border-radius: var(--radio-card); padding: 28px; }
+  .paso-num {
+    width: 34px; height: 34px; border-radius: 10px; background: var(--primario); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px;
+    margin-bottom: 16px; font-family: 'Space Grotesk', sans-serif;
+  }
+  .paso-card h3 { font-size: 17px; margin-bottom: 8px; }
+  .paso-card p { color: var(--texto-muted); font-size: 14.5px; }
+
+  /* ---- Features ---- */
+  .features { background: var(--neutro-claro); }
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; max-width: 1120px; margin: 0 auto; }
+  @media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .features-grid { grid-template-columns: 1fr; } }
+  .feature-card { background: #fff; border: 1px solid var(--borde); border-radius: var(--radio-card); padding: 26px; }
+  .feature-icon {
+    width: 42px; height: 42px; border-radius: 12px; background: rgba(212,166,74,0.14); color: var(--secundario);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+  }
+  .feature-card h3 { font-size: 16.5px; margin-bottom: 8px; }
+  .feature-card p { color: var(--texto-muted); font-size: 14px; }
+
+  /* ---- Pricing ---- */
+  .precios { background: #fff; }
+  .precios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; max-width: 1080px; margin: 0 auto; align-items: stretch; }
+  @media (max-width: 900px) { .precios-grid { grid-template-columns: 1fr; max-width: 420px; } }
+  .plan-card {
+    border: 1px solid var(--borde); border-radius: var(--radio-card); padding: 32px 26px;
+    display: flex; flex-direction: column;
+  }
+  .plan-card.destacado {
+    border: 2px solid var(--secundario); position: relative;
+    box-shadow: 0 20px 40px -24px rgba(212,166,74,0.35);
+  }
+  .plan-badge {
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    background: var(--secundario); color: var(--primario); font-size: 12px; font-weight: 800;
+    padding: 5px 14px; border-radius: 999px;
+  }
+  .plan-nombre { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; color: var(--texto-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .plan-precio { font-family: 'Space Grotesk', sans-serif; font-size: 36px; font-weight: 800; margin: 10px 0 2px; }
+  .plan-precio span { font-size: 15px; font-weight: 500; color: var(--texto-muted); }
+  .plan-setup { font-size: 13px; color: var(--texto-muted); margin-bottom: 6px; }
+  .plan-tagline { font-size: 14px; color: var(--texto-muted); margin-bottom: 20px; }
+  .plan-lista { list-style: none; display: flex; flex-direction: column; gap: 11px; margin-bottom: 26px; flex: 1; }
+  .plan-lista li { display: flex; gap: 10px; font-size: 14px; align-items: flex-start; }
+  .plan-lista svg { flex-shrink: 0; margin-top: 2px; color: var(--success); }
+
+  /* ---- FAQ ---- */
+  .faq { background: var(--neutro-claro); }
+  .faq-lista { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+  .faq-item { background: #fff; border: 1px solid var(--borde); border-radius: var(--radio-card); overflow: hidden; }
+  .faq-pregunta {
+    width: 100%; text-align: left; padding: 18px 22px; background: none; border: none; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 15px;
+    font-family: 'Inter', sans-serif; color: var(--primario);
+  }
+  .faq-pregunta svg { transition: transform 180ms ease; flex-shrink: 0; color: var(--texto-muted); }
+  .faq-item.abierto .faq-pregunta svg { transform: rotate(180deg); }
+  .faq-respuesta { max-height: 0; overflow: hidden; transition: max-height 220ms ease; }
+  .faq-respuesta-inner { padding: 0 22px 20px; color: var(--texto-muted); font-size: 14.5px; }
+  .faq-item.abierto .faq-respuesta { max-height: 240px; }
+
+  /* ---- CTA final ---- */
+  .cta-final { background: var(--primario); color: #fff; text-align: center; }
+  .cta-final h2 { color: #fff; font-size: 32px; margin-bottom: 12px; }
+  .cta-final p { color: #CBD5E1; margin-bottom: 28px; }
+  .cta-badges { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; margin-top: 28px; font-size: 13.5px; color: #94A3B8; }
+  .cta-badges span { display: flex; align-items: center; gap: 7px; }
+
+  /* ---- Footer ---- */
+  footer { background: var(--neutro-oscuro); color: #94A3B8; padding: 56px 24px 28px; }
+  .footer-grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; }
+  @media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+  footer h4 { color: #fff; font-size: 13.5px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+  footer ul { list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+  footer a:hover { color: #fff; }
+  .footer-bottom { max-width: 1120px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+  /* ---- WhatsApp flotante ---- */
+  .wsp-flotante {
+    position: fixed; bottom: 22px; right: 22px; z-index: 50;
+    background: #25D366; color: #fff; width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 24px -6px rgba(0,0,0,0.3);
+  }
+</style>
+</head>
+<body>
+
+<div class="banner-top">
+  🌱 Estás entre los primeros negocios en sumarte al club <strong>— ayudanos a moldear el producto</strong>
+  <a href="#contacto">Quiero sumarme</a>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo"><span class="logo-dot"></span>Control.Evo <span class="muted" style="font-weight:500;">Puntos</span></div>
+    <div class="nav-links">
+      <a href="#funciones">Funciones</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#precios">Precios</a>
+      <a href="#preguntas">Preguntas</a>
+    </div>
+    <div class="nav-cta">
+      <a href="https://controlevo-puntos.vercel.app" class="btn btn-ghost">Ver demo</a>
+      <a href="#contacto" class="btn btn-primario btn-chico">Sumar mi negocio</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero" style="padding-top:88px;">
+  <div class="hero-grid">
+    <div>
+      <span class="badge-suave">● Nuevo — club de fidelización multi-negocio</span>
+      <h1>Puntos que tus clientes<br/>realmente quieren juntar</h1>
+      <p class="sub">Convertí cada compra en una razón para volver — sin apps que nadie descarga, sin tarjetitas de cartón que se pierden.</p>
+      <div class="hero-ctas">
+        <a href="#contacto" class="btn btn-primario">Sumar mi negocio</a>
+        <a href="https://controlevo-puntos.vercel.app" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.2);">Ver el producto en vivo</a>
+      </div>
+      <p class="hero-nota">Onboarding guiado — no necesitás saber de tecnología.</p>
+    </div>
+    <div class="hero-mock">
+      <div class="mock-topbar">
+        <span class="mock-tag">CAFÉ NARDO · CLUB DE PUNTOS</span>
+        <span style="font-size:18px;">☕</span>
+      </div>
+      <div class="mock-card">
+        <div class="muted" style="font-size:12px;color:#94A3B8;">Tus puntos acá</div>
+        <div class="mock-puntos">1.240 pts</div>
+        <div class="mock-bar"><div class="mock-bar-fill"></div></div>
+        <div class="muted" style="font-size:12px;color:#94A3B8;">A 160 pts de tu próxima recompensa</div>
+      </div>
+      <div class="mock-card" style="margin-bottom:0;">
+        <div class="mock-fila" style="border-top:none;padding-top:0;"><span>Café + medialuna</span><span style="color:var(--secundario);font-weight:700;">+18 pts</span></div>
+        <div class="mock-fila"><span>Racha semanal</span><span style="color:var(--acento);font-weight:700;">🔥 3 semanas</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BENEFICIOS EN NÚMERO ============ -->
+<section class="beneficios">
+  <div class="beneficios-grid">
+    <div class="beneficio-card">
+      <div class="beneficio-num">$100 = 1pt</div>
+      <div class="beneficio-titulo">Automático en cada cobro</div>
+      <div class="beneficio-desc">El cajero no hace ninguna cuenta — se acredita solo al cargar el monto.</div>
+    </div>
+    <div class="beneficio-card">
+      <div class="beneficio-num">3 min</div>
+      <div class="beneficio-titulo">Para que tu cajero empiece</div>
+      <div class="beneficio-desc">Login por PIN de 4 dígitos, sin cuenta ni contraseña que recordar.</div>
+    </div>
+    <div class="beneficio-card">
+      <div class="beneficio-num">0</div>
+      <div class="beneficio-titulo">Apps para instalar</div>
+      <div class="beneficio-desc">Tu cliente entra desde el navegador, con un link. Nada que descargar.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EJEMPLO DE MARKETPLACE (rotulado, sin afirmar clientes reales) ============ -->
+<section class="ejemplo">
+  <div class="encabezado-seccion">
+    <div class="kicker">Marketplace</div>
+    <h2>Así se vería tu negocio en el club</h2>
+    <p>Ejemplo ilustrativo — estos son negocios ficticios para mostrar cómo luce el marketplace, no clientes actuales.</p>
+  </div>
+  <div class="ejemplo-wrap">
+    <div class="logos-grid">
+      <div class="logo-card"><span class="logo-emoji">☕</span>Café Nardo</div>
+      <div class="logo-card"><span class="logo-emoji">🍺</span>Cervecería Soler</div>
+      <div class="logo-card"><span class="logo-emoji">🛒</span>Almacén Guatemala</div>
+      <div class="logo-card"><span class="logo-emoji">🥐</span>Fornería Thames</div>
+      <div class="logo-card"><span class="logo-emoji">🧉</span>Súper Charcas</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CÓMO FUNCIONA ============ -->
+<section class="pasos" id="como-funciona">
+  <div class="encabezado-seccion">
+    <div class="kicker">Cómo funciona</div>
+    <h2>Tres roles, un solo sistema</h2>
+    <p>Vos, tu cajero y tus clientes ven exactamente lo que necesitan — nada más.</p>
+  </div>
+  <div class="pasos-grid">
+    <div class="paso-card">
+      <div class="paso-num">1</div>
+      <h3>Cargás tu negocio</h3>
+      <p>Nombre, rubro, recompensas y el PIN de tu cajero. Todo desde tu panel, en minutos.</p>
+    </div>
+    <div class="paso-card">
+      <div class="paso-num">2</div>
+      <h3>Tu cajero cobra y suma</h3>
+      <p>Entra con su PIN, carga el monto y el teléfono del cliente. Los puntos se acreditan solos.</p>
+    </div>
+    <div class="paso-card">
+      <div class="paso-num">3</div>
+      <h3>Tu cliente vuelve por más</h3>
+      <p>Ve sus puntos, sus rachas y canjea recompensas reales — sin instalar nada.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="features" id="funciones">
+  <div class="encabezado-seccion">
+    <div class="kicker">Funciones</div>
+    <h2>Todo lo que necesitás, nada de lo que no</h2>
+    <p>Pensado para gastronomía y almacenes/supermercados — no es un sistema genérico adaptado a las apuradas.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M3 9v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      </div>
+      <h3>Marketplace de negocios</h3>
+      <p>Tu negocio aparece en el club junto a otros locales — más visibilidad, más razones para que te elijan.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg>
+      </div>
+      <h3>Puntos automáticos en caja</h3>
+      <p>El cajero solo carga el monto — el sistema calcula y acredita los puntos sin margen de error.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+      </div>
+      <h3>Panel con métricas reales</h3>
+      <p>Cuántos clientes tenés, cuántos puntos acreditaste — datos de verdad, no una tabla vacía.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </div>
+      <h3>Recompensas editables al instante</h3>
+      <p>Cambiás precios, premios o combos desde tu panel — sin reprogramar nada, sin esperar a nadie.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/></svg>
+      </div>
+      <h3>Identidad propia</h3>
+      <p>Tu paleta, tu rubro (gastronomía o supermercado), tu logo. Nunca un QR genérico más.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+      </div>
+      <h3>Rachas, misiones e insignias</h3>
+      <p>Mecánicas que mantienen a tu cliente volviendo — no solo un contador de puntos aburrido.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRECIOS ============ -->
+<section class="precios" id="precios">
+  <div class="encabezado-seccion">
+    <div class="kicker">Precios</div>
+    <h2>Elegí el plan de tu negocio</h2>
+    <p>Setup una vez + mensual fijo. Sin comisión sobre tus ventas.</p>
+  </div>
+  <div class="precios-grid">
+    <div class="plan-card">
+      <div class="plan-nombre">Inicial</div>
+      <div class="plan-precio">USD 15 <span>/mes</span></div>
+      <div class="plan-setup">+ USD 100 de setup único</div>
+      <div class="plan-tagline">Tu club de puntos, andando en días.</div>
+      <ul class="plan-lista">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>1 negocio</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Hasta 5 recompensas</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Cajero con PIN</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Panel con métricas básicas</li>
+      </ul>
+      <a href="#contacto" class="btn btn-outline">Sumar mi negocio</a>
+    </div>
+    <div class="plan-card destacado">
+      <span class="plan-badge">Más elegido</span>
+      <div class="plan-nombre">Pro</div>
+      <div class="plan-precio">USD 29 <span>/mes</span></div>
+      <div class="plan-setup">+ USD 150 de setup único</div>
+      <div class="plan-tagline">Todo para hacer crecer tu club.</div>
+      <ul class="plan-lista">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Todo lo de Inicial</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Visible en el marketplace</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Recompensas ilimitadas</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Rachas, misiones e insignias</li>
+      </ul>
+      <a href="#contacto" class="btn btn-primario">Sumar mi negocio</a>
+    </div>
+    <div class="plan-card">
+      <div class="plan-nombre">Business</div>
+      <div class="plan-precio">A medida</div>
+      <div class="plan-setup">&nbsp;</div>
+      <div class="plan-tagline">Para negocios con más de una sucursal.</div>
+      <ul class="plan-lista">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Todo lo de Pro</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Multi-sucursal</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Onboarding asistido</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>Reportes a medida</li>
+      </ul>
+      <a href="#contacto" class="btn btn-outline">Hablemos</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="faq" id="preguntas">
+  <div class="encabezado-seccion">
+    <div class="kicker">Preguntas frecuentes</div>
+    <h2>Antes de que preguntes</h2>
+  </div>
+  <div class="faq-lista">
+    <div class="faq-item">
+      <button class="faq-pregunta" onclick="toggleFaq(this)">¿Mis clientes tienen que instalar una app?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="faq-respuesta"><div class="faq-respuesta-inner">No. Entran desde el navegador de su celular con un link — sin descargar nada ni crear cuentas complicadas.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-pregunta" onclick="toggleFaq(this)">¿Necesito saber de tecnología para usarlo?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="faq-respuesta"><div class="faq-respuesta-inner">No. El onboarding te guía paso a paso: nombre, recompensas y el PIN de tu cajero. Nada de código ni configuración técnica.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-pregunta" onclick="toggleFaq(this)">¿Puedo cambiar mis recompensas cuando quiera?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="faq-respuesta"><div class="faq-respuesta-inner">Sí, desde tu panel de dueño, en cualquier momento — los cambios se reflejan al instante en la app del cliente.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-pregunta" onclick="toggleFaq(this)">¿El sistema funciona sin internet en la caja?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="faq-respuesta"><div class="faq-respuesta-inner">Necesita conexión para acreditar los puntos en el momento del cobro — como cualquier posnet o billetera virtual.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-pregunta" onclick="toggleFaq(this)">¿Qué pasa con los datos de mis clientes?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="faq-respuesta"><div class="faq-respuesta-inner">Se guardan de forma segura y solo se usan para el club de puntos. Nunca se venden a terceros.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA FINAL ============ -->
+<section class="cta-final">
+  <div class="contenedor">
+    <h2>Sumá tu negocio al club</h2>
+    <p>Contanos sobre tu negocio y armamos tu club de puntos juntos.</p>
+    <a href="#contacto" class="btn btn-primario">Sumar mi negocio</a>
+    <div class="cta-badges">
+      <span>✓ Sin apps para instalar</span>
+      <span>✓ Vos controlás tus recompensas</span>
+      <span>✓ Soporte directo con nosotros</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer id="contacto">
+  <div class="footer-grid">
+    <div>
+      <div class="logo" style="color:#fff;margin-bottom:14px;"><span class="logo-dot"></span>Control.Evo <span style="color:#94A3B8;font-weight:500;">Puntos</span></div>
+      <p style="max-width:260px;font-size:13.5px;">El club de fidelización para gastronomía y almacenes/supermercados.</p>
+    </div>
+    <div>
+      <h4>Producto</h4>
+      <ul>
+        <li><a href="#funciones">Funciones</a></li>
+        <li><a href="#precios">Precios</a></li>
+        <li><a href="#preguntas">Preguntas</a></li>
+        <li><a href="https://controlevo-puntos.vercel.app">Ver demo</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contacto</h4>
+      <ul>
+        <!-- TODO: reemplazar por el WhatsApp y email reales de Control.Evo Puntos -->
+        <li><a href="https://wa.me/5490000000000?text=Hola!%20Quiero%20sumar%20mi%20negocio%20a%20Control.Evo%20Puntos">WhatsApp</a></li>
+        <li><a href="mailto:hola@controlevo.com">hola@controlevo.com</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="/TERMINOS.md">Términos y condiciones</a></li>
+        <li><a href="/PRIVACIDAD.md">Política de privacidad</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Control.Evo. Todos los derechos reservados.</span>
+    <span>Hecho en Argentina 🇦🇷</span>
+  </div>
+</footer>
+
+<!-- TODO: reemplazar por el número real de WhatsApp -->
+<a href="https://wa.me/5490000000000?text=Hola!%20Quiero%20sumar%20mi%20negocio%20a%20Control.Evo%20Puntos" class="wsp-flotante" aria-label="WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67a8.2 8.2 0 0 1 5.83 2.42 8.18 8.18 0 0 1 2.41 5.82c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.17 8.17 0 0 1-1.26-4.38c0-4.55 3.7-8.23 8.25-8.23m-4.2 4.7c-.15 0-.4.06-.61.3-.21.24-.8.78-.8 1.9s.82 2.2.93 2.36c.12.15 1.6 2.5 3.97 3.4 1.97.76 2.37.6 2.8.57.43-.04 1.38-.57 1.58-1.11.2-.55.2-1.02.14-1.11-.06-.1-.21-.15-.44-.27-.23-.12-1.38-.68-1.6-.76-.21-.08-.37-.12-.53.12-.15.24-.6.76-.74.92-.14.15-.27.17-.5.06-.24-.12-1-.37-1.9-1.18-.7-.63-1.18-1.4-1.32-1.64-.14-.24-.02-.37.1-.5.11-.1.24-.27.36-.4.12-.14.16-.24.24-.4.08-.15.04-.3-.02-.42-.06-.12-.53-1.3-.74-1.77-.19-.46-.39-.4-.53-.4Z"/></svg>
+</a>
+
+<script>
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const yaAbierto = item.classList.contains('abierto');
+    document.querySelectorAll('.faq-item.abierto').forEach((el) => el.classList.remove('abierto'));
+    if (!yaAbierto) item.classList.add('abierto');
+  }
+</script>
+
+</body>
+</html>
