@@ -31,14 +31,17 @@
     --radio-input: 12px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
   body {
     background: var(--neutro-claro);
     color: var(--primario);
     font-family: 'Inter', sans-serif;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
+  img, svg, video { max-width: 100%; }
   h1, h2, h3, .titulo {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
@@ -58,9 +61,15 @@
     padding: 10px 16px;
     font-size: 13.5px;
     font-weight: 500;
+    line-height: 1.4;
   }
   .banner-top strong { color: var(--secundario); }
-  .banner-top a { text-decoration: underline; text-underline-offset: 3px; margin-left: 6px; font-weight: 600; }
+  .banner-top a { display: inline-block; text-decoration: underline; text-underline-offset: 3px; margin-left: 6px; font-weight: 600; }
+  .solo-desktop { display: inline; }
+  @media (max-width: 480px) {
+    .banner-top { font-size: 12.5px; padding: 8px 12px; }
+    .solo-desktop { display: none; }
+  }
 
   /* ---- Nav ---- */
   nav {
@@ -69,13 +78,18 @@
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--borde);
   }
-  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; max-width: 1120px; margin: 0 auto; }
-  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 19px; display: flex; align-items: center; gap: 8px; }
-  .logo-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--secundario); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 24px; max-width: 1120px; margin: 0 auto; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 19px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .logo-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--secundario); flex-shrink: 0; }
   .nav-links { display: flex; gap: 28px; font-size: 14.5px; font-weight: 500; color: var(--texto-muted); }
   .nav-links a:hover { color: var(--primario); }
-  .nav-cta { display: flex; gap: 10px; align-items: center; }
+  .nav-cta { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
   @media (max-width: 860px) { .nav-links { display: none; } }
+  @media (max-width: 480px) {
+    .nav-inner { padding: 12px 16px; }
+    .logo { font-size: 16px; }
+    .nav-cta .btn-ghost { display: none; }
+  }
 
   /* ---- Botones ---- */
   .btn {
@@ -117,6 +131,10 @@
   .hero p.sub { font-size: 17px; color: #CBD5E1; max-width: 480px; margin-bottom: 28px; }
   .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
   .hero-nota { font-size: 13px; color: #94A3B8; }
+  @media (max-width: 480px) {
+    .hero-ctas { flex-direction: column; align-items: stretch; }
+    .hero-ctas .btn { width: 100%; }
+  }
   .hero-mock {
     background: #12213D; border: 1px solid rgba(255,255,255,0.08);
     border-radius: 24px; padding: 22px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
@@ -138,6 +156,11 @@
   .encabezado-seccion h2 { font-size: 32px; margin-bottom: 12px; }
   .encabezado-seccion p { color: var(--texto-muted); font-size: 16px; }
   .kicker { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--acento); margin-bottom: 10px; }
+  @media (max-width: 480px) {
+    section { padding: 56px 18px; }
+    .encabezado-seccion { margin-bottom: 32px; }
+    .encabezado-seccion h2 { font-size: 26px; }
+  }
 
   /* ---- Beneficios en número ---- */
   .beneficios { background: #fff; }
@@ -148,7 +171,7 @@
   .beneficio-titulo { font-weight: 700; margin: 8px 0 6px; }
   .beneficio-desc { color: var(--texto-muted); font-size: 14px; }
 
-  /* ---- Ejemplo de negocios (placeholder rotulado) ---- */
+  /* ---- Ejemplo de negocios (placeholder rotulado, en carrusel continuo) ---- */
   .ejemplo { background: var(--neutro-claro); }
   .ejemplo-aviso {
     text-align: center; font-size: 13px; color: var(--texto-muted);
@@ -156,13 +179,76 @@
     padding: 8px 18px; display: inline-flex; margin: 0 auto 32px; gap: 6px;
   }
   .ejemplo-wrap { text-align: center; }
-  .logos-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+  .marquee {
+    overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex; gap: 16px; width: max-content;
+    animation: desplazar 26s linear infinite;
+  }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  @keyframes desplazar {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
   .logo-card {
     display: flex; align-items: center; gap: 10px;
     background: #fff; border: 1px solid var(--borde); border-radius: var(--radio-card);
-    padding: 16px 22px; font-weight: 700; font-size: 14.5px;
+    padding: 16px 22px; font-weight: 700; font-size: 14.5px; white-space: nowrap;
+    opacity: 0.55; filter: grayscale(40%); transition: opacity 200ms ease;
   }
+  .logo-card:hover { opacity: 0.9; }
   .logo-emoji { font-size: 22px; }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
+
+  /* ---- Beneficios reales (destacada, con % citados de estudios de la industria) ---- */
+  .roi { background: var(--primario); color: #fff; }
+  .roi .encabezado-seccion p { color: #CBD5E1; }
+  .roi .kicker { color: var(--secundario); }
+  .roi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; max-width: 1120px; margin: 0 auto 40px; }
+  @media (max-width: 900px) { .roi-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .roi-grid { grid-template-columns: 1fr; } }
+  .roi-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radio-card); padding: 24px 20px; text-align: center;
+  }
+  .roi-num { font-family: 'Space Grotesk', sans-serif; font-size: 38px; font-weight: 800; color: var(--secundario); }
+  .roi-desc { font-size: 13.5px; color: #CBD5E1; margin-top: 6px; line-height: 1.4; }
+  .roi-fuente { font-size: 11px; color: #64748B; margin-top: 8px; }
+  .roi-lista {
+    max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 14px 28px; list-style: none;
+  }
+  @media (max-width: 640px) { .roi-lista { grid-template-columns: 1fr; } }
+  .roi-lista li { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; color: #E2E8F0; }
+  .roi-lista svg { flex-shrink: 0; margin-top: 3px; color: var(--secundario); }
+  .roi-nota { text-align: center; font-size: 12px; color: #64748B; margin-top: 32px; }
+
+  /* ---- Mockups (así se ve el panel del dueño / la app del cliente) ---- */
+  .mockups { background: #fff; }
+  .mockups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; max-width: 1000px; margin: 0 auto; }
+  @media (max-width: 760px) { .mockups-grid { grid-template-columns: 1fr; } }
+  .mockup-col { text-align: center; }
+  .mockup-col h3 { font-size: 17px; margin-bottom: 4px; }
+  .mockup-col p { font-size: 13.5px; color: var(--texto-muted); margin-bottom: 16px; }
+  .mockup-frame {
+    background: var(--primario); border-radius: 22px; padding: 18px;
+    box-shadow: 0 24px 48px -20px rgba(15,23,42,0.35); text-align: left;
+  }
+  .mockup-frame .mock-card { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
+  .mockup-chip {
+    display: inline-flex; align-items: center; gap: 6px; background: rgba(212,166,74,0.16);
+    color: var(--secundario); font-size: 11px; font-weight: 700; padding: 4px 10px;
+    border-radius: 999px; margin-bottom: 10px;
+  }
+  .mockup-fila-cliente {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12.5px; color: #CBD5E1;
+  }
+  .mockup-fila-cliente:first-child { border-top: none; }
 
   /* ---- Cómo funciona ---- */
   .pasos { background: #fff; }
@@ -216,6 +302,7 @@
   footer { background: var(--neutro-oscuro); color: #94A3B8; padding: 56px 24px 28px; }
   .footer-grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; }
   @media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; gap: 24px; } }
   footer h4 { color: #fff; font-size: 13.5px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
   footer ul { list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
   footer a:hover { color: #fff; }
@@ -233,7 +320,7 @@
 <body>
 
 <div class="banner-top">
-  🌱 Estás entre los primeros negocios en sumarte al club <strong>— ayudanos a moldear el producto</strong>
+  🌱 Estás entre los primeros negocios en sumarte<span class="solo-desktop"><strong> — ayudanos a moldear el producto</strong></span>
   <a href="#contacto">Quiero sumarme</a>
 </div>
 
@@ -305,6 +392,46 @@
   </div>
 </section>
 
+<!-- ============ BENEFICIOS REALES (destacada, % citados de estudios de la industria) ============ -->
+<section class="roi">
+  <div class="encabezado-seccion">
+    <div class="kicker">Por qué te conviene</div>
+    <h2>Esto es lo que gana tu negocio con un club de fidelización</h2>
+    <p>Datos de estudios de la industria de fidelización (no son una promesa nuestra — son cómo funciona esta mecánica en general, con fuente).</p>
+  </div>
+  <div class="roi-grid">
+    <div class="roi-card">
+      <div class="roi-num">+38%</div>
+      <div class="roi-desc">Gasto promedio por visita en restaurantes con club de fidelización</div>
+      <div class="roi-fuente">Fuente: Paytronix</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-num">+90%</div>
+      <div class="roi-desc">Más frecuencia de visita de los socios vs. clientes sin club</div>
+      <div class="roi-fuente">Fuente: Paytronix</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-num">4.8x</div>
+      <div class="roi-desc">Retorno de inversión promedio de un programa de fidelización</div>
+      <div class="roi-fuente">Fuente: Netguru</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-num">+25%</div>
+      <div class="roi-desc">Aumento de ingresos reportado por negocios con fidelización activa</div>
+      <div class="roi-fuente">Fuente: Bond / SoGoLytics</div>
+    </div>
+  </div>
+  <ul class="roi-lista">
+    <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Ticket promedio más alto</strong> — puntos y recompensas empujan a gastar un poco más en cada visita</span></li>
+    <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Más recurrencia</strong> — rachas, misiones y la ruleta semanal dan una razón concreta para volver</span></li>
+    <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Comunidad, no solo clientes</strong> — el marketplace y los referidos conectan gente real con tu marca</span></li>
+    <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Te diferenciás</strong> — identidad propia y carta digital, nunca un QR genérico más</span></li>
+    <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Medís tu negocio en tiempo real</strong> — clientes, puntos acreditados y quién vuelve, sin planillas</span></li>
+    <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Boca a boca real</strong> — invitar a un amigo premia a los dos cuando el vínculo con tu negocio es real</span></li>
+  </ul>
+  <p class="roi-nota">Los porcentajes son promedios publicados de la industria de fidelización, no resultados garantizados de Control.Evo Puntos.</p>
+</section>
+
 <!-- ============ EJEMPLO DE MARKETPLACE (rotulado, sin afirmar clientes reales) ============ -->
 <section class="ejemplo">
   <div class="encabezado-seccion">
@@ -313,12 +440,24 @@
     <p>Ejemplo ilustrativo — estos son negocios ficticios para mostrar cómo luce el marketplace, no clientes actuales.</p>
   </div>
   <div class="ejemplo-wrap">
-    <div class="logos-grid">
-      <div class="logo-card"><span class="logo-emoji">☕</span>Café Nardo</div>
-      <div class="logo-card"><span class="logo-emoji">🍺</span>Cervecería Soler</div>
-      <div class="logo-card"><span class="logo-emoji">🛒</span>Almacén Guatemala</div>
-      <div class="logo-card"><span class="logo-emoji">🥐</span>Fornería Thames</div>
-      <div class="logo-card"><span class="logo-emoji">🧉</span>Súper Charcas</div>
+    <div class="marquee">
+      <div class="marquee-track">
+        <div class="logo-card"><span class="logo-emoji">☕</span>Café Nardo</div>
+        <div class="logo-card"><span class="logo-emoji">🍺</span>Cervecería Soler</div>
+        <div class="logo-card"><span class="logo-emoji">🛒</span>Almacén Guatemala</div>
+        <div class="logo-card"><span class="logo-emoji">🥐</span>Fornería Thames</div>
+        <div class="logo-card"><span class="logo-emoji">🧉</span>Súper Charcas</div>
+        <div class="logo-card"><span class="logo-emoji">🍕</span>Fornería Palermo</div>
+        <div class="logo-card"><span class="logo-emoji">🍦</span>Heladería Aguirre</div>
+        <!-- Duplicado para el loop continuo del carrusel -->
+        <div class="logo-card" aria-hidden="true"><span class="logo-emoji">☕</span>Café Nardo</div>
+        <div class="logo-card" aria-hidden="true"><span class="logo-emoji">🍺</span>Cervecería Soler</div>
+        <div class="logo-card" aria-hidden="true"><span class="logo-emoji">🛒</span>Almacén Guatemala</div>
+        <div class="logo-card" aria-hidden="true"><span class="logo-emoji">🥐</span>Fornería Thames</div>
+        <div class="logo-card" aria-hidden="true"><span class="logo-emoji">🧉</span>Súper Charcas</div>
+        <div class="logo-card" aria-hidden="true"><span class="logo-emoji">🍕</span>Fornería Palermo</div>
+        <div class="logo-card" aria-hidden="true"><span class="logo-emoji">🍦</span>Heladería Aguirre</div>
+      </div>
     </div>
   </div>
 </section>
@@ -345,6 +484,50 @@
       <div class="paso-num">3</div>
       <h3>Tu cliente vuelve por más</h3>
       <p>Ve sus puntos, sus rachas y canjea recompensas reales — sin instalar nada.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MOCKUPS (así se ve el panel del dueño / la app del cliente) ============ -->
+<section class="mockups">
+  <div class="encabezado-seccion">
+    <div class="kicker">Así se ve</div>
+    <h2>Lo que ves vos, lo que ve tu cliente</h2>
+    <p>Ilustración del producto real — no es una captura literal, pero así está armado hoy.</p>
+  </div>
+  <div class="mockups-grid">
+    <div class="mockup-col">
+      <h3>Tu panel de dueño</h3>
+      <p>Métricas, clientes y recompensas en un solo lugar</p>
+      <div class="mockup-frame">
+        <span class="mockup-chip">📊 Métricas</span>
+        <div class="mock-card">
+          <div class="mockup-fila-cliente"><span>Clientes con puntos</span><span style="color:var(--secundario);font-weight:700;">128</span></div>
+          <div class="mockup-fila-cliente"><span>Puntos acreditados</span><span style="color:var(--secundario);font-weight:700;">42.300</span></div>
+          <div class="mockup-fila-cliente"><span>Club</span><span style="color:#5EEAD4;font-weight:700;">● Activo</span></div>
+        </div>
+        <div class="mock-card" style="margin-bottom:0;">
+          <div class="mockup-fila-cliente" style="border-top:none;"><span>María G.</span><span style="color:#CBD5E1;">hace 1 día</span></div>
+          <div class="mockup-fila-cliente"><span>Julián P.</span><span style="color:#CBD5E1;">hace 2 días</span></div>
+          <div class="mockup-fila-cliente"><span>Sofía R.</span><span style="color:#CBD5E1;">hace 4 días</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup-col">
+      <h3>La app de tu cliente</h3>
+      <p>Puntos, promos y la ruleta semanal, sin instalar nada</p>
+      <div class="mockup-frame">
+        <span class="mockup-chip">🎡 Ruleta semanal</span>
+        <div class="mock-card">
+          <div class="muted" style="font-size:12px;color:#94A3B8;">Tus puntos acá</div>
+          <div class="mock-puntos" style="font-size:28px;">890 pts</div>
+        </div>
+        <div class="mock-card" style="margin-bottom:0;">
+          <div class="mockup-fila-cliente" style="border-top:none;"><span>🔥 2x1 en tragos</span><span style="color:var(--secundario);font-weight:700;">Hoy</span></div>
+          <div class="mockup-fila-cliente"><span>🚚 Delivery gratis</span><span style="color:var(--secundario);font-weight:700;">Activo</span></div>
+          <div class="mockup-fila-cliente"><span>🔥 Racha</span><span style="color:var(--acento);font-weight:700;">4 semanas</span></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
