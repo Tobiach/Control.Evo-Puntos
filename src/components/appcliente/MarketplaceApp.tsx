@@ -18,6 +18,7 @@ import { usePermisoNotificaciones } from '../../lib/notificaciones';
 import { supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
 import { cargarAppCliente, canjearRecompensa, type ClienteApp } from '../../lib/panelCliente';
+import { procesarReferidoPendiente } from '../../lib/referidos';
 import AppCliente from './AppCliente';
 import Marketplace from './Marketplace';
 
@@ -80,6 +81,9 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
         setNegocios([...reales, ...NEGOCIOS]);
         setRelaciones({ ...RELACIONES_INICIALES, ...res.valor.relaciones });
         setClienteReal(res.valor.cliente);
+        // Ya hay sesión + cliente vinculado: registramos el referido pendiente (si vino de un
+        // link de invitación). Idempotente y server-side; no bloquea la carga de la app.
+        void procesarReferidoPendiente();
       }
       setCargando(false);
     });

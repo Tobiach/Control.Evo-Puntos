@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
 import { DATA_RUBROS, type Cliente, type Rubro } from './data/mockClientes';
@@ -13,6 +13,7 @@ import LoginDueno from './components/auth/LoginDueno';
 import LoginCajero from './components/cajero/LoginCajero';
 import RestablecerPassword from './components/auth/RestablecerPassword';
 import { esModoRecuperacion, supabaseEnabled } from './lib/auth';
+import { capturarReferidoPendiente } from './lib/referidos';
 
 type Pantalla =
   | 'bienvenida'
@@ -51,6 +52,13 @@ export default function App() {
   const [puntosSesion, setPuntosSesion] = useState(0);
   // El usuario llegó desde el link de "olvidé mi contraseña" (?modo=restablecer + hash de Supabase).
   const [recuperando, setRecuperando] = useState(() => supabaseEnabled && esModoRecuperacion());
+
+  // Si la app se abrió con un link de invitación (?ref=...&negocio=...), guardamos el referido
+  // pendiente y limpiamos la URL; se registra recién cuando el invitado tenga sesión (ver
+  // MarketplaceApp). Una sola vez al montar, igual filosofía que la lectura de ?rubro=.
+  useEffect(() => {
+    capturarReferidoPendiente();
+  }, []);
 
   const data = DATA_RUBROS[rubro];
   const clienteActivo = clientes.find((cliente) => cliente.id === clienteActivoId) ?? null;

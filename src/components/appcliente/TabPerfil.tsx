@@ -6,17 +6,16 @@ import {
   Crown,
   Gift,
   Phone,
-  Share2,
   Swords,
   Trophy,
   User,
   Users,
 } from 'lucide-react';
 import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
-import { codigoReferido, formatPuntos, nivelDe } from '../../lib/club';
-import { compartir } from '../../lib/compartir';
+import { formatPuntos, nivelDe } from '../../lib/club';
 import { lanzarConfetti } from '../../lib/confetti';
 import { AMIGOS_MOCK, desafioSemanal, rankingGrupo } from '../../lib/social';
+import SeccionReferidos from './SeccionReferidos';
 
 interface Props {
   data: RubroData;
@@ -52,8 +51,6 @@ export default function TabPerfil({
   onToggleCumple,
   onRegalar,
 }: Props) {
-  const codigo = codigoReferido(cliente);
-  const [copiado, setCopiado] = useState(false);
   const [enRanking, setEnRanking] = useState(false);
 
   const grupo = rankingGrupo(negocioId, historial, cliente.nombre);
@@ -66,15 +63,6 @@ export default function TabPerfil({
   const [amigoRegalo, setAmigoRegalo] = useState(AMIGOS_MOCK[0].id);
   const [montoRegalo, setMontoRegalo] = useState(MONTOS_REGALO[0]);
   const [regalado, setRegalado] = useState<{ amigo: string; monto: number } | null>(null);
-
-  const compartirInvitacion = async () => {
-    const texto = `¡Sumate al Club de Puntos de ${data.nombreNegocio}! Usá mi código ${codigo} y ganamos 50 pts cada uno.`;
-    const copio = await compartir(texto, codigo);
-    if (copio) {
-      setCopiado(true);
-      window.setTimeout(() => setCopiado(false), 2000);
-    }
-  };
 
   const confirmarRegalo = () => {
     if (montoRegalo > cliente.puntos) return;
@@ -261,39 +249,7 @@ export default function TabPerfil({
         </div>
       </section>
 
-      <section>
-        <p className="mb-2 text-xs font-bold tracking-widest text-texto-muted uppercase">
-          Invitá un amigo
-        </p>
-        <div className="rounded-3xl border border-borde bg-card p-5">
-          <p className="text-sm text-texto-muted">
-            Compartí tu código.{' '}
-            <span className="font-bold text-texto">Vos y tu amigo ganan 50 pts cada uno.</span>
-          </p>
-          <div className="mt-3 flex items-center justify-between rounded-2xl bg-premio-suave px-4 py-3">
-            <span className="font-titulo text-lg font-bold tracking-wider text-acento">
-              {codigo}
-            </span>
-            <span className="text-2xl">🎁</span>
-          </div>
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.97 }}
-            onClick={compartirInvitacion}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover"
-          >
-            {copiado ? (
-              <>
-                <Check size={16} /> Código copiado
-              </>
-            ) : (
-              <>
-                <Share2 size={16} /> Compartir invitación
-              </>
-            )}
-          </motion.button>
-        </div>
-      </section>
+      <SeccionReferidos negocioId={negocioId} data={data} cliente={cliente} />
 
       <section>
         <p className="mb-2 text-xs font-bold tracking-widest text-texto-muted uppercase">
