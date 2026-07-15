@@ -5,6 +5,7 @@ import type { Rubro } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import { formatPuntos } from '../../lib/club';
 import { distanciaKm, formatDistancia, mesesDesde, type Coordenadas } from '../../lib/geo';
+import MapaNegocios from './MapaNegocios';
 
 type Filtro = 'todos' | Rubro | 'cerca';
 
@@ -62,9 +63,6 @@ const ESTILO_RUBRO: Record<
     pillFondo: 'rgba(139, 0, 0, 0.08)',
   },
 };
-
-/** Centro aproximado de Palermo, para saber si el usuario está en el barrio. */
-const CENTRO_PALERMO: Coordenadas = { lat: -34.5855, lng: -58.428 };
 
 export default function Marketplace({
   negocios,
@@ -214,7 +212,9 @@ export default function Marketplace({
         </motion.div>
       )}
 
-      {filtro === 'cerca' && coords && <MiniMapa negocios={visibles} coords={coords} onAbrir={onAbrirNegocio} />}
+      {filtro === 'cerca' && coords && (
+        <MapaNegocios negocios={visibles} coords={coords} onAbrir={onAbrirNegocio} />
+      )}
 
       <div className="flex flex-col gap-3">
         <AnimatePresence initial={false} mode="popLayout">
@@ -336,101 +336,5 @@ function TarjetaNegocio({
         </span>
       </div>
     </motion.button>
-  );
-}
-
-/**
- * Mini-mapa aproximado (sin librería de mapas): posiciona los pines según la
- * distancia relativa real entre coordenadas, normalizadas al contenedor.
- */
-function MiniMapa({
-  negocios,
-  coords,
-  onAbrir,
-}: {
-  negocios: Negocio[];
-  coords: Coordenadas;
-  onAbrir: (negocio: Negocio) => void;
-}) {
-  const distanciaAlBarrio = distanciaKm(coords, CENTRO_PALERMO);
-  const usuarioEnZona = distanciaAlBarrio <= 8;
-
-  const puntos: Coordenadas[] = negocios.map(({ lat, lng }) => ({ lat, lng }));
-  if (usuarioEnZona) puntos.push(coords);
-  if (puntos.length === 0) return null;
-
-  const minLat = Math.min(...puntos.map((p) => p.lat));
-  const maxLat = Math.max(...puntos.map((p) => p.lat));
-  const minLng = Math.min(...puntos.map((p) => p.lng));
-  const maxLng = Math.max(...puntos.map((p) => p.lng));
-  const spanLat = Math.max(maxLat - minLat, 0.0015);
-  const spanLng = Math.max(maxLng - minLng, 0.0015);
-
-  const posicion = (p: Coordenadas) => ({
-    left: `${10 + ((p.lng - minLng) / spanLng) * 80}%`,
-    top: `${12 + (1 - (p.lat - minLat) / spanLat) * 72}%`,
-  });
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="overflow-hidden rounded-3xl border border-borde bg-card"
-    >
-      <div
-        className="relative h-64 w-full"
-        style={{
-          backgroundImage:
-            'linear-gradient(var(--color-borde) 1px, transparent 1px), linear-gradient(90deg, var(--color-borde) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-        }}
-      >
-        {negocios.map((negocio) => (
-          <button
-            key={negocio.id}
-            type="button"
-            onClick={() => onAbrir(negocio)}
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
-            style={posicion(negocio)}
-            aria-label={`Abrir ${negocio.nombre}`}
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-borde bg-fondo-medio text-lg shadow-md">
-              {negocio.emoji}
-            </span>
-            <span className="mt-0.5 max-w-20 truncate rounded-full bg-fondo-medio/90 px-1.5 text-[9px] font-bold text-texto">
-              {negocio.nombre}
-            </span>
-            <span className="text-[9px] font-semibold text-acento">
-              {formatDistancia(distanciaKm(coords, negocio))}
-            </span>
-          </button>
-        ))}
-
-        {usuarioEnZona && (
-          <div
-            className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
-            style={posicion(coords)}
-          >
-            <motion.span
-              animate={{ scale: [1, 1.15, 1] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-acento text-sm text-on-acento shadow-lg"
-            >
-              📍
-            </motion.span>
-            <span className="mt-0.5 rounded-full bg-acento px-1.5 text-[9px] font-bold text-on-acento">
-              Vos
-            </span>
-          </div>
-        )}
-      </div>
-
-      <p className="border-t border-borde px-4 py-2.5 text-[11px] font-semibold text-texto-muted">
-        {usuarioEnZona
-          ? 'Mapa aproximado de Palermo — tocá un pin para entrar al local'
-          : `Estás ${formatDistancia(distanciaAlBarrio)} de Palermo — locales ordenados por cercanía`}
-      </p>
-    </motion.div>
   );
 }
