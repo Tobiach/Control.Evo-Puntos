@@ -1,19 +1,34 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { BarChart3, ChevronLeft, Gift, Loader2, Save, Store } from 'lucide-react';
+import {
+  BarChart3,
+  ChevronLeft,
+  Gift,
+  Loader2,
+  Pause,
+  PauseCircle,
+  Play,
+  Save,
+  Store,
+  Users,
+} from 'lucide-react';
 import type { Recompensa } from '../../data/mockClientes';
 import {
+  cambiarEstadoNegocio,
+  cargarClientesDelNegocio,
   cargarMetricas,
   cargarNegocioDelDueno,
   guardarNegocioYRecompensas,
+  type ClienteDelNegocio,
   type DatosNegocioForm,
   type MetricasNegocio,
 } from '../../lib/panelDueno';
 import SeccionNegocio from './SeccionNegocio';
 import SeccionRecompensas from './SeccionRecompensas';
 import SeccionMetricas from './SeccionMetricas';
+import SeccionClientes from './SeccionClientes';
 
-type Seccion = 'negocio' | 'recompensas' | 'metricas';
+type Seccion = 'negocio' | 'recompensas' | 'clientes' | 'metricas';
 
 type Aviso = { tipo: 'ok' | 'error'; texto: string } | null;
 
@@ -43,11 +58,13 @@ const NEGOCIO_VACIO: DatosNegocioForm = {
   horarioValle: null,
   beneficiosVip: [],
   pinCajero: null,
+  activo: true,
 };
 
 const SECCIONES: { clave: Seccion; etiqueta: string; icono: typeof Store }[] = [
-  { clave: 'negocio', etiqueta: 'Mi negocio', icono: Store },
-  { clave: 'recompensas', etiqueta: 'Recompensas', icono: Gift },
+  { clave: 'negocio', etiqueta: 'Negocio', icono: Store },
+  { clave: 'recompensas', etiqueta: 'Premios', icono: Gift },
+  { clave: 'clientes', etiqueta: 'Clientes', icono: Users },
   { clave: 'metricas', etiqueta: 'Métricas', icono: BarChart3 },
 ];
 
@@ -57,8 +74,12 @@ export default function PanelDueno(props: Props) {
   const [negocio, setNegocio] = useState<DatosNegocioForm>(NEGOCIO_VACIO);
   const [recompensas, setRecompensas] = useState<Recompensa[]>([]);
   const [metricas, setMetricas] = useState<MetricasNegocio | null>(null);
+  const [clientes, setClientes] = useState<ClienteDelNegocio[] | null>(null);
+  const [clientesCargados, setClientesCargados] = useState(false);
   const [cargandoInicial, setCargandoInicial] = useState(!esPreview);
   const [cargandoMetricas, setCargandoMetricas] = useState(false);
+  const [cargandoClientes, setCargandoClientes] = useState(false);
+  const [cambiandoEstado, setCambiandoEstado] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState<Aviso>(null);
 
@@ -90,6 +111,38 @@ export default function PanelDueno(props: Props) {
       activo = false;
     };
   }, [duenoUserId]);
+
+  // Lista de clientes (mini-CRM): se carga la primera vez que el dueño abre la pestaña.
+  useEffect(() => {
+    if (seccion !== 'clientes' || props.modo !== 'conectado' || !negocio.id || clientesCargados) return;
+    let vivo = true;
+    setCargandoClientes(true);
+    cargarClientesDelNegocio(negocio.id).then((resultado) => {
+      if (!vivo) return;
+      if (resultado.ok) setClientes(resultado.valor);
+      setClientesCargados(true);
+      setCargandoClientes(false);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [seccion, negocio.id, clientesCargados, props.modo]);
+
+  const cambiarPausa = async (nuevoActivo: boolean) => {
+    if (props.modo !== 'conectado' || !negocio.id) return;
+    setCambiandoEstado(true);
+    const resultado = await cambiarEstadoNegocio(negocio.id, nuevoActivo);
+    setCambiandoEstado(false);
+    if (!resultado.ok) {
+      setAviso({ tipo: 'error', texto: 'No pudimos cambiar el estado. Revisá tu conexión e intentá de nuevo.' });
+      return;
+    }
+    setNegocio((previo) => ({ ...previo, activo: nuevoActivo }));
+    setAviso({
+      tipo: 'ok',
+      texto: nuevoActivo ? 'Tu club volvió a estar activo.' : 'Tu club quedó pausado.',
+    });
+  };
 
   const cambiarNegocio = (parche: Partial<DatosNegocioForm>) => {
     setNegocio((previo) => ({ ...previo, ...parche }));
@@ -153,6 +206,16 @@ export default function PanelDueno(props: Props) {
         </div>
       </header>
 
+      {props.modo === 'conectado' && negocio.id && !negocio.activo && (
+        <div className="flex items-start gap-3 rounded-2xl border border-rojo/40 bg-rojo/10 px-4 py-3">
+          <PauseCircle size={18} className="mt-0.5 shrink-0 text-rojo" />
+          <p className="text-sm leading-snug text-texto">
+            <span className="font-bold">Tu club está pausado.</span> No aparece en el marketplace de
+            los clientes. Reactivalo cuando quieras desde la pestaña “Negocio”.
+          </p>
+        </div>
+      )}
+
       {esPreview && (
         <div className="flex items-start gap-3 rounded-2xl border border-premio/40 bg-premio-suave px-4 py-3">
           <Store size={18} className="mt-0.5 shrink-0 text-acento" />
@@ -183,7 +246,17 @@ export default function PanelDueno(props: Props) {
       </div>
 
       <div className="flex-1">
-        {seccion === 'negocio' && <SeccionNegocio negocio={negocio} onCambiar={cambiarNegocio} />}
+        {seccion === 'negocio' && (
+          <div className="flex flex-col gap-5">
+            <SeccionNegocio negocio={negocio} onCambiar={cambiarNegocio} />
+            {props.modo === 'conectado' && negocio.id && (
+              <ControlPausa activo={negocio.activo} cambiando={cambiandoEstado} onCambiar={cambiarPausa} />
+            )}
+          </div>
+        )}
+        {seccion === 'clientes' && (
+          <SeccionClientes clientes={clientes} cargando={cargandoClientes} esPreview={esPreview} />
+        )}
         {seccion === 'recompensas' && (
           <SeccionRecompensas
             recompensas={recompensas}
@@ -225,6 +298,83 @@ export default function PanelDueno(props: Props) {
       </motion.button>
 
       {props.modo === 'conectado' && <CerrarSesion onCerrarSesion={props.onCerrarSesion} />}
+    </div>
+  );
+}
+
+function ControlPausa({
+  activo,
+  cambiando,
+  onCambiar,
+}: {
+  activo: boolean;
+  cambiando: boolean;
+  onCambiar: (activo: boolean) => void;
+}) {
+  const [confirmando, setConfirmando] = useState(false);
+
+  if (!activo) {
+    return (
+      <div className="flex flex-col gap-3 rounded-2xl border border-rojo/40 bg-rojo/5 p-4">
+        <p className="text-sm font-medium text-texto-muted">
+          Tu club está pausado: no aparece en el marketplace. Reactivalo para que tus clientes vuelvan
+          a verlo y sumar puntos.
+        </p>
+        <button
+          type="button"
+          onClick={() => onCambiar(true)}
+          disabled={cambiando}
+          className="flex items-center justify-center gap-2 rounded-2xl bg-verde-ok py-3 text-sm font-bold text-white disabled:opacity-60"
+        >
+          {cambiando ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+          Reactivar mi club
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-borde bg-card p-4">
+      {!confirmando ? (
+        <button
+          type="button"
+          onClick={() => setConfirmando(true)}
+          disabled={cambiando}
+          className="flex items-center justify-center gap-2 rounded-2xl border border-rojo/40 py-3 text-sm font-bold text-rojo disabled:opacity-60"
+        >
+          <Pause size={16} />
+          Pausar mi club
+        </button>
+      ) : (
+        <>
+          <p className="text-sm leading-snug text-texto">
+            Mientras esté pausado, tu club <span className="font-bold">no aparece en el marketplace</span>{' '}
+            y nadie nuevo puede encontrarte. Los puntos ya cargados no se pierden. ¿Seguro?
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmando(false)}
+              disabled={cambiando}
+              className="flex-1 rounded-2xl border border-borde py-3 text-sm font-bold text-texto-muted disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onCambiar(false);
+                setConfirmando(false);
+              }}
+              disabled={cambiando}
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-rojo py-3 text-sm font-bold text-white disabled:opacity-60"
+            >
+              {cambiando ? <Loader2 size={16} className="animate-spin" /> : <Pause size={16} />}
+              Sí, pausar
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

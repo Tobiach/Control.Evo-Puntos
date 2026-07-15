@@ -19,6 +19,8 @@ export interface DatosNegocioForm {
   beneficiosVip: string[];
   /** PIN de 4 dígitos para que el cajero entre a cobrar sin cuenta de Auth. `null` = sin configurar. */
   pinCajero: string | null;
+  /** `false` = club pausado: no aparece en el marketplace (la policy pública filtra por `activo`). */
+  activo: boolean;
 }
 
 export interface MetricasNegocio {
@@ -26,7 +28,33 @@ export interface MetricasNegocio {
   puntosAcreditados: number;
 }
 
+/** Un cliente del negocio para el mini-CRM del dueño (viene de la RPC `clientes_del_negocio`). */
+export interface ClienteDelNegocio {
+  clienteId: string;
+  nombre: string;
+  telefono: string;
+  puntos: number;
+  /** ISO de la última visita, o `null` si todavía no registró ninguna. */
+  ultimaVisitaAt: string | null;
+}
+
 export type ResultadoPanel<T> = { ok: true; valor: T } | { ok: false; error: string };
+
+const MS_DIA = 86_400_000;
+
+/**
+ * Texto relativo de la última visita para la lista de clientes ("hoy", "hace 1 día",
+ * "hace N días", o "sin visitas" si nunca vino). Lógica pura y testeable.
+ */
+export function textoUltimaVisita(ultimaVisitaAt: string | null, ahora: number): string {
+  if (!ultimaVisitaAt) return 'sin visitas';
+  const t = new Date(ultimaVisitaAt).getTime();
+  if (Number.isNaN(t)) return 'sin visitas';
+  const dias = Math.max(0, Math.floor((ahora - t) / MS_DIA));
+  if (dias === 0) return 'hoy';
+  if (dias === 1) return 'hace 1 día';
+  return `hace ${dias} días`;
+}
 
 // Forma cruda de las filas de Supabase (el cliente no está tipado con el schema).
 // El PIN vive en la tabla aparte `negocio_pin` (ver 0005_seguridad_pin_cajero.sql):
@@ -42,6 +70,16 @@ interface FilaNegocio {
   lng: number | null;
   horario_valle: HorarioValle | null;
   beneficios_vip: string[] | null;
+  activo: boolean | null;
+}
+
+/** Fila cruda que devuelve la RPC `clientes_del_negocio` (ver 0006_crm_clientes_del_negocio.sql). */
+interface FilaClienteCrm {
+  cliente_id: string;
+  nombre: string | null;
+  telefono: string | null;
+  puntos: number | null;
+  ultima_visita_at: string | null;
 }
 
 interface FilaRecompensa {
@@ -76,6 +114,7 @@ function filaANegocio(fila: FilaNegocio, pinCajero: string | null): DatosNegocio
     horarioValle: fila.horario_valle,
     beneficiosVip: fila.beneficios_vip ?? [],
     pinCajero,
+    activo: fila.activo ?? true,
   };
 }
 
@@ -100,7 +139,7 @@ export async function cargarNegocioDelDueno(
   if (!supabase) return { ok: false, error: 'sin-conexion' };
   const { data, error } = await supabase
     .from('negocios')
-    .select('id, nombre, categoria, rubro, emoji, lat, lng, horario_valle, beneficios_vip')
+    .select('id, nombre, categoria, rubro, emoji, lat, lng, horario_valle, beneficios_vip, activo')
     .eq('dueno_user_id', duenoUserId)
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
@@ -204,4 +243,45 @@ export async function cargarMetricas(negocioId: string): Promise<ResultadoPanel<
       puntosAcreditados: filas.reduce((total, fila) => total + (fila.puntos ?? 0), 0),
     },
   };
+}
+
+/**
+ * Lista de clientes del negocio (mini-CRM del dueño): nombre, teléfono, puntos y última
+ * visita, ordenados por la más reciente. Pasa por la RPC SECURITY DEFINER
+ * `clientes_del_negocio` (0006) porque la RLS de `clientes` (auth.uid() = user_id) impide
+ * que el dueño lea esos datos con un SELECT/join directo. Ver la migración para el detalle.
+ */
+export async function cargarClientesDelNegocio(
+  negocioId: string,
+): Promise<ResultadoPanel<ClienteDelNegocio[]>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase.rpc('clientes_del_negocio', { p_negocio_id: negocioId });
+  if (error) return { ok: false, error: error.message };
+
+  const filas = (data ?? []) as FilaClienteCrm[];
+  return {
+    ok: true,
+    valor: filas.map((fila) => ({
+      clienteId: fila.cliente_id,
+      nombre: fila.nombre ?? 'Cliente',
+      telefono: fila.telefono ?? '',
+      puntos: fila.puntos ?? 0,
+      ultimaVisitaAt: fila.ultima_visita_at,
+    })),
+  };
+}
+
+/**
+ * Pausa (`activo = false`) o reactiva (`activo = true`) el negocio. Pausado no aparece en el
+ * marketplace: la policy pública de `negocios` ya filtra por `activo = true`, así que alcanza
+ * con este UPDATE (cubierto por la policy "El dueño edita solo su negocio").
+ */
+export async function cambiarEstadoNegocio(
+  negocioId: string,
+  activo: boolean,
+): Promise<ResultadoPanel<void>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.from('negocios').update({ activo }).eq('id', negocioId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: undefined };
 }
