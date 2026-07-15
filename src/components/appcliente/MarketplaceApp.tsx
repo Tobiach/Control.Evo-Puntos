@@ -62,6 +62,10 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
   // Pide el permiso real de notificaciones al entrar a la app del cliente (una sola vez).
   const permisoNotif = usePermisoNotificaciones();
 
+  // IDs de los locales de ejemplo (ficticios): el canje de estos nunca toca Supabase,
+  // así nunca puede romperse con un error de servidor por un negocio que no existe ahí.
+  const idsEjemplo = useState(() => new Set(NEGOCIOS.map((n) => n.id)))[0];
+
   const userId = sesion?.user.id;
   useEffect(() => {
     if (!usarReal || !userId) return;
@@ -70,8 +74,11 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
     cargarAppCliente(userId).then((res) => {
       if (!activo) return;
       if (res.ok) {
-        setNegocios(res.valor.negocios);
-        setRelaciones(res.valor.relaciones);
+        // El marketplace real se completa con los locales de ejemplo mientras se suman
+        // negocios reales — sin duplicar si algún día colisiona un id real con uno de ejemplo.
+        const reales = res.valor.negocios.filter((n) => !idsEjemplo.has(n.id));
+        setNegocios([...reales, ...NEGOCIOS]);
+        setRelaciones({ ...RELACIONES_INICIALES, ...res.valor.relaciones });
         setClienteReal(res.valor.cliente);
       }
       setCargando(false);
@@ -79,7 +86,7 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
     return () => {
       activo = false;
     };
-  }, [usarReal, userId]);
+  }, [usarReal, userId, idsEjemplo]);
 
   // En modo real usamos el nombre/teléfono/id reales del cliente logueado.
   const clienteEfectivo: Cliente =
@@ -115,7 +122,9 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
       ...previas,
       [negocio.id]: { ...actual, puntos: Math.max(0, puntosPrevios - recompensa.pts) },
     }));
-    if (!usarReal) return;
+    // Local ficticio: el descuento optimista de arriba ya es el resultado final, no hay
+    // servidor real contra el cual confirmar (evita el error "recompensa_inexistente").
+    if (!usarReal || idsEjemplo.has(negocio.id)) return;
     // Real: confirmamos contra el servidor y ajustamos al saldo verdadero (o revertimos).
     canjearRecompensa(negocio.id, recompensa.pts).then((res) => {
       setRelaciones((previas) => {
