@@ -308,6 +308,37 @@
   footer a:hover { color: #fff; }
   .footer-bottom { max-width: 1120px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 
+  /* ---- Newsletter modal (aparece una vez por sesión) ---- */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100; background: rgba(9,9,11,0.6);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-card {
+    background: var(--primario); color: #fff; border-radius: 22px; max-width: 380px; width: 100%;
+    padding: 28px 24px 24px; position: relative; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+  .modal-cerrar {
+    position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: none; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-mock {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px;
+    padding: 16px; margin-bottom: 18px;
+  }
+  .modal-card h3 { font-size: 21px; margin-bottom: 6px; }
+  .modal-card p.modal-sub { color: #CBD5E1; font-size: 13.5px; margin-bottom: 18px; }
+  .modal-form { display: flex; flex-direction: column; gap: 10px; }
+  .modal-input {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 12px;
+    padding: 12px 14px; color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; width: 100%;
+  }
+  .modal-input::placeholder { color: #94A3B8; }
+  .modal-nota { font-size: 11px; color: #64748B; margin-top: 10px; }
+
   /* ---- WhatsApp flotante ---- */
   .wsp-flotante {
     position: fixed; bottom: 22px; right: 22px; z-index: 50;
@@ -665,6 +696,26 @@
   </div>
 </footer>
 
+<!-- ============ MODAL NEWSLETTER (una vez por sesión) ============ -->
+<div class="modal-overlay" id="modalNewsletter">
+  <div class="modal-card">
+    <button type="button" class="modal-cerrar" aria-label="Cerrar" onclick="cerrarModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-mock">
+      <span class="mockup-chip">🎯 Club de Puntos</span>
+      <div class="mock-fila" style="border-top:none;padding-top:0;"><span>Tu negocio, con su club</span><span style="color:var(--secundario);font-weight:700;">Listo</span></div>
+    </div>
+    <h3>Sumá tu negocio al club</h3>
+    <p class="modal-sub">Dejanos tu email o tu WhatsApp y te contactamos para armarlo juntos.</p>
+    <form class="modal-form" onsubmit="enviarModal(event)">
+      <input type="text" class="modal-input" id="modalContacto" placeholder="Tu email o WhatsApp" required />
+      <button type="submit" class="btn btn-primario" style="width:100%;">Quiero que me contacten</button>
+    </form>
+    <p class="modal-nota">Sin compromiso — vos decidís si seguimos adelante.</p>
+  </div>
+</div>
+
 <a href="https://wa.me/5491134552996?text=Hola!%20Quiero%20sumar%20mi%20negocio%20a%20Control.Evo%20Puntos" class="wsp-flotante" aria-label="WhatsApp">
   <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67a8.2 8.2 0 0 1 5.83 2.42 8.18 8.18 0 0 1 2.41 5.82c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.17 8.17 0 0 1-1.26-4.38c0-4.55 3.7-8.23 8.25-8.23m-4.2 4.7c-.15 0-.4.06-.61.3-.21.24-.8.78-.8 1.9s.82 2.2.93 2.36c.12.15 1.6 2.5 3.97 3.4 1.97.76 2.37.6 2.8.57.43-.04 1.38-.57 1.58-1.11.2-.55.2-1.02.14-1.11-.06-.1-.21-.15-.44-.27-.23-.12-1.38-.68-1.6-.76-.21-.08-.37-.12-.53.12-.15.24-.6.76-.74.92-.14.15-.27.17-.5.06-.24-.12-1-.37-1.9-1.18-.7-.63-1.18-1.4-1.32-1.64-.14-.24-.02-.37.1-.5.11-.1.24-.27.36-.4.12-.14.16-.24.24-.4.08-.15.04-.3-.02-.42-.06-.12-.53-1.3-.74-1.77-.19-.46-.39-.4-.53-.4Z"/></svg>
 </a>
@@ -675,6 +726,44 @@
     const yaAbierto = item.classList.contains('abierto');
     document.querySelectorAll('.faq-item.abierto').forEach((el) => el.classList.remove('abierto'));
     if (!yaAbierto) item.classList.add('abierto');
+  }
+
+  // Modal de newsletter: aparece una sola vez por sesión, al scrollear la mitad
+  // de la página o a los 12s (lo que pase primero). Nunca interrumpe la carga inicial.
+  (function () {
+    const CLAVE = 'celp_modal_visto';
+    const overlay = document.getElementById('modalNewsletter');
+    if (!overlay || sessionStorage.getItem(CLAVE)) return;
+
+    const mostrar = () => {
+      if (sessionStorage.getItem(CLAVE)) return;
+      overlay.classList.add('visible');
+      sessionStorage.setItem(CLAVE, '1');
+    };
+
+    const timer = setTimeout(mostrar, 12000);
+    window.addEventListener('scroll', function onScroll() {
+      const mitad = document.documentElement.scrollHeight / 2;
+      if (window.scrollY + window.innerHeight >= mitad) {
+        clearTimeout(timer);
+        window.removeEventListener('scroll', onScroll);
+        mostrar();
+      }
+    });
+  })();
+
+  function cerrarModal() {
+    document.getElementById('modalNewsletter').classList.remove('visible');
+  }
+
+  function enviarModal(evento) {
+    evento.preventDefault();
+    const contacto = document.getElementById('modalContacto').value.trim();
+    const mensaje = encodeURIComponent(
+      `Hola! Quiero sumar mi negocio a Control.Evo Puntos. Mi contacto: ${contacto}`,
+    );
+    window.open(`https://wa.me/5491134552996?text=${mensaje}`, '_blank');
+    cerrarModal();
   }
 </script>
 
