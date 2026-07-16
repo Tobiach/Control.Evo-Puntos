@@ -8,6 +8,7 @@
 <meta property="og:title" content="Control.Evo Puntos — El club de fidelización para tu negocio" />
 <meta property="og:description" content="Convertí cada compra en una razón para volver. Puntos automáticos, sin apps, sin fricción." />
 <meta property="og:type" content="website" />
+<meta property="og:image" content="https://controlevo-puntos.vercel.app/landing/img/feature-captura.png" />
 <meta name="theme-color" content="#0F172A" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -162,6 +163,13 @@
     .encabezado-seccion h2 { font-size: 26px; }
   }
 
+  /* ---- Showcase (imagen completa generada, con sus propios títulos adentro) ---- */
+  .showcase { background: var(--neutro-claro); text-align: center; padding-top: 56px; padding-bottom: 56px; }
+  .showcase img {
+    max-width: 380px; width: 100%; height: auto; margin: 0 auto;
+    border-radius: 20px; box-shadow: 0 30px 60px -24px rgba(15,23,42,0.35);
+  }
+
   /* ---- Beneficios en número ---- */
   .beneficios { background: #fff; }
   .beneficios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; max-width: 1120px; margin: 0 auto; }
@@ -235,9 +243,10 @@
   .mockup-col h3 { font-size: 17px; margin-bottom: 4px; }
   .mockup-col p { font-size: 13.5px; color: var(--texto-muted); margin-bottom: 16px; }
   .mockup-frame {
-    background: var(--primario); border-radius: 22px; padding: 18px;
+    background: var(--primario); border-radius: 22px; padding: 14px;
     box-shadow: 0 24px 48px -20px rgba(15,23,42,0.35); text-align: left;
   }
+  .mockup-frame img { width: 100%; height: auto; border-radius: 14px; display: block; }
   .mockup-frame .mock-card { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
   .mockup-chip {
     display: inline-flex; align-items: center; gap: 6px; background: rgba(212,166,74,0.16);
@@ -402,6 +411,12 @@
   </div>
 </section>
 
+<!-- ============ SHOWCASE (imagen generada, contenido completo adentro) ============ -->
+<section class="showcase">
+  <div class="kicker">Así funciona</div>
+  <img src="/landing/img/feature-captura.png" alt="Panel de puntos de Control.Evo: saldo, nivel, canje y beneficios para el cliente" loading="lazy" width="941" height="1672" />
+</section>
+
 <!-- ============ BENEFICIOS EN NÚMERO ============ -->
 <section class="beneficios">
   <div class="beneficios-grid">
@@ -531,33 +546,14 @@
       <h3>Tu panel de dueño</h3>
       <p>Métricas, clientes y recompensas en un solo lugar</p>
       <div class="mockup-frame">
-        <span class="mockup-chip">📊 Métricas</span>
-        <div class="mock-card">
-          <div class="mockup-fila-cliente"><span>Clientes con puntos</span><span style="color:var(--secundario);font-weight:700;">128</span></div>
-          <div class="mockup-fila-cliente"><span>Puntos acreditados</span><span style="color:var(--secundario);font-weight:700;">42.300</span></div>
-          <div class="mockup-fila-cliente"><span>Club</span><span style="color:#5EEAD4;font-weight:700;">● Activo</span></div>
-        </div>
-        <div class="mock-card" style="margin-bottom:0;">
-          <div class="mockup-fila-cliente" style="border-top:none;"><span>María G.</span><span style="color:#CBD5E1;">hace 1 día</span></div>
-          <div class="mockup-fila-cliente"><span>Julián P.</span><span style="color:#CBD5E1;">hace 2 días</span></div>
-          <div class="mockup-fila-cliente"><span>Sofía R.</span><span style="color:#CBD5E1;">hace 4 días</span></div>
-        </div>
+        <img src="/landing/img/panel-dueno.png" alt="Panel del dueño: clientes, puntos acreditados y actividad" loading="lazy" width="1024" height="1536" />
       </div>
     </div>
     <div class="mockup-col">
       <h3>La app de tu cliente</h3>
       <p>Puntos, promos y la ruleta semanal, sin instalar nada</p>
       <div class="mockup-frame">
-        <span class="mockup-chip">🎡 Ruleta semanal</span>
-        <div class="mock-card">
-          <div class="muted" style="font-size:12px;color:#94A3B8;">Tus puntos acá</div>
-          <div class="mock-puntos" style="font-size:28px;">890 pts</div>
-        </div>
-        <div class="mock-card" style="margin-bottom:0;">
-          <div class="mockup-fila-cliente" style="border-top:none;"><span>🔥 2x1 en tragos</span><span style="color:var(--secundario);font-weight:700;">Hoy</span></div>
-          <div class="mockup-fila-cliente"><span>🚚 Delivery gratis</span><span style="color:var(--secundario);font-weight:700;">Activo</span></div>
-          <div class="mockup-fila-cliente"><span>🔥 Racha</span><span style="color:var(--acento);font-weight:700;">4 semanas</span></div>
-        </div>
+        <img src="/landing/img/panel-cliente.png" alt="App del cliente: puntos, 2x1, ruleta semanal y racha" loading="lazy" width="1024" height="1536" />
       </div>
     </div>
   </div>
