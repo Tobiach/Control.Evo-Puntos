@@ -15,7 +15,7 @@ import {
   type RelacionNegocio,
 } from '../../data/negocios';
 import { usePermisoNotificaciones } from '../../lib/notificaciones';
-import { supabaseEnabled } from '../../lib/supabase';
+import { supabase, supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
 import { cargarAppCliente, canjearRecompensa, type ClienteApp } from '../../lib/panelCliente';
 import { procesarReferidoPendiente } from '../../lib/referidos';
@@ -91,6 +91,48 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
       activo = false;
     };
   }, [usarReal, userId, idsEjemplo]);
+
+  // Sincronización en tiempo real: si el cajero cobra mientras el cliente tiene la app
+  // abierta, el saldo de puntos se actualiza solo (sin refrescar). RLS ya filtra esto a
+  // "solo mis propias relaciones", Realtime respeta esa misma policy de lectura.
+  const clienteRealId = clienteReal?.id;
+  useEffect(() => {
+    if (!usarReal || !supabase || !clienteRealId) return;
+    const cliente = supabase;
+    const canal = cliente
+      .channel(`relaciones-cliente-${clienteRealId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'relaciones_negocio',
+          filter: `cliente_id=eq.${clienteRealId}`,
+        },
+        (payload) => {
+          const fila = payload.new as { negocio_id: string; puntos: number; ultima_visita_at: string | null } | null;
+          if (!fila) return;
+          setRelaciones((previas) => {
+            const actual = previas[fila.negocio_id];
+            const dias = fila.ultima_visita_at
+              ? Math.max(0, Math.floor((Date.now() - new Date(fila.ultima_visita_at).getTime()) / 86_400_000))
+              : (actual?.ultimaVisitaDias ?? 0);
+            return {
+              ...previas,
+              [fila.negocio_id]: {
+                puntos: fila.puntos,
+                ultimaVisitaDias: dias,
+                historial: actual?.historial ?? [],
+              },
+            };
+          });
+        },
+      )
+      .subscribe();
+    return () => {
+      cliente.removeChannel(canal);
+    };
+  }, [usarReal, clienteRealId]);
 
   // En modo real usamos el nombre/teléfono/id reales del cliente logueado.
   const clienteEfectivo: Cliente =
