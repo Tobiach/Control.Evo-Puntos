@@ -16,6 +16,7 @@ import { formatPuntos, nivelDe } from '../../lib/club';
 import { lanzarConfetti } from '../../lib/confetti';
 import { AMIGOS_MOCK, desafioSemanal, rankingGrupo } from '../../lib/social';
 import SeccionReferidos from './SeccionReferidos';
+import SeccionDesafios from './SeccionDesafios';
 
 interface Props {
   data: RubroData;
@@ -250,6 +251,8 @@ export default function TabPerfil({
       </section>
 
       <SeccionReferidos negocioId={negocioId} data={data} cliente={cliente} />
+
+      <SeccionDesafios negocioId={negocioId} data={data} />
 
       <section>
         <p className="mb-2 text-xs font-bold tracking-widest text-texto-muted uppercase">
