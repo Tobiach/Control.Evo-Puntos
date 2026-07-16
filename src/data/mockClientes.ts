@@ -107,7 +107,7 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
   gastro: {
     rubro: 'gastro',
     etiqueta: 'Gastronomía',
-    nombreNegocio: 'Cielo Rooftop',
+    nombreNegocio: 'Demo Gastronomía',
     monedaPrefijo: '$',
     locale: 'es-AR',
     montoPorPunto: 100, // 1 punto cada $100 (ARS)
@@ -152,7 +152,7 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
   super: {
     rubro: 'super',
     etiqueta: 'Supermercado',
-    nombreNegocio: 'Almacén Don Beto',
+    nombreNegocio: 'Demo Supermercado',
     monedaPrefijo: 'Gs.',
     locale: 'es-PY',
     montoPorPunto: 5000, // 1 punto cada Gs. 5.000 (PYG)
