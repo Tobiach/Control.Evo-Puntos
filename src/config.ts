@@ -1,3 +1,3 @@
 // Número de WhatsApp del CTA final, formato internacional sin "+".
-// Placeholder — reemplazar por el número comercial real de Control.Evo.
+// Placeholder — reemplazar por el número comercial real de SumaPuntos.
 export const WHATSAPP_NUMBER = '5491100000000';

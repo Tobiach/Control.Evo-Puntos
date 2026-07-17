@@ -1,7 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { supabase, supabaseEnabled } from './supabase';
 
-// Auth real de Control.Evo — SIEMPRE sobre Supabase Auth (el servidor hashea la contraseña).
+// Auth real de SumaPuntos — SIEMPRE sobre Supabase Auth (el servidor hashea la contraseña).
 // Nunca se implementa hashing propio en el cliente (el error de btoa() en bar-restaurante-arg
 // no se repite). Todo es null-safe: sin env vars (`supabaseEnabled === false`) la app sigue
 // corriendo sobre los datos mock y estas funciones devuelven un resultado 'sin-conexion' que

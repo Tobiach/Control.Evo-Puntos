@@ -1,7 +1,7 @@
 {
   "//": "Iconos placeholder (public/icons/icon.svg) — reemplazar por el logo real cuando exista.",
-  "name": "Control.Evo — Club de Puntos",
-  "short_name": "Club de Puntos",
+  "name": "SumaPuntos",
+  "short_name": "SumaPuntos",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0D0D0D",

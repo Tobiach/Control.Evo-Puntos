@@ -359,7 +359,7 @@ function TarjetaNegocio({
             </>
           ) : (
             <>
-              <CalendarDays size={12} /> Hace {meses} {meses === 1 ? 'mes' : 'meses'} en Control.Evo
+              <CalendarDays size={12} /> Hace {meses} {meses === 1 ? 'mes' : 'meses'} en SumaPuntos
             </>
           )}
         </span>

@@ -68,8 +68,8 @@ export default function Bienvenida({
         >
           <Sparkles size={30} strokeWidth={2.2} />
         </motion.div>
-        <h1 className="text-3xl font-black tracking-tight">Control.Evo</h1>
-        <p className="mt-1 text-lg font-semibold text-acento">Club de Puntos</p>
+        <h1 className="text-3xl font-black tracking-tight">SumaPuntos</h1>
+        <p className="mt-1 text-lg font-semibold text-acento">Club de fidelización</p>
         <p className="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-texto-muted">
           Mirá el sistema de fidelización como lo ven tus clientes, tu caja y vos. Dos minutos, en
           tu propio celular.
