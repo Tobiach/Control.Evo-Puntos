@@ -1,4 +1,9 @@
-export type Rubro = 'gastro' | 'super';
+export type Rubro = 'gastro' | 'super' | 'carniceria';
+
+/** Coacciona un valor de rubro leído del backend (texto libre) al union type seguro. */
+export function parseRubro(valor: string | null | undefined): Rubro {
+  return valor === 'super' || valor === 'carniceria' ? valor : 'gastro';
+}
 
 export type NombreNivel = 'Nuevo' | 'Frecuente' | 'VIP';
 
@@ -45,6 +50,16 @@ export interface HorarioValle {
   /** Hora de fin en formato 'HH:MM'. */
   hasta: string;
   /** Días de la semana en que aplica (0 = domingo … 6 = sábado). */
+  dias: number[];
+}
+
+/** Combo de asado de fin de semana destacado por una carnicería (feature de nicho del rubro). */
+export interface ComboFinde {
+  /** Qué incluye el combo (ej. "Vacío + chorizo + morcilla para 4"). */
+  descripcion: string;
+  /** Precio del combo en ARS (opcional). */
+  precio?: number;
+  /** Días en que aplica (0 = domingo … 6 = sábado), mismo formato que `HorarioValle.dias`. */
   dias: number[];
 }
 
@@ -99,6 +114,8 @@ export interface RubroData {
   promos?: Promo[];
   /** Beneficios NO monetarios del nivel más alto (VIP). Sólo en la vista de un local. */
   beneficiosVip?: string[];
+  /** Combo de asado de fin de semana destacado (carnicerías). Sólo en la vista de un local. */
+  comboFinde?: ComboFinde;
 }
 
 export const DIAS_INACTIVO = 20;
@@ -192,6 +209,51 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
       { diasAtras: 18, monto: 410000, puntos: 82 },
       { diasAtras: 25, monto: 95000, puntos: 19 },
       { diasAtras: 31, monto: 270000, puntos: 54 },
+    ],
+  },
+  carniceria: {
+    rubro: 'carniceria',
+    etiqueta: 'Carnicería',
+    nombreNegocio: 'Demo Carnicería',
+    monedaPrefijo: '$',
+    locale: 'es-AR',
+    montoPorPunto: 100, // 1 punto cada $100 (ARS)
+    montoEjemplo: 9000,
+    niveles: [
+      { nombre: 'Nuevo', min: 0 },
+      { nombre: 'Frecuente', min: 300 },
+      { nombre: 'VIP', min: 800 },
+    ],
+    recompensas: [
+      { pts: 120, descripcion: 'Chorizos parrilleros x6', categoria: 'Regalos' },
+      { pts: 200, descripcion: 'Provoleta de regalo', categoria: 'Regalos' },
+      { pts: 350, descripcion: '10% off en tu compra', categoria: 'Descuentos' },
+      { pts: 500, descripcion: 'Combo asado (vacío + chorizo)', categoria: 'Comida', costoDinero: 6000 },
+      { pts: 700, descripcion: 'Delivery del pedido sin cargo', categoria: 'Descuentos' },
+      { pts: 900, descripcion: 'Matambre de cerdo de regalo', categoria: 'Regalos' },
+      { pts: 1300, descripcion: 'Media res porcionada (15% off)', categoria: 'Descuentos' },
+    ],
+    clientes: [
+      { id: 'c1', nombre: 'Héctor Sosa', telefono: '11 5541-2093', puntos: 680, ultimaVisitaDias: 2, nacimiento: '07-13' },
+      { id: 'c2', nombre: 'Marta Quiroga', telefono: '11 4471-8852', puntos: 910, ultimaVisitaDias: 4 },
+      { id: 'c3', nombre: 'Rubén Ledesma', telefono: '11 6690-3317', puntos: 240, ultimaVisitaDias: 1 },
+      { id: 'c4', nombre: 'Norma Villar', telefono: '11 3308-7745', puntos: 520, ultimaVisitaDias: 27 },
+      { id: 'c5', nombre: 'Aldo Peralta', telefono: '11 5882-1160', puntos: 130, ultimaVisitaDias: 33 },
+      { id: 'c6', nombre: 'Silvia Roldán', telefono: '11 2274-9908', puntos: 1050, ultimaVisitaDias: 6 },
+      { id: 'c7', nombre: 'Jorge Maidana', telefono: '11 4013-6624', puntos: 360, ultimaVisitaDias: 19 },
+    ],
+    metricasSemana: { puntosAcreditados: 5240, subieronDeNivel: 3 },
+    mensajeWhatsApp:
+      'Hola! Probé la demo del Club de Puntos de Control.Evo y quiero implementarlo en mi carnicería. ¿Cómo seguimos?',
+    clienteAppId: 'c1',
+    historialApp: [
+      { diasAtras: 2, monto: 8600, puntos: 86 },
+      { diasAtras: 5, monto: 5400, puntos: 54 },
+      { diasAtras: 10, monto: 12800, puntos: 128 },
+      { diasAtras: 14, monto: 4200, puntos: 42 },
+      { diasAtras: 21, monto: 15600, puntos: 156 },
+      { diasAtras: 28, monto: 6900, puntos: 69 },
+      { diasAtras: 35, monto: 9300, puntos: 93 },
     ],
   },
 };

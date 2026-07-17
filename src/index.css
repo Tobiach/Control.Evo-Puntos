@@ -39,6 +39,24 @@
   --color-rojo:         #DC2626;
 }
 
+/* Paleta Carnicería — estética de carnicería de barrio: fondo cálido tipo madera/carbón,
+   acento rojo profundo (sello de calidad), texto crema. Se activa con data-rubro. */
+:root[data-rubro='carniceria'] {
+  --color-fondo:        #1C1410;
+  --color-fondo-medio:  #241A14;
+  --color-card:         #2E211A;
+  --color-borde:        rgba(196, 74, 58, 0.25);
+  --color-acento:       #C4443A;
+  --color-acento-hover: #E0574B;
+  --color-on-acento:    #FFFFFF;
+  --color-texto:        #F5EDE4;
+  --color-texto-muted:  #A89184;
+  --color-premio:       #E0574B;
+  --color-premio-suave: rgba(196, 74, 58, 0.12);
+  --color-verde-ok:     #4CAF88;
+  --color-rojo:         #EF4444;
+}
+
 body {
   background: var(--color-fondo);
   color: var(--color-texto);

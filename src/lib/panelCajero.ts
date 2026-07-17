@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { CategoriaRecompensa, Recompensa, Rubro } from '../data/mockClientes';
+import { parseRubro } from '../data/mockClientes';
 
 // Capa de datos del panel de cajero. El cajero se identifica con un PIN de 4 dígitos
 // por negocio (sin cuenta de Supabase Auth). Todo pasa por funciones SECURITY DEFINER
@@ -63,7 +64,7 @@ function normalizarCategoria(valor: string): CategoriaRecompensa {
 }
 
 function rpcANegocio(fila: RpcNegocio): NegocioCajero {
-  const rubro: Rubro = fila.rubro === 'super' ? 'super' : 'gastro';
+  const rubro: Rubro = parseRubro(fila.rubro);
   const recompensas = (fila.recompensas ?? []).map((rec) => ({
     pts: rec.pts,
     descripcion: rec.descripcion,

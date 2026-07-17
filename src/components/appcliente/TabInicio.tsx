@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
 import {
+  formatMonto,
   formatPuntos,
   progresoNivel,
   proximaRecompensa,
@@ -29,6 +30,7 @@ import {
   nombreMesActual,
   rachaSemanal,
   temporadaMensual,
+  textoComboFinde,
   textoHorarioValle,
 } from '../../lib/misiones';
 import type { Aviso, PermisoNotif } from '../../lib/notificaciones';
@@ -269,6 +271,25 @@ export default function TabInicio({
             </span>{' '}
             acá.
           </p>
+        </div>
+      )}
+
+      {data.comboFinde && (
+        <div className="rounded-3xl border border-borde bg-premio-suave p-4">
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-acento uppercase">
+            <Flame size={13} strokeWidth={2.5} /> Combo de asado del finde
+          </p>
+          <p className="mt-2 text-sm font-bold leading-snug text-texto">{data.comboFinde.descripcion}</p>
+          <div className="mt-1.5 flex items-center justify-between gap-3">
+            <span className="text-xs font-semibold text-texto-muted">
+              {textoComboFinde(data.comboFinde)}
+            </span>
+            {data.comboFinde.precio != null && (
+              <span className="shrink-0 font-titulo text-sm font-bold text-premio">
+                {formatMonto(data, data.comboFinde.precio)}
+              </span>
+            )}
+          </div>
         </div>
       )}
 

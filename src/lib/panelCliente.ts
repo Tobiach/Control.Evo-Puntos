@@ -7,6 +7,7 @@ import type {
   Rubro,
   Visita,
 } from '../data/mockClientes';
+import { parseRubro } from '../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../data/negocios';
 
 // Capa de datos de la APP DEL CLIENTE (socio del club logueado por email). Espeja el estilo
@@ -148,7 +149,7 @@ export function filaANegocioMarket(
   recompensas: Recompensa[],
   eventos: EventoNegocio[],
 ): Negocio {
-  const rubro: Rubro = fila.rubro === 'super' ? 'super' : 'gastro';
+  const rubro: Rubro = parseRubro(fila.rubro);
   return {
     id: fila.id,
     nombre: fila.nombre ?? '',

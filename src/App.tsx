@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
-import { DATA_RUBROS, type Cliente, type Rubro } from './data/mockClientes';
+import { DATA_RUBROS, parseRubro, type Cliente, type Rubro } from './data/mockClientes';
 import Bienvenida, { type Modo } from './components/Bienvenida';
 import PasoCliente from './components/PasoCliente';
 import PasoCajero from './components/PasoCajero';
@@ -27,10 +27,10 @@ type Pantalla =
   | 'auth-cajero';
 
 const ORDEN: Pantalla[] = ['bienvenida', 'cliente', 'cajero', 'dueno', 'cierre'];
-const COLOR_BARRA: Record<Rubro, string> = { gastro: '#0D0D0D', super: '#F5F6FA' };
+const COLOR_BARRA: Record<Rubro, string> = { gastro: '#0D0D0D', super: '#F5F6FA', carniceria: '#1C1410' };
 
 function rubroInicial(): Rubro {
-  return new URLSearchParams(window.location.search).get('rubro') === 'super' ? 'super' : 'gastro';
+  return parseRubro(new URLSearchParams(window.location.search).get('rubro'));
 }
 
 const clonarClientes = (rubro: Rubro): Cliente[] =>

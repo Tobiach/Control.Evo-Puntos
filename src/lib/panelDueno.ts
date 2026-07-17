@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { COLUMNAS_CARTA, mapearItemCarta, type FilaItemCarta, type ItemCarta } from './carta';
 import type { CategoriaRecompensa, HorarioValle, Recompensa, Rubro } from '../data/mockClientes';
+import { parseRubro } from '../data/mockClientes';
 
 // Capa de datos del panel del dueño. Todo null-safe: sin backend conectado
 // (`supabase === null`) estas funciones devuelven { ok:false, error:'sin-conexion' }
@@ -108,7 +109,7 @@ function filaANegocio(fila: FilaNegocio, pinCajero: string | null): DatosNegocio
     id: fila.id,
     nombre: fila.nombre ?? '',
     categoria: fila.categoria ?? '',
-    rubro: fila.rubro === 'super' ? 'super' : 'gastro',
+    rubro: parseRubro(fila.rubro),
     emoji: fila.emoji ?? '🏪',
     lat: fila.lat,
     lng: fila.lng,

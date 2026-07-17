@@ -29,7 +29,7 @@ interface Props {
   onSalir: () => void;
 }
 
-const COLOR_BARRA: Record<Rubro, string> = { gastro: '#0D0D0D', super: '#F5F6FA' };
+const COLOR_BARRA: Record<Rubro, string> = { gastro: '#0D0D0D', super: '#F5F6FA', carniceria: '#1C1410' };
 
 /** Los locales del marketplace están en Palermo (Buenos Aires): siempre ARS. */
 const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined): RubroData => ({
@@ -44,6 +44,7 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   horarioValle: negocio.horarioValle,
   promos: negocio.promos,
   beneficiosVip: negocio.beneficiosVip,
+  comboFinde: negocio.comboFinde,
 });
 
 export default function MarketplaceApp({ data, cliente, onSalir }: Props) {

@@ -1,5 +1,5 @@
 import { Award, CalendarHeart, Flame, Sparkles, type LucideIcon } from 'lucide-react';
-import type { EventoNegocio, HorarioValle, RubroData, Visita } from '../data/mockClientes';
+import type { ComboFinde, EventoNegocio, HorarioValle, RubroData, Visita } from '../data/mockClientes';
 import { rachaSemanas } from './club';
 
 const DIA_MS = 86_400_000;
@@ -175,4 +175,17 @@ export function textoHorarioValle(horario: HorarioValle): string {
       ? dias.join('')
       : `${dias.slice(0, -1).join(', ')} y ${dias[dias.length - 1]}`;
   return `Puntos x2 los ${listado} de ${horario.desde} a ${horario.hasta}`;
+}
+
+// ── Combo de fin de semana (carnicerías) ────────────────────────
+
+/** Texto de disponibilidad del combo de asado de fin de semana (días configurados). */
+export function textoComboFinde(combo: ComboFinde): string {
+  const dias = combo.dias.map((dia) => DIAS_LARGOS[dia] ?? '').filter(Boolean);
+  if (dias.length === 0) return 'Disponible todo el fin de semana';
+  const listado =
+    dias.length <= 1
+      ? dias.join('')
+      : `${dias.slice(0, -1).join(', ')} y ${dias[dias.length - 1]}`;
+  return `Disponible ${listado}`;
 }

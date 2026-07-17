@@ -1,4 +1,5 @@
 import type {
+  ComboFinde,
   EventoNegocio,
   HorarioValle,
   Promo,
@@ -43,6 +44,8 @@ export interface Negocio {
   promos?: Promo[];
   /** Beneficios NO monetarios reservados al nivel más alto (VIP) de ESTE local. */
   beneficiosVip?: string[];
+  /** Combo de asado de fin de semana destacado (carnicerías). */
+  comboFinde?: ComboFinde;
 }
 
 /** Relación de puntos del cliente con UN negocio (independiente por local). */
@@ -420,6 +423,106 @@ export const NEGOCIOS: Negocio[] = [
       { tipo: 'descuento', titulo: '10% off de madrugada', detalle: 'Todos los días de 0 a 6' },
     ],
     beneficiosVip: ['Fiado de confianza para socios', 'Te guardamos el cigarrillo/vape de tu marca'],
+  },
+  {
+    id: 'carniceria-cabrera',
+    nombre: 'Carnicería La Cabrera',
+    categoria: 'Carnicería',
+    rubro: 'carniceria',
+    emoji: '🥩',
+    lat: -34.5851,
+    lng: -58.4276,
+    clientesActivos: 214,
+    fechaAlta: '2026-03-24',
+    recompensas: [
+      { pts: 130, descripcion: 'Chorizos parrilleros x6', categoria: 'Regalos' },
+      { pts: 320, descripcion: '10% off en tu compra', categoria: 'Descuentos' },
+      { pts: 480, descripcion: 'Combo asado (vacío + chorizo)', categoria: 'Comida', costoDinero: 6000 },
+      { pts: 900, descripcion: 'Matambre de cerdo de regalo', categoria: 'Regalos' },
+    ],
+    promos: [
+      { tipo: 'delivery-gratis', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $12.000' },
+      { tipo: 'descuento', titulo: '15% en achuras', detalle: 'Sábados de feria' },
+    ],
+    comboFinde: {
+      descripcion: 'Combo asado familiar: vacío + chorizo + morcilla para 4',
+      precio: 18000,
+      dias: [5, 6, 0],
+    },
+    beneficiosVip: ['Te reservamos el corte del finde', 'Cortes especiales por encargo sin recargo'],
+  },
+  {
+    id: 'carniceria-serrano',
+    nombre: 'La Res de Serrano',
+    categoria: 'Carnicería',
+    rubro: 'carniceria',
+    emoji: '🍖',
+    lat: -34.5889,
+    lng: -58.4332,
+    clientesActivos: 148,
+    fechaAlta: '2026-04-16',
+    recompensas: [
+      { pts: 150, descripcion: 'Provoleta de regalo', categoria: 'Regalos' },
+      { pts: 300, descripcion: 'Combo hamburguesas caseras x8', categoria: 'Comida', costoDinero: 4000 },
+      { pts: 550, descripcion: '10% off en tu compra', categoria: 'Descuentos' },
+    ],
+    horarioValle: { desde: '09:00', hasta: '12:00', dias: [2, 3, 4] },
+    comboFinde: {
+      descripcion: 'Parrillada completa: tira + vacío + chinchulines + chorizo',
+      precio: 24000,
+      dias: [6, 0],
+    },
+    beneficiosVip: ['Elegís tu corte antes que abra el mostrador', 'Picada de fiambres de regalo en tu cumple'],
+  },
+  {
+    id: 'carniceria-honduras',
+    nombre: 'El Novillo de Honduras',
+    categoria: 'Carnicería',
+    rubro: 'carniceria',
+    emoji: '🥩',
+    lat: -34.5837,
+    lng: -58.4258,
+    clientesActivos: 96,
+    fechaAlta: '2026-05-22',
+    recompensas: [
+      { pts: 120, descripcion: 'Docena de empanadas de carne', categoria: 'Comida' },
+      { pts: 280, descripcion: '8% off en tu compra', categoria: 'Descuentos' },
+      { pts: 500, descripcion: 'Pollo entero deshuesado de regalo', categoria: 'Regalos' },
+    ],
+    promos: [
+      { tipo: '2x1', titulo: '2x1 en chorizos', detalle: 'Los jueves' },
+    ],
+    comboFinde: {
+      descripcion: 'Combo picada + asado: bondiola + chorizo + provoleta',
+      precio: 16500,
+      dias: [5, 6, 0],
+    },
+    beneficiosVip: ['Encargue por WhatsApp y retirá sin fila', 'Deshuesado y porcionado sin cargo'],
+  },
+  {
+    id: 'carniceria-fitzroy',
+    nombre: 'Carnicería Don Fitz',
+    categoria: 'Carnicería',
+    rubro: 'carniceria',
+    emoji: '🍖',
+    lat: -34.5814,
+    lng: -58.4351,
+    clientesActivos: 127,
+    fechaAlta: '2026-06-07',
+    recompensas: [
+      { pts: 140, descripcion: 'Morcillas x6 de regalo', categoria: 'Regalos' },
+      { pts: 300, descripcion: 'Combo milanesas caseras x10', categoria: 'Comida', costoDinero: 3500 },
+      { pts: 620, descripcion: '12% off en tu compra', categoria: 'Descuentos' },
+    ],
+    promos: [
+      { tipo: 'delivery-gratis', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $10.000' },
+    ],
+    comboFinde: {
+      descripcion: 'Combo cerdo a la parrilla: bondiola + matambre + chorizo',
+      precio: 19500,
+      dias: [5, 6, 0],
+    },
+    beneficiosVip: ['Reserva del lechón del finde largo', 'Cortes premium apartados para socios'],
   },
 ];
 

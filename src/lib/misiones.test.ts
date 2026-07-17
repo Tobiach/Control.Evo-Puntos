@@ -11,6 +11,7 @@ import {
   rachaSemanal,
   SEMANAS_RACHA_LARGA,
   temporadaMensual,
+  textoComboFinde,
   VISITAS_RACHA_SEMANAL,
 } from './misiones';
 
@@ -102,5 +103,23 @@ describe('temporadaMensual', () => {
 
     const ninguna = insigniasDeNegocio(dataDe(cafeNardo.eventos), []).map((i) => ({ ...i, conseguida: false }));
     expect(temporadaMensual(ninguna).completa).toBe(false);
+  });
+});
+
+describe('textoComboFinde', () => {
+  it('lista los días con coma y "y" final', () => {
+    expect(textoComboFinde({ descripcion: 'Asado', dias: [5, 6, 0] })).toBe(
+      'Disponible viernes, sábado y domingo',
+    );
+  });
+
+  it('un solo día no lleva conector', () => {
+    expect(textoComboFinde({ descripcion: 'Asado', dias: [6] })).toBe('Disponible sábado');
+  });
+
+  it('sin días configurados cae al texto genérico', () => {
+    expect(textoComboFinde({ descripcion: 'Asado', dias: [] })).toBe(
+      'Disponible todo el fin de semana',
+    );
   });
 });

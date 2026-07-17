@@ -13,6 +13,7 @@ type EstadoGeo =
 const RUBROS: { valor: Rubro; etiqueta: string }[] = [
   { valor: 'gastro', etiqueta: 'Gastronomía' },
   { valor: 'super', etiqueta: 'Supermercado' },
+  { valor: 'carniceria', etiqueta: 'Carnicería' },
 ];
 
 const DIAS_SEMANA = [

@@ -28,6 +28,7 @@ const FILTROS: { id: Filtro; label: string }[] = [
   { id: 'todos', label: 'Todos' },
   { id: 'gastro', label: 'Gastronomía' },
   { id: 'super', label: 'Supermercado' },
+  { id: 'carniceria', label: 'Carnicería' },
   { id: 'cerca', label: 'Cerca tuyo' },
 ];
 
@@ -62,6 +63,15 @@ const ESTILO_RUBRO: Record<
     muted: '#4B5563',
     acento: '#8B0000',
     pillFondo: 'rgba(139, 0, 0, 0.08)',
+  },
+  carniceria: {
+    fondo: '#1C1410',
+    banner: 'linear-gradient(135deg, rgba(196,74,58,0.24), rgba(196,74,58,0.05))',
+    borde: 'rgba(196, 74, 58, 0.3)',
+    texto: '#F5EDE4',
+    muted: '#A89184',
+    acento: '#E0574B',
+    pillFondo: 'rgba(196, 74, 58, 0.14)',
   },
 };
 
@@ -120,7 +130,7 @@ export default function Marketplace({
         negocio.nombre.toLowerCase().includes(texto) ||
         negocio.categoria.toLowerCase().includes(texto),
     );
-    if (filtro === 'gastro' || filtro === 'super') {
+    if (filtro !== 'todos' && filtro !== 'cerca') {
       lista = lista.filter((negocio) => negocio.rubro === filtro);
     }
     if (filtro === 'cerca' && coords) {

@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { Rubro } from '../data/mockClientes';
+import { parseRubro } from '../data/mockClientes';
 
 // Carta digital: lo que el negocio vende normalmente, en pesos (distinto de las
 // recompensas, que se canjean con puntos). Este módulo tiene la lógica pura (formato
@@ -127,7 +128,7 @@ export async function cargarCartaPublica(negocioId: string): Promise<ResultadoCa
       nombre: fila.nombre ?? '',
       emoji: fila.emoji ?? '🏪',
       categoria: fila.categoria ?? '',
-      rubro: fila.rubro === 'super' ? 'super' : 'gastro',
+      rubro: parseRubro(fila.rubro),
     },
     grupos: agruparPorCategoria(lista),
   };
