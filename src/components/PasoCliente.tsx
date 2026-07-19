@@ -122,7 +122,7 @@ function TarjetaSocio({
       <div className="overflow-hidden rounded-3xl border border-borde bg-card shadow-lg">
         <div className="flex items-center justify-between bg-acento px-5 py-3 text-on-acento">
           <span className="text-xs font-black tracking-widest uppercase">{data.nombreNegocio}</span>
-          <span className="text-[11px] font-semibold opacity-80">SumaPuntos</span>
+          <span className="text-[11px] font-semibold opacity-80">Premia.ar</span>
         </div>
 
         <div className="flex flex-col gap-5 px-5 py-5">

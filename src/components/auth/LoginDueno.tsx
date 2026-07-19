@@ -105,7 +105,7 @@ export default function LoginDueno({ onVolver }: Props) {
         </button>
         <div>
           <h2 className="font-titulo text-2xl font-bold tracking-tight">Cuenta de dueño</h2>
-          <p className="text-sm text-texto-muted">Gestioná tu negocio en SumaPuntos.</p>
+          <p className="text-sm text-texto-muted">Gestioná tu negocio en Premia.ar.</p>
         </div>
       </header>
 

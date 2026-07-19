@@ -19,7 +19,7 @@ const fechaRelativa = (diasDesdeHoy: number): string =>
   new Date(Date.now() + diasDesdeHoy * DIA_MS).toISOString().slice(0, 10);
 
 /**
- * Marketplace de locales afiliados a SumaPuntos.
+ * Marketplace de locales afiliados a Premia.ar.
  * Nombres 100% ficticios (no son marcas reales); la geografía sí es real:
  * todas las coordenadas caen dentro del barrio de Palermo, Buenos Aires.
  */
@@ -33,7 +33,7 @@ export interface Negocio {
   lng: number;
   /** Clientes que ya usan el club en este local (números de local de barrio). */
   clientesActivos: number;
-  /** Fecha ISO en la que el local se sumó a SumaPuntos. */
+  /** Fecha ISO en la que el local se sumó a Premia.ar. */
   fechaAlta: string;
   recompensas: Recompensa[];
   /** Eventos con fecha cargados por el dueño (misiones por evento). */

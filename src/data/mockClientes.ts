@@ -154,7 +154,7 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
     ],
     metricasSemana: { puntosAcreditados: 4820, subieronDeNivel: 3 },
     mensajeWhatsApp:
-      'Hola! Probé la demo de SumaPuntos y quiero implementarlo en mi bar/restaurante. ¿Cómo seguimos?',
+      'Hola! Probé la demo de Premia.ar y quiero implementarlo en mi bar/restaurante. ¿Cómo seguimos?',
     clienteAppId: 'g1',
     historialApp: [
       { diasAtras: 2, monto: 5200, puntos: 52 },
@@ -199,7 +199,7 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
     ],
     metricasSemana: { puntosAcreditados: 6150, subieronDeNivel: 4 },
     mensajeWhatsApp:
-      'Hola! Probé la demo de SumaPuntos y quiero implementarlo en mi supermercado. ¿Cómo seguimos?',
+      'Hola! Probé la demo de Premia.ar y quiero implementarlo en mi supermercado. ¿Cómo seguimos?',
     clienteAppId: 's1',
     historialApp: [
       { diasAtras: 1, monto: 255000, puntos: 51 },
@@ -244,7 +244,7 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
     ],
     metricasSemana: { puntosAcreditados: 5240, subieronDeNivel: 3 },
     mensajeWhatsApp:
-      'Hola! Probé la demo de SumaPuntos y quiero implementarlo en mi carnicería. ¿Cómo seguimos?',
+      'Hola! Probé la demo de Premia.ar y quiero implementarlo en mi carnicería. ¿Cómo seguimos?',
     clienteAppId: 'c1',
     historialApp: [
       { diasAtras: 2, monto: 8600, puntos: 86 },

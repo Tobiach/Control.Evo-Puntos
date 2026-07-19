@@ -113,7 +113,7 @@ export default function CartaPublica({ negocioId }: Props) {
       )}
 
       <footer className="mt-auto border-t border-borde py-5 text-center text-xs text-texto-muted">
-        Carta digital · SumaPuntos
+        Carta digital · Premia.ar
       </footer>
     </Marco>
   );

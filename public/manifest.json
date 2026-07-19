@@ -1,7 +1,7 @@
 {
   "//": "Iconos placeholder (public/icons/icon.svg) — reemplazar por el logo real cuando exista.",
-  "name": "SumaPuntos",
-  "short_name": "SumaPuntos",
+  "name": "Premia.ar",
+  "short_name": "Premia.ar",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0D0D0D",

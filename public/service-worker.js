@@ -1,4 +1,4 @@
-/* Service Worker — SumaPuntos
+/* Service Worker — Premia.ar
  * Cache basico del shell (cache-first para assets estaticos).
  * Sin logica de push / VAPID: solo instalabilidad y offline basico.
  */
