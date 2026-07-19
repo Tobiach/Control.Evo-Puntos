@@ -44,6 +44,8 @@ export interface Negocio {
   promos?: Promo[];
   /** Beneficios NO monetarios reservados al nivel más alto (VIP) de ESTE local. */
   beneficiosVip?: string[];
+  /** Puntos desde los que un cliente es VIP en ESTE local. `null`/`undefined` = sin configurar (usa el umbral genérico de demo). */
+  vipDesdePuntos?: number | null;
   /** Combo de asado de fin de semana destacado (carnicerías). */
   comboFinde?: ComboFinde;
 }

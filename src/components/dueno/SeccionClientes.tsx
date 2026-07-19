@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Clock, Coins, Loader2, Phone, Search, Users } from 'lucide-react';
+import { Clock, Coins, Crown, Loader2, Phone, Search, Users } from 'lucide-react';
 import { formatPuntos } from '../../lib/club';
 import { textoUltimaVisita, type ClienteDelNegocio } from '../../lib/panelDueno';
 
@@ -7,9 +7,11 @@ interface Props {
   clientes: ClienteDelNegocio[] | null;
   cargando: boolean;
   esPreview: boolean;
+  /** Puntos desde los que un cliente es VIP acá. `null` = sin configurar (no se muestra insignia). */
+  vipDesdePuntos: number | null;
 }
 
-export default function SeccionClientes({ clientes, cargando, esPreview }: Props) {
+export default function SeccionClientes({ clientes, cargando, esPreview, vipDesdePuntos }: Props) {
   const [busqueda, setBusqueda] = useState('');
   const ahora = Date.now();
 
@@ -70,7 +72,14 @@ export default function SeccionClientes({ clientes, cargando, esPreview }: Props
               className="flex items-center justify-between gap-3 rounded-2xl border border-borde bg-card px-4 py-3"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">{cliente.nombre}</p>
+                <p className="flex items-center gap-1.5 truncate text-sm font-bold">
+                  {cliente.nombre}
+                  {vipDesdePuntos != null && cliente.puntos >= vipDesdePuntos && (
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-acento px-2 py-0.5 text-[10px] font-black text-on-acento">
+                      <Crown size={10} strokeWidth={3} /> VIP
+                    </span>
+                  )}
+                </p>
                 <p className="mt-0.5 flex items-center gap-3 text-xs text-texto-muted">
                   {cliente.telefono && (
                     <span className="flex items-center gap-1">

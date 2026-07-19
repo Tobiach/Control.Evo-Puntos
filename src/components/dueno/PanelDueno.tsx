@@ -65,6 +65,7 @@ const NEGOCIO_VACIO: DatosNegocioForm = {
   lng: null,
   horarioValle: null,
   beneficiosVip: [],
+  vipDesdePuntos: null,
   pinCajero: null,
   activo: true,
 };
@@ -271,7 +272,12 @@ export default function PanelDueno(props: Props) {
         )}
         {seccion === 'carta' && <SeccionCarta negocioId={negocio.id} esPreview={esPreview} />}
         {seccion === 'clientes' && (
-          <SeccionClientes clientes={clientes} cargando={cargandoClientes} esPreview={esPreview} />
+          <SeccionClientes
+            clientes={clientes}
+            cargando={cargandoClientes}
+            esPreview={esPreview}
+            vipDesdePuntos={negocio.vipDesdePuntos}
+          />
         )}
         {seccion === 'recompensas' && (
           <SeccionRecompensas

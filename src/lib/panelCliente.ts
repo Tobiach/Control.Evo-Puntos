@@ -57,6 +57,7 @@ interface FilaNegocioMarket {
   clientes_activos: number | null;
   horario_valle: HorarioValle | null;
   beneficios_vip: string[] | null;
+  vip_desde_puntos: number | null;
   created_at: string | null;
 }
 
@@ -166,6 +167,7 @@ export function filaANegocioMarket(
     ...(fila.beneficios_vip && fila.beneficios_vip.length > 0
       ? { beneficiosVip: fila.beneficios_vip }
       : {}),
+    vipDesdePuntos: fila.vip_desde_puntos,
   };
 }
 
@@ -245,7 +247,9 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
   const [negociosRes, recompensasRes, eventosRes, relacionesRes, visitasRes] = await Promise.all([
     supabase
       .from('negocios')
-      .select('id, nombre, categoria, rubro, emoji, lat, lng, clientes_activos, horario_valle, beneficios_vip, created_at')
+      .select(
+        'id, nombre, categoria, rubro, emoji, lat, lng, clientes_activos, horario_valle, beneficios_vip, vip_desde_puntos, created_at',
+      )
       .eq('activo', true),
     supabase.from('recompensas').select('negocio_id, pts, descripcion, categoria, costo_dinero').eq('activa', true),
     supabase.from('eventos_negocio').select('negocio_id, nombre, fecha_inicio, fecha_fin, recompensa_extra'),

@@ -6,6 +6,7 @@ import {
   calcularPuntos,
   categoriaFavorita,
   nivelDe,
+  nivelesDeNegocio,
   progresoNivel,
   proximaRecompensa,
   puntosPorMonto,
@@ -24,6 +25,22 @@ describe('nivelDe', () => {
     expect(nivelDe(NIVELES, 620).nombre).toBe('Frecuente');
     expect(nivelDe(NIVELES, 700).nombre).toBe('VIP');
     expect(nivelDe(NIVELES, 985).nombre).toBe('VIP');
+  });
+});
+
+describe('nivelesDeNegocio', () => {
+  it('usa el umbral genérico si el negocio no configuró vipDesdePuntos', () => {
+    expect(nivelesDeNegocio(null, NIVELES)).toBe(NIVELES);
+    expect(nivelesDeNegocio(undefined, NIVELES)).toBe(NIVELES);
+    expect(nivelesDeNegocio(0, NIVELES)).toBe(NIVELES);
+  });
+
+  it('devuelve una curva real de 2 niveles cuando el negocio configuró su propio umbral', () => {
+    const niveles = nivelesDeNegocio(500, NIVELES);
+    expect(niveles).toEqual([
+      { nombre: 'Nuevo', min: 0 },
+      { nombre: 'VIP', min: 500 },
+    ]);
   });
 });
 

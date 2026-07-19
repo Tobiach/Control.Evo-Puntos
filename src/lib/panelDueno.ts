@@ -23,6 +23,8 @@ export interface DatosNegocioForm {
   lng: number | null;
   horarioValle: HorarioValle | null;
   beneficiosVip: string[];
+  /** Puntos desde los que un cliente es VIP acá. `null` = sin configurar (usa el umbral genérico). */
+  vipDesdePuntos: number | null;
   /** PIN de 4 dígitos para que el cajero entre a cobrar sin cuenta de Auth. `null` = sin configurar. */
   pinCajero: string | null;
   /** `false` = club pausado: no aparece en el marketplace (la policy pública filtra por `activo`). */
@@ -79,6 +81,7 @@ interface FilaNegocio {
   lng: number | null;
   horario_valle: HorarioValle | null;
   beneficios_vip: string[] | null;
+  vip_desde_puntos: number | null;
   activo: boolean | null;
 }
 
@@ -125,6 +128,7 @@ function filaANegocio(fila: FilaNegocio, pinCajero: string | null): DatosNegocio
     lng: fila.lng,
     horarioValle: fila.horario_valle,
     beneficiosVip: fila.beneficios_vip ?? [],
+    vipDesdePuntos: fila.vip_desde_puntos,
     pinCajero,
     activo: fila.activo ?? true,
   };
@@ -151,7 +155,9 @@ export async function cargarNegocioDelDueno(
   if (!supabase) return { ok: false, error: 'sin-conexion' };
   const { data, error } = await supabase
     .from('negocios')
-    .select('id, nombre, categoria, rubro, emoji, calle, altura, codigo_postal, lat, lng, horario_valle, beneficios_vip, activo')
+    .select(
+      'id, nombre, categoria, rubro, emoji, calle, altura, codigo_postal, lat, lng, horario_valle, beneficios_vip, vip_desde_puntos, activo',
+    )
     .eq('dueno_user_id', duenoUserId)
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
@@ -206,6 +212,7 @@ export async function guardarNegocioYRecompensas(
       lng: negocio.lng,
       horario_valle: negocio.horarioValle,
       beneficios_vip: negocio.beneficiosVip,
+      vip_desde_puntos: negocio.vipDesdePuntos,
     },
     { onConflict: 'id' },
   );

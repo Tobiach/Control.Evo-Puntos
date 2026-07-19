@@ -286,6 +286,23 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
         )}
       </Campo>
 
+      <Campo etiqueta="A partir de cuántos puntos es VIP (opcional)">
+        <input
+          inputMode="numeric"
+          value={negocio.vipDesdePuntos ?? ''}
+          onChange={(e) => {
+            const digitos = e.target.value.replace(/\D/g, '');
+            onCambiar({ vipDesdePuntos: digitos ? Number(digitos) : null });
+          }}
+          placeholder="Ej: 700"
+          className={claseInput}
+        />
+        <p className="mt-1 px-1 text-xs text-texto-muted">
+          Los clientes que lleguen a este puntaje ven la insignia VIP y los beneficios de abajo.
+          Sin este número, no hay diferenciación real entre tus clientes.
+        </p>
+      </Campo>
+
       <Campo etiqueta="Beneficios VIP">
         <div className="flex gap-2">
           <input

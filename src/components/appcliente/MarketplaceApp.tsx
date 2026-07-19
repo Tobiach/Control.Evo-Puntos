@@ -14,6 +14,7 @@ import {
   type Negocio,
   type RelacionNegocio,
 } from '../../data/negocios';
+import { nivelesDeNegocio } from '../../lib/club';
 import { usePermisoNotificaciones } from '../../lib/notificaciones';
 import { supabase, supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
@@ -38,6 +39,7 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   monedaPrefijo: '$',
   locale: 'es-AR',
   montoPorPunto: 100,
+  niveles: nivelesDeNegocio(negocio.vipDesdePuntos, DATA_RUBROS[negocio.rubro].niveles),
   recompensas: negocio.recompensas,
   historialApp: relacion?.historial ?? [],
   eventos: negocio.eventos,

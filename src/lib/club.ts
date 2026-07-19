@@ -23,6 +23,20 @@ export function nivelDe(niveles: Nivel[], puntos: number): Nivel {
   return actual;
 }
 
+/**
+ * Niveles a usar para UN negocio: si el dueño configuró un umbral real de VIP
+ * (`vipDesdePuntos`), reemplaza la curva genérica de demo por la real de ese local
+ * (Nuevo → VIP, sin nivel intermedio inventado). Si no lo configuró, se mantiene el
+ * umbral genérico (`nivelesBase`) para no romper negocios demo sin este dato.
+ */
+export function nivelesDeNegocio(vipDesdePuntos: number | null | undefined, nivelesBase: Nivel[]): Nivel[] {
+  if (vipDesdePuntos == null || vipDesdePuntos <= 0) return nivelesBase;
+  return [
+    { nombre: 'Nuevo', min: 0 },
+    { nombre: 'VIP', min: vipDesdePuntos },
+  ];
+}
+
 export function progresoNivel(niveles: Nivel[], puntos: number) {
   const actual = nivelDe(niveles, puntos);
   const siguiente = niveles.find((nivel) => nivel.min > puntos) ?? null;
