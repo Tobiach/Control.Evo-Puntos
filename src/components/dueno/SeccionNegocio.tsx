@@ -239,7 +239,11 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
         )}
       </Campo>
 
-      <Campo etiqueta="Horario valle (puntos x2, opcional)">
+      <Campo etiqueta="Horario parado (puntos x2, opcional)">
+        <p className="px-1 text-xs text-texto-muted">
+          Ej: martes a la tarde en un bar, lunes al mediodía en una carnicería, domingo a la
+          noche en un almacén.
+        </p>
         <button
           type="button"
           onClick={toggleValle}
@@ -247,7 +251,7 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
             valle ? 'border-acento bg-premio-suave text-acento' : 'border-borde bg-card text-texto-muted'
           }`}
         >
-          {valle ? 'Activado' : 'Sin horario valle'}
+          {valle ? 'Activado' : 'Sin horario parado'}
           <span className="text-xs font-semibold">{valle ? 'Tocá para quitar' : 'Tocá para activar'}</span>
         </button>
         {valle && (
