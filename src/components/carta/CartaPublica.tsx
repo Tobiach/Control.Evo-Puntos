@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loader2, StoreIcon, UtensilsCrossed } from 'lucide-react';
+import { Gift, Loader2, StoreIcon, UtensilsCrossed } from 'lucide-react';
 import { cargarCartaPublica, formatPrecio, type ResultadoCarta } from '../../lib/carta';
 
 interface Props {
@@ -69,6 +69,19 @@ export default function CartaPublica({ negocioId }: Props) {
           <p className="text-sm font-medium text-texto-muted">{negocio.categoria}</p>
         )}
       </header>
+
+      <a
+        href="/"
+        className="mb-6 flex items-center gap-3 rounded-2xl border border-acento bg-premio-suave px-4 py-3.5"
+      >
+        <Gift size={22} className="shrink-0 text-acento" />
+        <span className="flex-1 text-sm font-semibold leading-snug text-texto">
+          ¿Todavía no sos parte del club? Sumate y empezá a ganar puntos en cada compra acá.
+        </span>
+        <span className="shrink-0 rounded-xl bg-acento px-3 py-2 text-xs font-bold text-on-acento">
+          Sumarme
+        </span>
+      </a>
 
       {grupos.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center text-texto-muted">
