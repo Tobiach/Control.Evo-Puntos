@@ -15,6 +15,10 @@ export interface DatosNegocioForm {
   categoria: string;
   rubro: Rubro;
   emoji: string;
+  /** Dirección real (strings vacíos por default para inputs controlados, igual que `nombre`). */
+  calle: string;
+  altura: string;
+  codigoPostal: string;
   lat: number | null;
   lng: number | null;
   horarioValle: HorarioValle | null;
@@ -68,6 +72,9 @@ interface FilaNegocio {
   categoria: string | null;
   rubro: string | null;
   emoji: string | null;
+  calle: string | null;
+  altura: string | null;
+  codigo_postal: string | null;
   lat: number | null;
   lng: number | null;
   horario_valle: HorarioValle | null;
@@ -111,6 +118,9 @@ function filaANegocio(fila: FilaNegocio, pinCajero: string | null): DatosNegocio
     categoria: fila.categoria ?? '',
     rubro: parseRubro(fila.rubro),
     emoji: fila.emoji ?? '🏪',
+    calle: fila.calle ?? '',
+    altura: fila.altura ?? '',
+    codigoPostal: fila.codigo_postal ?? '',
     lat: fila.lat,
     lng: fila.lng,
     horarioValle: fila.horario_valle,
@@ -141,7 +151,7 @@ export async function cargarNegocioDelDueno(
   if (!supabase) return { ok: false, error: 'sin-conexion' };
   const { data, error } = await supabase
     .from('negocios')
-    .select('id, nombre, categoria, rubro, emoji, lat, lng, horario_valle, beneficios_vip, activo')
+    .select('id, nombre, categoria, rubro, emoji, calle, altura, codigo_postal, lat, lng, horario_valle, beneficios_vip, activo')
     .eq('dueno_user_id', duenoUserId)
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
@@ -189,6 +199,9 @@ export async function guardarNegocioYRecompensas(
       categoria: negocio.categoria,
       rubro: negocio.rubro,
       emoji: negocio.emoji,
+      calle: negocio.calle.trim() || null,
+      altura: negocio.altura.trim() || null,
+      codigo_postal: negocio.codigoPostal.trim() || null,
       lat: negocio.lat,
       lng: negocio.lng,
       horario_valle: negocio.horarioValle,
@@ -360,6 +373,48 @@ export async function cambiarEstadoNegocio(
 ): Promise<ResultadoPanel<void>> {
   if (!supabase) return { ok: false, error: 'sin-conexion' };
   const { error } = await supabase.from('negocios').update({ activo }).eq('id', negocioId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: undefined };
+}
+
+// ============================================================
+// PERFIL DEL DUEÑO — datos personales, separados del negocio (ver 0012_perfil_dueno.sql).
+// RLS: cada dueño solo lee/escribe su propia fila (auth.uid() = dueno_user_id).
+// ============================================================
+
+interface FilaPerfilDueno {
+  nombre_persona: string | null;
+}
+
+/** Trae el perfil del dueño logueado, o `null` si todavía no guardó ninguno. */
+export async function cargarPerfilDueno(
+  duenoUserId: string,
+): Promise<ResultadoPanel<{ nombrePersona: string } | null>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase
+    .from('dueno_perfil')
+    .select('nombre_persona')
+    .eq('dueno_user_id', duenoUserId)
+    .maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: true, valor: null };
+  return { ok: true, valor: { nombrePersona: (data as FilaPerfilDueno).nombre_persona ?? '' } };
+}
+
+/** Guarda (upsert por `dueno_user_id`) el nombre personal del dueño. */
+export async function guardarPerfilDueno(
+  duenoUserId: string,
+  nombrePersona: string,
+): Promise<ResultadoPanel<void>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.from('dueno_perfil').upsert(
+    {
+      dueno_user_id: duenoUserId,
+      nombre_persona: nombrePersona,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'dueno_user_id' },
+  );
   if (error) return { ok: false, error: error.message };
   return { ok: true, valor: undefined };
 }

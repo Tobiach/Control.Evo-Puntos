@@ -10,6 +10,7 @@ import {
   Play,
   Save,
   Store,
+  UserRound,
   UtensilsCrossed,
   Users,
 } from 'lucide-react';
@@ -19,18 +20,20 @@ import {
   cargarClientesDelNegocio,
   cargarMetricas,
   cargarNegocioDelDueno,
+  cargarPerfilDueno,
   guardarNegocioYRecompensas,
   type ClienteDelNegocio,
   type DatosNegocioForm,
   type MetricasNegocio,
 } from '../../lib/panelDueno';
 import SeccionNegocio from './SeccionNegocio';
+import SeccionPerfil from './SeccionPerfil';
 import SeccionRecompensas from './SeccionRecompensas';
 import SeccionCarta from './SeccionCarta';
 import SeccionMetricas from './SeccionMetricas';
 import SeccionClientes from './SeccionClientes';
 
-type Seccion = 'negocio' | 'recompensas' | 'carta' | 'clientes' | 'metricas';
+type Seccion = 'negocio' | 'recompensas' | 'carta' | 'clientes' | 'metricas' | 'perfil';
 
 type Aviso = { tipo: 'ok' | 'error'; texto: string } | null;
 
@@ -55,6 +58,9 @@ const NEGOCIO_VACIO: DatosNegocioForm = {
   categoria: '',
   rubro: 'gastro',
   emoji: '🏪',
+  calle: '',
+  altura: '',
+  codigoPostal: '',
   lat: null,
   lng: null,
   horarioValle: null,
@@ -69,12 +75,14 @@ const SECCIONES: { clave: Seccion; etiqueta: string; icono: typeof Store }[] = [
   { clave: 'carta', etiqueta: 'Carta', icono: UtensilsCrossed },
   { clave: 'clientes', etiqueta: 'Clientes', icono: Users },
   { clave: 'metricas', etiqueta: 'Métricas', icono: BarChart3 },
+  { clave: 'perfil', etiqueta: 'Perfil', icono: UserRound },
 ];
 
 export default function PanelDueno(props: Props) {
   const esPreview = props.modo === 'preview';
   const [seccion, setSeccion] = useState<Seccion>('negocio');
   const [negocio, setNegocio] = useState<DatosNegocioForm>(NEGOCIO_VACIO);
+  const [perfilNombre, setPerfilNombre] = useState('');
   const [recompensas, setRecompensas] = useState<Recompensa[]>([]);
   const [metricas, setMetricas] = useState<MetricasNegocio | null>(null);
   const [clientes, setClientes] = useState<ClienteDelNegocio[] | null>(null);
@@ -109,6 +117,10 @@ export default function PanelDueno(props: Props) {
         void refrescarMetricas(resultado.valor.negocio.id);
       }
       setCargandoInicial(false);
+    });
+    cargarPerfilDueno(duenoUserId).then((resultado) => {
+      if (!activo) return;
+      if (resultado.ok && resultado.valor) setPerfilNombre(resultado.valor.nombrePersona);
     });
     return () => {
       activo = false;
@@ -276,6 +288,20 @@ export default function PanelDueno(props: Props) {
             cantidadRecompensas={recompensas.length}
             cargando={cargandoMetricas}
             esPreview={esPreview}
+          />
+        )}
+        {seccion === 'perfil' && (
+          <SeccionPerfil
+            negocio={negocio}
+            onCambiar={cambiarNegocio}
+            nombrePersona={perfilNombre}
+            onCambiarNombrePersona={(valor) => {
+              setPerfilNombre(valor);
+              setAviso(null);
+            }}
+            duenoUserId={duenoUserId}
+            esPreview={esPreview}
+            onAviso={setAviso}
           />
         )}
       </div>

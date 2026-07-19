@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Check, Copy, KeyRound, LocateFixed, Loader2, MapPin, Plus, Store, X } from 'lucide-react';
+import { Check, Copy, KeyRound, LocateFixed, Loader2, Plus, Store, X } from 'lucide-react';
 import type { Rubro } from '../../data/mockClientes';
 import type { DatosNegocioForm } from '../../lib/panelDueno';
 import type { Coordenadas } from '../../lib/geo';
+import BuscadorDireccion from './BuscadorDireccion';
 
 type EstadoGeo =
   | { estado: 'inactivo' }
@@ -79,11 +80,6 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
     );
   };
 
-  const setCoord = (campo: 'lat' | 'lng', texto: string) => {
-    const numero = texto.trim() === '' ? null : Number(texto);
-    onCambiar({ [campo]: numero != null && Number.isFinite(numero) ? numero : null });
-  };
-
   const toggleValle = () => {
     onCambiar(valle ? { horarioValle: null } : { horarioValle: { desde: '15:00', hasta: '17:00', dias: [] } });
   };
@@ -114,8 +110,15 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
           value={negocio.nombre}
           onChange={(e) => onCambiar({ nombre: e.target.value })}
           placeholder="Café Nardo"
-          className={claseInput}
+          disabled={negocio.id !== null}
+          readOnly={negocio.id !== null}
+          className={`${claseInput} ${negocio.id !== null ? 'opacity-60' : ''}`}
         />
+        {negocio.id !== null && (
+          <p className="px-1 text-xs text-texto-muted">
+            Para cambiar el nombre de tu negocio, andá a la pestaña Perfil.
+          </p>
+        )}
       </Campo>
 
       <Campo etiqueta="Código de tu negocio (para el cajero)">
@@ -215,28 +218,14 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
         {geo.estado === 'error' && (
           <p className="mb-2 px-1 text-xs font-semibold text-rojo">{geo.mensaje}</p>
         )}
-        <div className="grid grid-cols-2 gap-3">
-          <input
-            inputMode="decimal"
-            value={negocio.lat ?? ''}
-            onChange={(e) => setCoord('lat', e.target.value)}
-            placeholder="Latitud"
-            className={claseInput}
-          />
-          <input
-            inputMode="decimal"
-            value={negocio.lng ?? ''}
-            onChange={(e) => setCoord('lng', e.target.value)}
-            placeholder="Longitud"
-            className={claseInput}
-          />
-        </div>
-        {negocio.lat != null && negocio.lng != null && (
-          <p className="mt-2 flex items-center gap-1.5 px-1 text-xs font-medium text-texto-muted">
-            <MapPin size={13} className="text-acento" />
-            {negocio.lat.toFixed(5)}, {negocio.lng.toFixed(5)}
-          </p>
-        )}
+        <BuscadorDireccion
+          calle={negocio.calle}
+          altura={negocio.altura}
+          codigoPostal={negocio.codigoPostal}
+          lat={negocio.lat}
+          lng={negocio.lng}
+          onCambiar={onCambiar}
+        />
       </Campo>
 
       <Campo etiqueta="Horario parado (puntos x2, opcional)">

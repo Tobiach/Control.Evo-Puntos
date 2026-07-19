@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { distanciaKm, formatDistancia, type Coordenadas } from './geo';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { distanciaKm, formatDistancia, geocodificarDireccion, type Coordenadas } from './geo';
 
 describe('distanciaKm (Haversine)', () => {
   it('es 0 entre el mismo punto', () => {
@@ -37,5 +37,45 @@ describe('formatDistancia', () => {
 
   it('usa km con una decimal por encima de 1 km', () => {
     expect(formatDistancia(2.43)).toBe('a 2,4 km');
+  });
+});
+
+describe('geocodificarDireccion (Nominatim)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('devuelve lat/lng del primer resultado cuando la búsqueda tiene éxito', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [{ lat: '-34.6037', lon: '-58.3816' }],
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const coords = await geocodificarDireccion('Av. Corrientes 1234');
+    expect(coords).toEqual({ lat: -34.6037, lng: -58.3816 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toContain('nominatim.openstreetmap.org/search');
+    expect(fetchMock.mock.calls[0][0]).toContain('countrycodes=ar');
+  });
+
+  it('devuelve null cuando no hay resultados', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => [] }),
+    );
+    expect(await geocodificarDireccion('dirección inexistente zzz')).toBeNull();
+  });
+
+  it('devuelve null (sin tirar) ante un error de red', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')));
+    expect(await geocodificarDireccion('Av. Corrientes 1234')).toBeNull();
+  });
+
+  it('no llama a fetch con query vacía', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await geocodificarDireccion('   ')).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
