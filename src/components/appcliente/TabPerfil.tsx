@@ -84,7 +84,7 @@ export default function TabPerfil({
 
   return (
     <div className="flex flex-col gap-5 px-5 pt-6">
-      <h1 className="font-titulo text-2xl font-bold">Perfil</h1>
+      <h1 className="text-2xl font-bold">Perfil</h1>
 
       <section>
         <p className="mb-2 text-xs font-bold tracking-widest text-texto-muted uppercase">Cuenta</p>
@@ -356,7 +356,7 @@ export default function TabPerfil({
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-acento text-on-acento">
                 <Gift size={30} strokeWidth={2.4} />
               </div>
-              <h2 className="font-titulo text-xl font-bold">¡Regalo enviado!</h2>
+              <h2 className="text-xl font-bold">¡Regalo enviado!</h2>
               <p className="mt-1 text-sm text-texto-muted">
                 Le regalaste{' '}
                 <span className="font-bold text-acento">{regalado.monto} pts</span> a{' '}

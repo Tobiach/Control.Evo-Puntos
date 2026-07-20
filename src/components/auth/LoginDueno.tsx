@@ -104,7 +104,7 @@ export default function LoginDueno({ onVolver }: Props) {
           <ChevronLeft size={18} />
         </button>
         <div>
-          <h2 className="font-titulo text-2xl font-bold tracking-tight">Cuenta de dueño</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Cuenta de dueño</h2>
           <p className="text-sm text-texto-muted">Gestioná tu negocio en Premia.ar.</p>
         </div>
       </header>

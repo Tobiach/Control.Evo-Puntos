@@ -29,7 +29,7 @@ export default function TabActividad({ data, cliente, historial }: Props) {
 
   return (
     <div className="flex flex-col gap-6 px-5 pt-6">
-      <h1 className="font-titulo text-2xl font-bold">Tu actividad</h1>
+      <h1 className="text-2xl font-bold">Tu actividad</h1>
 
       <div className="flex flex-col items-center rounded-3xl border border-borde bg-card p-6">
         <div className="relative h-36 w-36">
@@ -50,7 +50,7 @@ export default function TabActividad({ data, cliente, historial }: Props) {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-titulo text-3xl font-bold text-texto">{pct}%</span>
+            <span className="font-titulo text-3xl font-extrabold tracking-tight text-texto">{pct}%</span>
             <span className="text-[11px] font-semibold text-texto-muted">
               a {siguiente ? siguiente.nombre : 'máximo'}
             </span>

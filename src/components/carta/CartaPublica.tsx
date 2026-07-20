@@ -64,7 +64,7 @@ export default function CartaPublica({ negocioId }: Props) {
     <Marco>
       <header className="flex flex-col items-center gap-2 py-8 text-center">
         <span className="text-5xl">{negocio.emoji}</span>
-        <h1 className="font-titulo text-3xl font-bold tracking-tight">{negocio.nombre}</h1>
+        <h1 className="font-titulo text-3xl font-extrabold tracking-tight">{negocio.nombre}</h1>
         {negocio.categoria && (
           <p className="text-sm font-medium text-texto-muted">{negocio.categoria}</p>
         )}
@@ -92,7 +92,7 @@ export default function CartaPublica({ negocioId }: Props) {
         <div className="flex flex-col gap-8 pb-12">
           {grupos.map((grupo) => (
             <section key={grupo.categoria} className="flex flex-col gap-3">
-              <h2 className="border-b border-borde pb-2 font-titulo text-lg font-bold text-acento">
+              <h2 className="border-b border-borde pb-2 text-lg font-bold text-acento">
                 {grupo.categoria}
               </h2>
               <ul className="flex flex-col gap-3">

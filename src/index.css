@@ -2,7 +2,8 @@
 
 @theme {
   --font-display: 'Inter', sans-serif;
-  --font-titulo: 'Fredoka', 'Inter', sans-serif;
+  --font-titulo: 'Space Grotesk', 'Inter', sans-serif;
+  --font-nota: 'Caveat', cursive;
 
   /* Paleta Gastronomía (demo genérico) — tema por defecto */
   --color-fondo:        #0D0D0D;

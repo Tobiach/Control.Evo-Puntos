@@ -69,7 +69,7 @@ export default function RecompensaSorpresa({ disponible, faltan, onUsar }: Props
         >
           <div className="flex flex-col items-center gap-1">
             <span className="text-4xl">{premio.emoji}</span>
-            <p className="font-titulo text-lg font-bold text-acento">{premio.label}</p>
+            <p className="text-lg font-bold text-acento">{premio.label}</p>
             <p className="text-[11px] font-semibold text-texto-muted">
               {revelado ? '¡Mostralo en la caja para reclamarlo!' : 'Tu premio te espera'}
             </p>

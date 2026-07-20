@@ -102,7 +102,7 @@ export default function RuletaSemanal({ ultimaTiradaTs, onGirar }: Props) {
         {premio ? (
           <div className="text-center">
             <span className="text-3xl">{premio.emoji}</span>
-            <p className="font-titulo text-lg font-bold text-acento">{premio.label}</p>
+            <p className="text-lg font-bold text-acento">{premio.label}</p>
             <p className="mt-1 text-[11px] font-semibold text-texto-muted">
               ¡Mostralo en la caja para reclamarlo! Volvé en {estado.diasRestantes}{' '}
               {estado.diasRestantes === 1 ? 'día' : 'días'} para girar de nuevo.

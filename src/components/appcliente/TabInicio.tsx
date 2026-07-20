@@ -122,7 +122,7 @@ export default function TabInicio({
       <header className="flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold text-texto-muted">Hola, {primerNombre} 👋</p>
-          <h1 className="font-titulo text-2xl font-bold text-texto">{data.nombreNegocio}</h1>
+          <h1 className="text-2xl font-bold text-texto">{data.nombreNegocio}</h1>
         </div>
         <button
           type="button"
@@ -138,7 +138,7 @@ export default function TabInicio({
         <div className="flex items-end justify-between">
           <div>
             <p className="text-xs font-semibold text-texto-muted">Tus puntos</p>
-            <p className="font-titulo text-5xl leading-none font-bold text-premio">
+            <p className="font-titulo text-5xl leading-none font-extrabold tracking-tighter text-premio">
               {formatPuntos(puntosMostrados)}
             </p>
           </div>

@@ -148,7 +148,7 @@ export default function Marketplace({
           <p className="text-xs font-semibold text-texto-muted">
             Hola, {nombreCliente.split(' ')[0]} 👋
           </p>
-          <h1 className="font-titulo text-2xl font-bold text-texto">Locales que te premian</h1>
+          <h1 className="text-2xl font-bold text-texto">Locales que te premian</h1>
           <p className="mt-0.5 text-xs text-texto-muted">
             Sumás puntos distintos en cada local afiliado
           </p>
@@ -288,7 +288,7 @@ function TarjetaNegocio({
           {negocio.emoji}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-titulo text-base leading-tight font-bold" style={{ color: estilo.texto }}>
+          <p className="text-base leading-tight font-bold" style={{ color: estilo.texto }}>
             {negocio.nombre}
           </p>
           <span

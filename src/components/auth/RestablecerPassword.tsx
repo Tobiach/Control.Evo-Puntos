@@ -55,7 +55,7 @@ export default function RestablecerPassword({ onListo }: Props) {
           <KeyRound size={22} strokeWidth={2.2} />
         </span>
         <div>
-          <h2 className="font-titulo text-2xl font-bold tracking-tight">Nueva contraseña</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Nueva contraseña</h2>
           <p className="text-sm text-texto-muted">Elegí una clave nueva para tu cuenta.</p>
         </div>
       </header>

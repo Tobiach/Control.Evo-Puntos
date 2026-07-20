@@ -215,7 +215,7 @@ export default function PanelDueno(props: Props) {
           <ChevronLeft size={18} />
         </button>
         <div className="min-w-0 flex-1">
-          <h2 className="font-titulo text-2xl font-bold tracking-tight">Mi panel</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Mi panel</h2>
           <p className="truncate text-sm text-texto-muted">
             {props.modo === 'conectado' ? props.emailSesion : 'Modo demostración'}
           </p>

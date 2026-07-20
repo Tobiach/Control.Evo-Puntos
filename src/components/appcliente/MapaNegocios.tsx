@@ -148,7 +148,7 @@ export default function MapaNegocios({
             >
               <Popup>
                 <div className="flex min-w-36 flex-col gap-1">
-                  <p className="font-titulo text-sm leading-tight font-bold text-texto">
+                  <p className="text-sm leading-tight font-bold text-texto">
                     {negocio.emoji} {negocio.nombre}
                   </p>
                   <p className="text-[11px] font-semibold text-texto-muted">

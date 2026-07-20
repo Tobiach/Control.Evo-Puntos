@@ -47,7 +47,7 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
   return (
     <div className="flex flex-col gap-4 px-5 pt-6">
       <div>
-        <h1 className="font-titulo text-2xl font-bold">Recompensas 🎁</h1>
+        <h1 className="text-2xl font-bold">Recompensas 🎁</h1>
         <p className="mt-0.5 text-sm text-texto-muted">Canjeá tus puntos en {data.nombreNegocio}</p>
       </div>
 
@@ -156,7 +156,7 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
               >
                 <Check size={32} strokeWidth={3} />
               </motion.div>
-              <h2 className="font-titulo text-xl font-bold">¡Canje exitoso!</h2>
+              <h2 className="text-xl font-bold">¡Canje exitoso!</h2>
               <p className="mt-1 text-sm text-texto-muted">
                 Mostrá esta pantalla en {data.nombreNegocio} para reclamar:
               </p>
