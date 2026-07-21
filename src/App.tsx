@@ -36,6 +36,14 @@ function rubroInicial(): Rubro {
   return parseRubro(new URLSearchParams(window.location.search).get('rubro'));
 }
 
+/**
+ * Link directo para compartir con conocidos (`?club`): entra derecho a la portada del
+ * cliente final, sin pasar por el panel de demo de venta (rubro + demo/app) que ve Tobias.
+ */
+function esEntradaDirecta(): boolean {
+  return new URLSearchParams(window.location.search).has('club');
+}
+
 const clonarClientes = (rubro: Rubro): Cliente[] =>
   DATA_RUBROS[rubro].clientes.map((cliente) => ({ ...cliente }));
 
@@ -47,8 +55,10 @@ const variantes = {
 
 export default function App() {
   const [rubro, setRubro] = useState<Rubro>(rubroInicial);
-  const [modo, setModo] = useState<Modo>('demo');
-  const [pantalla, setPantalla] = useState<Pantalla>('bienvenida');
+  const [modo, setModo] = useState<Modo>(() => (esEntradaDirecta() ? 'app' : 'demo'));
+  const [pantalla, setPantalla] = useState<Pantalla>(() =>
+    esEntradaDirecta() ? 'portada-cliente' : 'bienvenida',
+  );
   const [direccion, setDireccion] = useState(1);
   const [clientes, setClientes] = useState<Cliente[]>(() => clonarClientes(rubro));
   const [clienteActivoId, setClienteActivoId] = useState<string | null>(null);
