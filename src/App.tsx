@@ -27,7 +27,8 @@ type Pantalla =
   | 'auth-cajero';
 
 const ORDEN: Pantalla[] = ['bienvenida', 'cliente', 'cajero', 'dueno', 'cierre'];
-const COLOR_BARRA: Record<Rubro, string> = { gastro: '#0D0D0D', super: '#F5F6FA', carniceria: '#1C1410' };
+// Paleta unificada Premia.ar: los 3 rubros comparten el mismo fondo, ya no varía por tema.
+const COLOR_BARRA: Record<Rubro, string> = { gastro: '#FFF4EB', super: '#FFF4EB', carniceria: '#FFF4EB' };
 
 function rubroInicial(): Rubro {
   return parseRubro(new URLSearchParams(window.location.search).get('rubro'));

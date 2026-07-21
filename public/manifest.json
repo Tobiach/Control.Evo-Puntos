@@ -4,8 +4,8 @@
   "short_name": "Premia.ar",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0D0D0D",
-  "theme_color": "#0D0D0D",
+  "background_color": "#FFF4EB",
+  "theme_color": "#FFF4EB",
   "icons": [
     {
       "src": "/icons/icon.svg",

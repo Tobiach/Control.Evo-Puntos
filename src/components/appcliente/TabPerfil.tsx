@@ -351,16 +351,16 @@ export default function TabPerfil({
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 240, damping: 20 }}
               onClick={(evento) => evento.stopPropagation()}
-              className="w-full max-w-xs rounded-3xl border border-borde bg-card p-6 text-center shadow-2xl"
+              className="w-full max-w-xs rounded-3xl border border-white/10 bg-surface-dark p-6 text-center shadow-2xl"
             >
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-acento text-on-acento">
                 <Gift size={30} strokeWidth={2.4} />
               </div>
-              <h2 className="text-xl font-bold">¡Regalo enviado!</h2>
-              <p className="mt-1 text-sm text-texto-muted">
+              <h2 className="text-xl font-bold text-white">¡Regalo enviado!</h2>
+              <p className="mt-1 text-sm text-white/60">
                 Le regalaste{' '}
                 <span className="font-bold text-acento">{regalado.monto} pts</span> a{' '}
-                <span className="font-bold text-texto">{regalado.amigo}</span> en{' '}
+                <span className="font-bold text-white">{regalado.amigo}</span> en{' '}
                 {data.nombreNegocio}.
               </p>
               <button

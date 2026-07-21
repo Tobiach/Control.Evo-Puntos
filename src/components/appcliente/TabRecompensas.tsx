@@ -146,7 +146,7 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 240, damping: 20 }}
               onClick={(evento) => evento.stopPropagation()}
-              className="w-full max-w-xs rounded-3xl border border-borde bg-card p-6 text-center shadow-2xl"
+              className="w-full max-w-xs rounded-3xl border border-white/10 bg-surface-dark p-6 text-center shadow-2xl"
             >
               <motion.div
                 initial={{ scale: 0 }}
@@ -156,15 +156,15 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
               >
                 <Check size={32} strokeWidth={3} />
               </motion.div>
-              <h2 className="text-xl font-bold">¡Canje exitoso!</h2>
-              <p className="mt-1 text-sm text-texto-muted">
+              <h2 className="text-xl font-bold text-white">¡Canje exitoso!</h2>
+              <p className="mt-1 text-sm text-white/60">
                 Mostrá esta pantalla en {data.nombreNegocio} para reclamar:
               </p>
               <p className="mt-3 rounded-2xl bg-premio-suave px-4 py-3 text-sm font-bold text-acento">
                 {canje.recompensa.descripcion}
               </p>
-              <p className="mt-3 text-xs text-texto-muted">
-                Código: <span className="font-bold text-texto">{canje.codigo}</span>
+              <p className="mt-3 text-xs text-white/60">
+                Código: <span className="font-bold text-white">{canje.codigo}</span>
               </p>
               <button
                 type="button"

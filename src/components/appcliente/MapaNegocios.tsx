@@ -46,13 +46,13 @@ const ESTILOS_MAPA = `
   display: flex; align-items: center; justify-content: center;
   width: 38px; height: 38px; border-radius: 9999px; font-size: 19px;
   background: var(--color-fondo-medio);
-  border: 2px solid var(--color-acento);
+  border: 2px solid var(--color-ubicacion);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
 .pin-club-punta {
   display: block; margin: -1px auto 0; width: 0; height: 0;
   border-left: 6px solid transparent; border-right: 6px solid transparent;
-  border-top: 8px solid var(--color-acento);
+  border-top: 8px solid var(--color-ubicacion);
 }
 .pin-club-usuario {
   position: relative; display: block; width: 22px; height: 22px;

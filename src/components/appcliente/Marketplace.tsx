@@ -201,7 +201,7 @@ export default function Marketplace({
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3 text-sm text-texto-muted"
         >
-          <LocateFixed size={16} className="animate-pulse text-acento" />
+          <LocateFixed size={16} className="animate-pulse text-ubicacion" />
           Buscando tu ubicación…
         </motion.div>
       )}

@@ -5,57 +5,32 @@
   --font-titulo: 'Space Grotesk', 'Inter', sans-serif;
   --font-nota: 'Caveat', cursive;
 
-  /* Paleta Gastronomía (demo genérico) — tema por defecto */
-  --color-fondo:        #0D0D0D;
-  --color-fondo-medio:  #1A1A1A;
-  --color-card:         #242424;
-  --color-borde:        rgba(201, 151, 58, 0.25);
-  --color-acento:       #C9973A;
-  --color-acento-hover: #E5B860;
-  --color-on-acento:    #0D0D0D;
-  --color-texto:        #F5F0E8;
-  --color-texto-muted:  #A89880;
-  --color-premio:       #E5B860;
-  --color-premio-suave: rgba(201, 151, 58, 0.12);
-  --color-verde-ok:     #4CAF88;
-  --color-rojo:         #EF4444;
-  --color-whatsapp:     #25D366;
-}
-
-/* Paleta Supermercado (Super Ezefran) — se activa en runtime con data-rubro,
-   sin builds separados: las utilidades de Tailwind leen estas mismas variables */
-:root[data-rubro='super'] {
-  --color-fondo:        #F5F6FA;
-  --color-fondo-medio:  #FFFFFF;
-  --color-card:         #FFFFFF;
-  --color-borde:        #E5E7EB;
-  --color-acento:       #8B0000;
-  --color-acento-hover: #6B0000;
-  --color-on-acento:    #FFFFFF;
-  --color-texto:        #111827;
-  --color-texto-muted:  #4B5563;
-  --color-premio:       #C9A84C;
-  --color-premio-suave: #FFF8DC;
-  --color-verde-ok:     #0E7C4F;
-  --color-rojo:         #DC2626;
-}
-
-/* Paleta Carnicería — estética de carnicería de barrio: fondo cálido tipo madera/carbón,
-   acento rojo profundo (sello de calidad), texto crema. Se activa con data-rubro. */
-:root[data-rubro='carniceria'] {
-  --color-fondo:        #1C1410;
-  --color-fondo-medio:  #241A14;
-  --color-card:         #2E211A;
-  --color-borde:        rgba(196, 74, 58, 0.25);
-  --color-acento:       #C4443A;
-  --color-acento-hover: #E0574B;
-  --color-on-acento:    #FFFFFF;
-  --color-texto:        #F5EDE4;
-  --color-texto-muted:  #A89184;
-  --color-premio:       #E0574B;
-  --color-premio-suave: rgba(196, 74, 58, 0.12);
-  --color-verde-ok:     #4CAF88;
-  --color-rojo:         #EF4444;
+  /* Paleta oficial Premia.ar — única para los 3 rubros (gastro/super/carnicería):
+     la marca ya no cambia de colores por tipo de negocio, solo el emoji/ícono. */
+  --color-fondo:            #FFF4EB;
+  --color-fondo-medio:      #F5EDE3;
+  --color-card:             #FFFFFF;
+  --color-borde:            #E8DDD4;
+  --color-borde-fuerte:     #C9BEB4;
+  --color-acento:           #F04818;
+  --color-acento-hover:     #C93A12;
+  --color-on-acento:        #FFFFFF;
+  --color-texto:            #111827;
+  --color-texto-muted:      #5E6472;
+  --color-texto-disabled:   #B0B5BF;
+  --color-premio:           #FF8A5B;
+  --color-premio-suave:     #FFE9DC;
+  --color-verde-ok:         #00C08B;
+  --color-verde-suave:      #E6FBF5;
+  --color-rojo:             #EF4444;
+  --color-whatsapp:         #25D366;
+  /* Uso exclusivo: pin del mapa, ícono de ubicación/brújula, onboarding de dirección.
+     Nunca en botones ni texto general (ese rol es de --color-acento). */
+  --color-ubicacion:        #003399;
+  /* Superficies oscuras deliberadas sobre el tema claro: bottom nav, overlays de
+     modales y pantallas celebratorias (canje/regalo), nunca el fondo general. */
+  --color-surface-dark:     #111827;
+  --color-surface-mid:      #0F1629;
 }
 
 body {

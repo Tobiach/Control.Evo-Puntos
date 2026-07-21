@@ -138,7 +138,7 @@ export default function AppCliente({
         </AnimatePresence>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-md items-stretch border-t border-borde bg-fondo-medio px-2 pb-[env(safe-area-inset-bottom)]">
+      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-md items-stretch border-t border-white/10 bg-surface-dark px-2 pb-[env(safe-area-inset-bottom)]">
         {TABS.map(({ id, label, icono: Icono }) => {
           const activo = tab === id;
           return (
@@ -157,10 +157,10 @@ export default function AppCliente({
               <Icono
                 size={22}
                 strokeWidth={activo ? 2.6 : 2}
-                className={activo ? 'text-acento' : 'text-texto-muted'}
+                className={activo ? 'text-acento' : 'text-white/50'}
               />
               <span
-                className={`text-[11px] font-semibold ${activo ? 'text-acento' : 'text-texto-muted'}`}
+                className={`text-[11px] font-semibold ${activo ? 'text-acento' : 'text-white/50'}`}
               >
                 {label}
               </span>

@@ -102,7 +102,7 @@ export default function BuscadorDireccion({ calle, altura, codigoPostal, lat, ln
 
       {lat != null && lng != null && (
         <p className="flex items-center gap-1.5 px-1 text-xs font-medium text-texto-muted">
-          <MapPin size={13} className="text-acento" />
+          <MapPin size={13} className="text-ubicacion" />
           {lat.toFixed(5)}, {lng.toFixed(5)}
         </p>
       )}

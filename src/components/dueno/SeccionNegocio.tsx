@@ -112,7 +112,7 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
           placeholder="Café Nardo"
           disabled={negocio.id !== null}
           readOnly={negocio.id !== null}
-          className={`${claseInput} ${negocio.id !== null ? 'opacity-60' : ''}`}
+          className={`${claseInput} ${negocio.id !== null ? 'text-texto-disabled' : ''}`}
         />
         {negocio.id !== null && (
           <p className="px-1 text-xs text-texto-muted">
