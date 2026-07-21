@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
 import { DATA_RUBROS, parseRubro, type Cliente, type Rubro } from './data/mockClientes';
 import Bienvenida, { type Modo } from './components/Bienvenida';
+import PortadaCliente from './components/entrada/PortadaCliente';
 import PasoCliente from './components/PasoCliente';
 import PasoCajero from './components/PasoCajero';
 import PasoDueno from './components/PasoDueno';
@@ -17,6 +18,7 @@ import { capturarReferidoPendiente } from './lib/referidos';
 
 type Pantalla =
   | 'bienvenida'
+  | 'portada-cliente'
   | 'cliente'
   | 'cajero'
   | 'dueno'
@@ -89,7 +91,7 @@ export default function App() {
 
   const comenzar = () => {
     if (modo === 'app') {
-      navegar('auth-cliente');
+      navegar('portada-cliente');
       return;
     }
     navegar('cliente');
@@ -181,6 +183,12 @@ export default function App() {
               onComenzar={comenzar}
               onDueno={() => navegar('auth-dueno')}
               onCajero={() => navegar('auth-cajero')}
+            />
+          )}
+          {pantalla === 'portada-cliente' && (
+            <PortadaCliente
+              onContinuar={() => navegar('auth-cliente')}
+              onVolver={() => navegar('bienvenida')}
             />
           )}
           {pantalla === 'cliente' && (
