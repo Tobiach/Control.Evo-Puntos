@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
 import {
+  codigoReferido,
   formatMonto,
   formatPuntos,
   progresoNivel,
@@ -23,7 +24,14 @@ import {
   sugerenciaFavorita,
   vencimientoPuntos,
 } from '../../lib/club';
+import { compartir } from '../../lib/compartir';
 import { META_PROMO } from '../../lib/promos';
+import {
+  armarLinkInvitacion,
+  obtenerCodigoReferido,
+  PUNTOS_BONUS_REFERIDO,
+  VISITAS_PARA_PREMIO,
+} from '../../lib/referidos';
 import {
   eventoActivo,
   insigniasDeNegocio,
@@ -35,6 +43,7 @@ import {
 } from '../../lib/misiones';
 import type { Aviso, PermisoNotif } from '../../lib/notificaciones';
 import { lanzarConfetti } from '../../lib/confetti';
+import { supabaseEnabled } from '../../lib/supabase';
 import RecompensaSorpresa from './RecompensaSorpresa';
 import RuletaSemanal from './RuletaSemanal';
 
@@ -42,6 +51,7 @@ const PTS_POR_SORPRESA = 200;
 
 interface Props {
   data: RubroData;
+  negocioId: string;
   cliente: Cliente;
   historial: Visita[];
   avisos: Aviso[];
@@ -51,6 +61,68 @@ interface Props {
   onGirarRuleta: () => void;
   onVerRecompensas: () => void;
   onSalir: () => void;
+}
+
+/**
+ * Invitación compacta para el momento de mayor intención: recién se sumó a este negocio y
+ * todavía no tiene puntos. El progreso real de referidos (con contador de visitas) sigue
+ * viviendo en Perfil — esto es solo el gancho de compartir, en el lugar de más visibilidad.
+ */
+function InvitarDesdeInicio({
+  negocioId,
+  nombreNegocio,
+  cliente,
+}: {
+  negocioId: string;
+  nombreNegocio: string;
+  cliente: Cliente;
+}) {
+  const [codigo, setCodigo] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState(false);
+
+  useEffect(() => {
+    if (!supabaseEnabled) return;
+    let activo = true;
+    obtenerCodigoReferido().then((cod) => {
+      if (activo) setCodigo(cod);
+    });
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const invitar = async () => {
+    const codigoEfectivo = codigo ?? codigoReferido(cliente);
+    const link = armarLinkInvitacion(window.location.origin, codigoEfectivo, negocioId);
+    const texto =
+      `¡Sumate al Club de Puntos de ${nombreNegocio}! Entrá con mi invitación y, cuando ` +
+      `vayas ${VISITAS_PARA_PREMIO} veces, ganamos ${PUNTOS_BONUS_REFERIDO} pts cada uno. ${link}`;
+    const copio = await compartir(texto, link);
+    if (copio) {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={invitar}
+      className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5 text-left"
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-verde-suave text-verde">
+        <Heart size={16} strokeWidth={2.4} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-bold text-texto">Invitá a un amigo acá</span>
+        <span className="block text-xs text-texto-muted">
+          {copiado
+            ? 'Copiado — mandaselo por WhatsApp'
+            : `Cuando vaya ${VISITAS_PARA_PREMIO} veces, ganan ${PUNTOS_BONUS_REFERIDO} pts los dos`}
+        </span>
+      </span>
+    </button>
+  );
 }
 
 /** Cuenta de 0 al valor con easing, para que el contador "suba" al entrar. */
@@ -77,6 +149,7 @@ function useConteoAnimado(valor: number, duracionMs = 900): number {
 
 export default function TabInicio({
   data,
+  negocioId,
   cliente,
   historial,
   avisos,
@@ -87,6 +160,7 @@ export default function TabInicio({
   onSalir,
 }: Props) {
   const { actual, siguiente, pct } = progresoNivel(data.niveles, cliente.puntos);
+  const esNuevo = historial.length === 0;
   const racha = rachaSemanas(historial);
   const rachaDia = rachaDias(historial);
   const venc = vencimientoPuntos(cliente);
@@ -134,6 +208,16 @@ export default function TabInicio({
         </button>
       </header>
 
+      {esNuevo && (
+        <div className="flex items-start gap-3 rounded-2xl bg-premio-suave px-4 py-3.5">
+          <Sparkles size={18} className="mt-0.5 shrink-0 text-acento" strokeWidth={2.4} />
+          <p className="text-sm leading-snug">
+            <span className="font-bold text-acento">Todavía no sumaste acá.</span>{' '}
+            <span className="text-texto-muted">Tu próxima visita ya cuenta para tus puntos.</span>
+          </p>
+        </div>
+      )}
+
       <div className="rounded-3xl border border-borde bg-card p-5 shadow-lg">
         <div className="flex items-end justify-between">
           <div>
@@ -143,9 +227,11 @@ export default function TabInicio({
             </p>
           </div>
           <div className="flex flex-col items-end gap-1.5">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-premio-suave px-3 py-1.5 text-sm font-bold text-acento">
-              <Flame size={15} strokeWidth={2.5} /> {racha} {racha === 1 ? 'sem' : 'sems'}
-            </span>
+            {racha > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-premio-suave px-3 py-1.5 text-sm font-bold text-acento">
+                <Flame size={15} strokeWidth={2.5} /> {racha} {racha === 1 ? 'sem' : 'sems'}
+              </span>
+            )}
             {rachaDia >= 2 && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-borde bg-card px-3 py-1 text-xs font-bold text-premio">
                 <CalendarCheck size={14} strokeWidth={2.5} /> {rachaDia} días seguidos
@@ -175,6 +261,10 @@ export default function TabInicio({
           </div>
         </div>
       </div>
+
+      {esNuevo && (
+        <InvitarDesdeInicio negocioId={negocioId} nombreNegocio={data.nombreNegocio} cliente={cliente} />
+      )}
 
       {mostrarPanelAvisos && (
         <div className="flex flex-col gap-2">

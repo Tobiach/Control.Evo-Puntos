@@ -64,8 +64,9 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
   // Última tirada de la ruleta semanal por negocio (mismo patrón in-memory que `relaciones`).
   const [tiradasRuleta, setTiradasRuleta] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(usarReal);
-  // Pide el permiso real de notificaciones al entrar a la app del cliente (una sola vez).
-  const permisoNotif = usePermisoNotificaciones();
+  // El permiso se pide recién cuando el usuario confirma en AvisoActivarNotificaciones,
+  // nunca en frío al montar (ver notificaciones.ts).
+  const [permisoNotif, pedirPermisoNotif] = usePermisoNotificaciones();
 
   // IDs de los locales de ejemplo (ficticios): el canje de estos nunca toca Supabase,
   // así nunca puede romperse con un error de servidor por un negocio que no existe ahí.
@@ -235,6 +236,7 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
         cliente={clienteNegocio}
         clientes={clientesNegocio}
         permisoNotif={permisoNotif}
+        onPedirPermisoNotif={pedirPermisoNotif}
         ultimaRuletaTs={tiradasRuleta[negocio.id]}
         onGirarRuleta={girarRuleta}
         onCanjear={canjear}
@@ -259,6 +261,7 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
             negocios={negocios}
             relaciones={relaciones}
             nombreCliente={clienteEfectivo.nombre}
+            esNuevo={usarReal && !Object.keys(relaciones).some((id) => !idsEjemplo.has(id))}
             onAbrirNegocio={(elegido) => setNegocioId(elegido.id)}
             onSalir={onSalir}
           />

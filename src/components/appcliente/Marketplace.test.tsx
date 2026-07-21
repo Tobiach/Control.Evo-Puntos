@@ -9,6 +9,7 @@ const renderMarketplace = () =>
       negocios={NEGOCIOS}
       relaciones={RELACIONES_INICIALES}
       nombreCliente="Martina Gómez"
+      esNuevo={false}
       onAbrirNegocio={vi.fn()}
       onSalir={vi.fn()}
     />,

@@ -15,35 +15,29 @@ function permisoActual(): PermisoNotif {
 }
 
 /**
- * Pide el permiso REAL de notificaciones una única vez al entrar a la app del cliente.
- * Si ya fue concedido o denegado antes, respeta ese estado. Nunca rompe si no hay soporte.
+ * Estado del permiso de notificaciones + acción para pedirlo. A propósito NO se pide solo al
+ * montar: muchos navegadores exigen que `requestPermission()` cuelgue de un gesto real del
+ * usuario (un click), y pedirlo en frío sin avisar antes suele terminar en "Bloquear" reflejo.
+ * `pedirPermiso` se llama desde el botón de la pantalla de aviso (ver AvisoActivarNotificaciones).
  */
-export function usePermisoNotificaciones(): PermisoNotif {
+export function usePermisoNotificaciones(): [PermisoNotif, () => Promise<void>] {
   const [permiso, setPermiso] = useState<PermisoNotif>(permisoActual);
 
   useEffect(() => {
-    if (!soportaNotificaciones()) {
-      setPermiso('unsupported');
-      return;
-    }
-    if (Notification.permission !== 'default') {
-      setPermiso(Notification.permission);
-      return;
-    }
-    let vivo = true;
-    Notification.requestPermission()
-      .then((resultado) => {
-        if (vivo) setPermiso(resultado);
-      })
-      .catch(() => {
-        // Algunos navegadores rechazan la promesa si no es un gesto de usuario: no rompemos.
-      });
-    return () => {
-      vivo = false;
-    };
+    if (!soportaNotificaciones()) setPermiso('unsupported');
   }, []);
 
-  return permiso;
+  const pedirPermiso = async () => {
+    if (!soportaNotificaciones()) return;
+    try {
+      const resultado = await Notification.requestPermission();
+      setPermiso(resultado);
+    } catch {
+      // Algunos navegadores rechazan la promesa si no es un gesto de usuario: no rompemos.
+    }
+  };
+
+  return [permiso, pedirPermiso];
 }
 
 /** Dispara una notificación nativa del sistema (si hay permiso). No hace nada si no. */

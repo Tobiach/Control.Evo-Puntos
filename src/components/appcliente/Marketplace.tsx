@@ -20,6 +20,8 @@ interface Props {
   negocios: Negocio[];
   relaciones: Record<string, RelacionNegocio>;
   nombreCliente: string;
+  /** Todavía no tiene relación con ningún negocio real: recién se sumó al club. */
+  esNuevo: boolean;
   onAbrirNegocio: (negocio: Negocio) => void;
   onSalir: () => void;
 }
@@ -79,6 +81,7 @@ export default function Marketplace({
   negocios,
   relaciones,
   nombreCliente,
+  esNuevo,
   onAbrirNegocio,
   onSalir,
 }: Props) {
@@ -162,6 +165,21 @@ export default function Marketplace({
           <ChevronLeft size={18} />
         </button>
       </header>
+
+      {esNuevo && filtro === 'todos' && !busqueda.trim() && negocios.length > 0 && (
+        <div className="flex items-start gap-3 rounded-2xl bg-surface-dark px-4 py-3.5 text-white">
+          <MapPin size={18} className="mt-0.5 shrink-0 text-premio" strokeWidth={2.4} />
+          <p className="text-sm leading-snug">
+            <span className="font-bold">
+              {negocios.length === 1
+                ? 'Ya hay 1 local esperándote'
+                : `Ya hay ${negocios.length} locales esperándote`}
+            </span>
+            <br />
+            <span className="text-white/60">Empezá por el que más visitás.</span>
+          </p>
+        </div>
+      )}
 
       <label className="flex items-center gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3">
         <Search size={17} className="shrink-0 text-texto-muted" />

@@ -12,6 +12,7 @@ import TabInicio from './TabInicio';
 import TabRecompensas from './TabRecompensas';
 import TabActividad from './TabActividad';
 import TabPerfil from './TabPerfil';
+import AvisoActivarNotificaciones from './AvisoActivarNotificaciones';
 
 type Tab = 'inicio' | 'recompensas' | 'actividad' | 'perfil';
 
@@ -21,6 +22,7 @@ interface Props {
   cliente: Cliente;
   clientes: Cliente[];
   permisoNotif: PermisoNotif;
+  onPedirPermisoNotif: () => Promise<void>;
   /** Timestamp de la última tirada de ruleta en este negocio (cooldown de 7 días). */
   ultimaRuletaTs?: number;
   onGirarRuleta: () => void;
@@ -50,6 +52,7 @@ export default function AppCliente({
   cliente,
   clientes,
   permisoNotif,
+  onPedirPermisoNotif,
   ultimaRuletaTs,
   onGirarRuleta,
   onCanjear,
@@ -59,6 +62,8 @@ export default function AppCliente({
 }: Props) {
   const [tab, setTab] = useState<Tab>('inicio');
   const [cumpleForzado, setCumpleForzado] = useState(false);
+  const [avisoNotifCerrado, setAvisoNotifCerrado] = useState(false);
+  const mostrarAvisoNotif = permisoNotif === 'default' && !avisoNotifCerrado;
   const historial = data.historialApp;
 
   const avisos = useMemo<Aviso[]>(
@@ -106,6 +111,7 @@ export default function AppCliente({
             {tab === 'inicio' && (
               <TabInicio
                 data={data}
+                negocioId={negocioId}
                 cliente={cliente}
                 historial={historial}
                 avisos={avisos}
@@ -175,6 +181,15 @@ export default function AppCliente({
           className="pointer-events-none fixed inset-0 z-10 mx-auto max-w-md bg-[#070a16]/12"
         />
       )}
+
+      <AnimatePresence>
+        {mostrarAvisoNotif && (
+          <AvisoActivarNotificaciones
+            onPedirPermiso={onPedirPermisoNotif}
+            onCerrar={() => setAvisoNotifCerrado(true)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
