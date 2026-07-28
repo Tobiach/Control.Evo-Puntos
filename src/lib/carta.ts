@@ -26,6 +26,7 @@ export interface NegocioCarta {
   emoji: string;
   categoria: string;
   rubro: Rubro;
+  logoUrl: string | null;
 }
 
 /** Items de una misma sección del menú, en el orden en que se cargaron. */
@@ -103,7 +104,7 @@ export async function cargarCartaPublica(negocioId: string): Promise<ResultadoCa
 
   const { data: neg, error } = await supabase
     .from('negocios')
-    .select('id, nombre, emoji, categoria, rubro')
+    .select('id, nombre, emoji, categoria, rubro, logo_url')
     .eq('id', negocioId)
     .eq('activo', true)
     .maybeSingle();
@@ -119,7 +120,14 @@ export async function cargarCartaPublica(negocioId: string): Promise<ResultadoCa
     .order('id', { ascending: true });
   if (errItems) return { estado: 'error' };
 
-  const fila = neg as { id: string; nombre: string | null; emoji: string | null; categoria: string | null; rubro: string | null };
+  const fila = neg as {
+    id: string;
+    nombre: string | null;
+    emoji: string | null;
+    categoria: string | null;
+    rubro: string | null;
+    logo_url: string | null;
+  };
   const lista = (items ?? []).map((f) => mapearItemCarta(f as FilaItemCarta));
   return {
     estado: 'ok',
@@ -129,6 +137,7 @@ export async function cargarCartaPublica(negocioId: string): Promise<ResultadoCa
       emoji: fila.emoji ?? '🏪',
       categoria: fila.categoria ?? '',
       rubro: parseRubro(fila.rubro),
+      logoUrl: fila.logo_url,
     },
     grupos: agruparPorCategoria(lista),
   };

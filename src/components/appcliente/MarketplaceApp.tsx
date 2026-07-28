@@ -48,6 +48,7 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   promos: negocio.promos,
   beneficiosVip: negocio.beneficiosVip,
   comboFinde: negocio.comboFinde,
+  premiosRuleta: negocio.premiosRuleta,
 });
 
 export default function MarketplaceApp({ data, cliente, onSalir }: Props) {

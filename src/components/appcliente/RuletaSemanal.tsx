@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { RotateCw } from 'lucide-react';
 import { lanzarConfetti } from '../../lib/confetti';
@@ -9,25 +9,32 @@ interface Props {
   ultimaTiradaTs?: number;
   /** Registra la tirada en el estado del padre (cliente-negocio). */
   onGirar: () => void;
+  /** Pool de premios del negocio (ver `premios_ruleta`). Vacío/undefined = pool global genérico. */
+  premios?: PremioRuleta[];
 }
 
-const GRADOS_POR_PORCION = 360 / PREMIOS_RULETA.length;
 const DURACION_MS = 3400;
 const RADIO_EMOJI = 66;
 
 /** Un color fijo por porción, alternados para que se distingan bien al girar. */
 const COLORES = ['#C9973A', '#8B5CF6', '#EC4899', '#0EA5E9', '#F97316', '#10B981', '#E5B860', '#6366F1'];
 
-const gradiente = `conic-gradient(${PREMIOS_RULETA.map(
-  (_, i) => `${COLORES[i % COLORES.length]} ${i * GRADOS_POR_PORCION}deg ${(i + 1) * GRADOS_POR_PORCION}deg`,
-).join(', ')})`;
-
-export default function RuletaSemanal({ ultimaTiradaTs, onGirar }: Props) {
+export default function RuletaSemanal({ ultimaTiradaTs, onGirar, premios }: Props) {
   const [rotacion, setRotacion] = useState(0);
   const [girando, setGirando] = useState(false);
   const [premio, setPremio] = useState<PremioRuleta | null>(null);
   const ruedaRef = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const pool = premios && premios.length > 0 ? premios : PREMIOS_RULETA;
+  const gradosPorPorcion = 360 / pool.length;
+  const gradiente = useMemo(
+    () =>
+      `conic-gradient(${pool
+        .map((_, i) => `${COLORES[i % COLORES.length]} ${i * gradosPorPorcion}deg ${(i + 1) * gradosPorPorcion}deg`)
+        .join(', ')})`,
+    [pool, gradosPorPorcion],
+  );
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -36,12 +43,12 @@ export default function RuletaSemanal({ ultimaTiradaTs, onGirar }: Props) {
 
   const girar = () => {
     if (girando || premio || !estado.puedeGirar) return;
-    const { premio: elegido, indice } = elegirPremio();
+    const { premio: elegido, indice } = elegirPremio(pool);
     setGirando(true);
     onGirar();
 
     // Alinea el centro de la porción ganadora bajo el puntero de arriba, + 5 vueltas enteras.
-    const destino = 360 - (indice * GRADOS_POR_PORCION + GRADOS_POR_PORCION / 2);
+    const destino = 360 - (indice * gradosPorPorcion + gradosPorPorcion / 2);
     setRotacion((previa) => previa - (previa % 360) + 360 * 5 + destino);
 
     timer.current = setTimeout(() => {
@@ -79,8 +86,8 @@ export default function RuletaSemanal({ ultimaTiradaTs, onGirar }: Props) {
             className="relative h-full w-full rounded-full border-4 border-card shadow-inner"
             style={{ background: gradiente }}
           >
-            {PREMIOS_RULETA.map((p, i) => {
-              const angulo = i * GRADOS_POR_PORCION + GRADOS_POR_PORCION / 2;
+            {pool.map((p, i) => {
+              const angulo = i * gradosPorPorcion + gradosPorPorcion / 2;
               return (
                 <span
                   key={p.id}

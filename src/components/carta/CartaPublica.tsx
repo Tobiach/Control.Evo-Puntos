@@ -63,7 +63,15 @@ export default function CartaPublica({ negocioId }: Props) {
   return (
     <Marco>
       <header className="flex flex-col items-center gap-2 py-8 text-center">
-        <span className="text-5xl">{negocio.emoji}</span>
+        {negocio.logoUrl ? (
+          <img
+            src={negocio.logoUrl}
+            alt={negocio.nombre}
+            className="h-16 w-16 rounded-2xl border border-borde object-cover"
+          />
+        ) : (
+          <span className="text-5xl">{negocio.emoji}</span>
+        )}
         <h1 className="font-titulo text-3xl font-extrabold tracking-tight">{negocio.nombre}</h1>
         {negocio.categoria && (
           <p className="text-sm font-medium text-texto-muted">{negocio.categoria}</p>

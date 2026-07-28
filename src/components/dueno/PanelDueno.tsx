@@ -68,6 +68,8 @@ const NEGOCIO_VACIO: DatosNegocioForm = {
   vipDesdePuntos: null,
   pinCajero: null,
   activo: true,
+  logoUrl: null,
+  portadaUrl: null,
 };
 
 const SECCIONES: { clave: Seccion; etiqueta: string; icono: typeof Store }[] = [

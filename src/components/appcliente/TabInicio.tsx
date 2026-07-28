@@ -466,7 +466,7 @@ export default function TabInicio({
         </div>
       )}
 
-      <RuletaSemanal ultimaTiradaTs={ultimaRuletaTs} onGirar={onGirarRuleta} />
+      <RuletaSemanal ultimaTiradaTs={ultimaRuletaTs} onGirar={onGirarRuleta} premios={data.premiosRuleta} />
 
       <RecompensaSorpresa
         key={sorpresasUsadas}

@@ -1,3 +1,5 @@
+import type { PremioRuleta } from '../lib/ruleta';
+
 export type Rubro = 'gastro' | 'super' | 'carniceria';
 
 /** Coacciona un valor de rubro leído del backend (texto libre) al union type seguro. */
@@ -114,6 +116,8 @@ export interface RubroData {
   promos?: Promo[];
   /** Beneficios NO monetarios del nivel más alto (VIP). Sólo en la vista de un local. */
   beneficiosVip?: string[];
+  /** Pool de premios de la ruleta semanal de ESTE local. Sin esto, se usa el pool genérico. */
+  premiosRuleta?: PremioRuleta[];
   /** Combo de asado de fin de semana destacado (carnicerías). Sólo en la vista de un local. */
   comboFinde?: ComboFinde;
 }

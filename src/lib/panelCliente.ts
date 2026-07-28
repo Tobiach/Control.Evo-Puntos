@@ -9,6 +9,7 @@ import type {
 } from '../data/mockClientes';
 import { parseRubro } from '../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../data/negocios';
+import type { PremioRuleta } from './ruleta';
 
 // Capa de datos de la APP DEL CLIENTE (socio del club logueado por email). Espeja el estilo
 // de panelDueno.ts: null-safe (sin backend → { ok:false, error:'sin-conexion' }, la app corre
@@ -58,7 +59,19 @@ interface FilaNegocioMarket {
   horario_valle: HorarioValle | null;
   beneficios_vip: string[] | null;
   vip_desde_puntos: number | null;
+  logo_url: string | null;
+  portada_url: string | null;
   created_at: string | null;
+}
+
+interface FilaPremioRuleta {
+  id: number;
+  negocio_id: string;
+  label: string;
+  emoji: string | null;
+  peso: number | null;
+  bueno: boolean | null;
+  orden: number | null;
 }
 
 interface FilaRecompensaMarket {
@@ -140,6 +153,16 @@ function filaAEvento(fila: FilaEvento): EventoNegocio {
   };
 }
 
+function filaAPremioRuleta(fila: FilaPremioRuleta): PremioRuleta {
+  return {
+    id: String(fila.id),
+    label: fila.label,
+    emoji: fila.emoji ?? '🎁',
+    peso: fila.peso ?? 10,
+    bueno: fila.bueno ?? false,
+  };
+}
+
 /**
  * Arma un `Negocio` del marketplace a partir de su fila + las recompensas/eventos ya agrupados.
  * Negocios reales pueden no tener lat/lng cargada: se usa el centro de Palermo por defecto para
@@ -149,6 +172,7 @@ export function filaANegocioMarket(
   fila: FilaNegocioMarket,
   recompensas: Recompensa[],
   eventos: EventoNegocio[],
+  premiosRuleta: PremioRuleta[] = [],
 ): Negocio {
   const rubro: Rubro = parseRubro(fila.rubro);
   return {
@@ -168,6 +192,9 @@ export function filaANegocioMarket(
       ? { beneficiosVip: fila.beneficios_vip }
       : {}),
     vipDesdePuntos: fila.vip_desde_puntos,
+    ...(fila.logo_url ? { logoUrl: fila.logo_url } : {}),
+    ...(fila.portada_url ? { portadaUrl: fila.portada_url } : {}),
+    ...(premiosRuleta.length > 0 ? { premiosRuleta } : {}),
   };
 }
 
@@ -210,9 +237,11 @@ export function construirNegocios(
   filasNegocio: FilaNegocioMarket[],
   filasRecompensa: FilaRecompensaMarket[],
   filasEvento: FilaEvento[],
+  filasPremio: FilaPremioRuleta[] = [],
 ): Negocio[] {
   const recompensasPorNegocio = agruparPorNegocio(filasRecompensa);
   const eventosPorNegocio = agruparPorNegocio(filasEvento);
+  const premiosPorNegocio = agruparPorNegocio(filasPremio);
   return filasNegocio.map((negocio) =>
     filaANegocioMarket(
       negocio,
@@ -220,6 +249,9 @@ export function construirNegocios(
         .map(filaARecompensaMarket)
         .sort((a, b) => a.pts - b.pts),
       (eventosPorNegocio.get(negocio.id) ?? []).map(filaAEvento),
+      (premiosPorNegocio.get(negocio.id) ?? [])
+        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+        .map(filaAPremioRuleta),
     ),
   );
 }
@@ -244,15 +276,20 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
   const cli = filaCliente as FilaCliente;
   const clienteId = cli.id;
 
-  const [negociosRes, recompensasRes, eventosRes, relacionesRes, visitasRes] = await Promise.all([
+  const [negociosRes, recompensasRes, eventosRes, premiosRes, relacionesRes, visitasRes] = await Promise.all([
     supabase
       .from('negocios')
       .select(
-        'id, nombre, categoria, rubro, emoji, lat, lng, clientes_activos, horario_valle, beneficios_vip, vip_desde_puntos, created_at',
+        'id, nombre, categoria, rubro, emoji, lat, lng, clientes_activos, horario_valle, beneficios_vip, vip_desde_puntos, logo_url, portada_url, created_at',
       )
-      .eq('activo', true),
+      // `es_muestra`: negocios de preview de venta para un prospecto puntual (ver 0014).
+      // No aparecen en el marketplace de un cliente real, aunque sigan activos para
+      // quien entra por el link directo `?carta=<id>`.
+      .eq('activo', true)
+      .eq('es_muestra', false),
     supabase.from('recompensas').select('negocio_id, pts, descripcion, categoria, costo_dinero').eq('activa', true),
     supabase.from('eventos_negocio').select('negocio_id, nombre, fecha_inicio, fecha_fin, recompensa_extra'),
+    supabase.from('premios_ruleta').select('id, negocio_id, label, emoji, peso, bueno, orden').eq('activo', true),
     supabase.from('relaciones_negocio').select('negocio_id, puntos, ultima_visita_at').eq('cliente_id', clienteId),
     supabase
       .from('visitas')
@@ -261,7 +298,12 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
   ]);
 
   const primerError =
-    negociosRes.error ?? recompensasRes.error ?? eventosRes.error ?? relacionesRes.error ?? visitasRes.error;
+    negociosRes.error ??
+    recompensasRes.error ??
+    eventosRes.error ??
+    premiosRes.error ??
+    relacionesRes.error ??
+    visitasRes.error;
   if (primerError) return { ok: false, error: primerError.message };
 
   const ahora = Date.now();
@@ -269,6 +311,7 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
     (negociosRes.data ?? []) as FilaNegocioMarket[],
     (recompensasRes.data ?? []) as FilaRecompensaMarket[],
     (eventosRes.data ?? []) as FilaEvento[],
+    (premiosRes.data ?? []) as FilaPremioRuleta[],
   );
   const relaciones = construirRelaciones(
     (relacionesRes.data ?? []) as FilaRelacion[],

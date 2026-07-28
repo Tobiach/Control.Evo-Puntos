@@ -29,6 +29,10 @@ export interface DatosNegocioForm {
   pinCajero: string | null;
   /** `false` = club pausado: no aparece en el marketplace (la policy pública filtra por `activo`). */
   activo: boolean;
+  /** URL ya subida a otro lado (sin upload propio, mismo patrón que `carta_items.foto_url`). */
+  logoUrl: string | null;
+  /** Imagen de portada/cabecera del negocio. Mismo patrón sin upload que `logoUrl`. */
+  portadaUrl: string | null;
 }
 
 export interface MetricasNegocio {
@@ -83,6 +87,8 @@ interface FilaNegocio {
   beneficios_vip: string[] | null;
   vip_desde_puntos: number | null;
   activo: boolean | null;
+  logo_url: string | null;
+  portada_url: string | null;
 }
 
 /** Fila cruda que devuelve la RPC `clientes_del_negocio` (ver 0006_crm_clientes_del_negocio.sql). */
@@ -131,6 +137,8 @@ function filaANegocio(fila: FilaNegocio, pinCajero: string | null): DatosNegocio
     vipDesdePuntos: fila.vip_desde_puntos,
     pinCajero,
     activo: fila.activo ?? true,
+    logoUrl: fila.logo_url,
+    portadaUrl: fila.portada_url,
   };
 }
 
@@ -156,7 +164,7 @@ export async function cargarNegocioDelDueno(
   const { data, error } = await supabase
     .from('negocios')
     .select(
-      'id, nombre, categoria, rubro, emoji, calle, altura, codigo_postal, lat, lng, horario_valle, beneficios_vip, vip_desde_puntos, activo',
+      'id, nombre, categoria, rubro, emoji, calle, altura, codigo_postal, lat, lng, horario_valle, beneficios_vip, vip_desde_puntos, activo, logo_url, portada_url',
     )
     .eq('dueno_user_id', duenoUserId)
     .maybeSingle();
@@ -213,6 +221,8 @@ export async function guardarNegocioYRecompensas(
       horario_valle: negocio.horarioValle,
       beneficios_vip: negocio.beneficiosVip,
       vip_desde_puntos: negocio.vipDesdePuntos,
+      logo_url: negocio.logoUrl?.trim() || null,
+      portada_url: negocio.portadaUrl?.trim() || null,
     },
     { onConflict: 'id' },
   );

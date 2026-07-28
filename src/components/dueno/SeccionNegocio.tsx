@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Copy, KeyRound, LocateFixed, Loader2, Plus, Store, X } from 'lucide-react';
+import { Check, Copy, ImageOff, KeyRound, LocateFixed, Loader2, Plus, Store, X } from 'lucide-react';
 import type { Rubro } from '../../data/mockClientes';
 import type { DatosNegocioForm } from '../../lib/panelDueno';
 import type { Coordenadas } from '../../lib/geo';
@@ -39,6 +39,8 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
   const [geo, setGeo] = useState<EstadoGeo>({ estado: 'inactivo' });
   const [nuevoVip, setNuevoVip] = useState('');
   const [copiado, setCopiado] = useState(false);
+  const [logoRoto, setLogoRoto] = useState(false);
+  const [portadaRota, setPortadaRota] = useState(false);
   const valle = negocio.horarioValle;
 
   const copiarCodigo = async () => {
@@ -198,6 +200,58 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
               </button>
             );
           })}
+        </div>
+      </Campo>
+
+      <Campo etiqueta="Logo (URL de una imagen ya subida a otro lado)">
+        <div className="flex items-center gap-3">
+          {negocio.logoUrl && !logoRoto ? (
+            <img
+              src={negocio.logoUrl}
+              alt="Logo del negocio"
+              onError={() => setLogoRoto(true)}
+              className="h-14 w-14 shrink-0 rounded-2xl border border-borde object-cover"
+            />
+          ) : (
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-dashed border-borde text-texto-muted">
+              <ImageOff size={18} />
+            </div>
+          )}
+          <input
+            value={negocio.logoUrl ?? ''}
+            onChange={(e) => {
+              setLogoRoto(false);
+              onCambiar({ logoUrl: e.target.value || null });
+            }}
+            placeholder="https://..."
+            className={claseInput}
+          />
+        </div>
+      </Campo>
+
+      <Campo etiqueta="Portada (imagen de cabecera, opcional)">
+        <div className="flex items-center gap-3">
+          {negocio.portadaUrl && !portadaRota ? (
+            <img
+              src={negocio.portadaUrl}
+              alt="Portada del negocio"
+              onError={() => setPortadaRota(true)}
+              className="h-14 w-24 shrink-0 rounded-2xl border border-borde object-cover"
+            />
+          ) : (
+            <div className="flex h-14 w-24 shrink-0 items-center justify-center rounded-2xl border border-dashed border-borde text-texto-muted">
+              <ImageOff size={18} />
+            </div>
+          )}
+          <input
+            value={negocio.portadaUrl ?? ''}
+            onChange={(e) => {
+              setPortadaRota(false);
+              onCambiar({ portadaUrl: e.target.value || null });
+            }}
+            placeholder="https://..."
+            className={claseInput}
+          />
         </div>
       </Campo>
 

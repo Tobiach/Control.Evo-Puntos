@@ -7,6 +7,7 @@ import type {
   Rubro,
   Visita,
 } from './mockClientes';
+import type { PremioRuleta } from '../lib/ruleta';
 
 const DIA_MS = 86_400_000;
 
@@ -48,6 +49,12 @@ export interface Negocio {
   vipDesdePuntos?: number | null;
   /** Combo de asado de fin de semana destacado (carnicerías). */
   comboFinde?: ComboFinde;
+  /** URL ya subida a otro lado (sin upload propio, mismo patrón que la carta digital). */
+  logoUrl?: string;
+  /** Imagen de portada/cabecera del negocio, mismo patrón sin upload. */
+  portadaUrl?: string;
+  /** Pool de premios de la ruleta semanal de ESTE local. Sin esto, se usa el pool genérico. */
+  premiosRuleta?: PremioRuleta[];
 }
 
 /** Relación de puntos del cliente con UN negocio (independiente por local). */
