@@ -1,20 +1,14 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { CalendarDays, ChevronLeft, LocateFixed, MapPin, Search, Users } from 'lucide-react';
+import { CalendarDays, Flame, MapPin, Search, Trophy, Users } from 'lucide-react';
 import type { Rubro } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import { formatPuntos } from '../../lib/club';
-import { distanciaKm, formatDistancia, mesesDesde, type Coordenadas } from '../../lib/geo';
+import { horarioValleActivoAhora } from '../../lib/misiones';
+import { mesesDesde } from '../../lib/geo';
 import { META_PROMO } from '../../lib/promos';
-import MapaNegocios from './MapaNegocios';
 
-type Filtro = 'todos' | Rubro | 'cerca';
-
-type EstadoGeo =
-  | { estado: 'inactivo' }
-  | { estado: 'pidiendo' }
-  | { estado: 'ok'; coords: Coordenadas }
-  | { estado: 'error'; mensaje: string };
+type Filtro = 'todos' | Rubro;
 
 interface Props {
   negocios: Negocio[];
@@ -23,7 +17,6 @@ interface Props {
   /** Todavía no tiene relación con ningún negocio real: recién se sumó al club. */
   esNuevo: boolean;
   onAbrirNegocio: (negocio: Negocio) => void;
-  onSalir: () => void;
 }
 
 const FILTROS: { id: Filtro; label: string }[] = [
@@ -32,7 +25,6 @@ const FILTROS: { id: Filtro; label: string }[] = [
   { id: 'super', label: 'Supermercado' },
   { id: 'carniceria', label: 'Carnicería' },
   { id: 'cafeteria', label: 'Cafetería' },
-  { id: 'cerca', label: 'Cerca tuyo' },
 ];
 
 /** Cada tarjeta conserva el tema de SU negocio (gastro oscuro / super claro),
@@ -87,53 +79,9 @@ const ESTILO_RUBRO: Record<
   },
 };
 
-export default function Marketplace({
-  negocios,
-  relaciones,
-  nombreCliente,
-  esNuevo,
-  onAbrirNegocio,
-  onSalir,
-}: Props) {
+export default function Marketplace({ negocios, relaciones, nombreCliente, esNuevo, onAbrirNegocio }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [busqueda, setBusqueda] = useState('');
-  const [geo, setGeo] = useState<EstadoGeo>({ estado: 'inactivo' });
-
-  const coords = geo.estado === 'ok' ? geo.coords : null;
-
-  const pedirUbicacion = () => {
-    if (!('geolocation' in navigator)) {
-      setGeo({
-        estado: 'error',
-        mensaje: 'Tu navegador no soporta geolocalización. Te mostramos todos los locales igual.',
-      });
-      return;
-    }
-    setGeo({ estado: 'pidiendo' });
-    navigator.geolocation.getCurrentPosition(
-      (posicion) =>
-        setGeo({
-          estado: 'ok',
-          coords: { lat: posicion.coords.latitude, lng: posicion.coords.longitude },
-        }),
-      (error) =>
-        setGeo({
-          estado: 'error',
-          mensaje:
-            error.code === error.PERMISSION_DENIED
-              ? 'No nos diste permiso de ubicación. Podés activarlo en tu navegador y reintentar.'
-              : 'No pudimos obtener tu ubicación. Revisá el GPS y reintentá.',
-        }),
-      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 },
-    );
-  };
-
-  const elegirFiltro = (nuevo: Filtro) => {
-    setFiltro(nuevo);
-    if (nuevo === 'cerca' && geo.estado !== 'ok' && geo.estado !== 'pidiendo') {
-      pedirUbicacion();
-    }
-  };
 
   const visibles = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
@@ -143,37 +91,31 @@ export default function Marketplace({
         negocio.nombre.toLowerCase().includes(texto) ||
         negocio.categoria.toLowerCase().includes(texto),
     );
-    if (filtro !== 'todos' && filtro !== 'cerca') {
+    if (filtro !== 'todos') {
       lista = lista.filter((negocio) => negocio.rubro === filtro);
     }
-    if (filtro === 'cerca' && coords) {
-      lista = [...lista].sort(
-        (a, b) => distanciaKm(coords, a) - distanciaKm(coords, b),
-      );
-    }
     return lista;
-  }, [negocios, busqueda, filtro, coords]);
+  }, [negocios, busqueda, filtro]);
+
+  // Ofertas reales: solo negocios con horario valle configurado por el dueño Y vigente
+  // ahora mismo (día + franja horaria reales) — nunca un countdown decorativo.
+  const activasAhora = useMemo(
+    () => negocios.filter((negocio) => negocio.horarioValle && horarioValleActivoAhora(negocio.horarioValle)).slice(0, 3),
+    [negocios],
+  );
+
+  // Los más elegidos: ranking real por clientes activos del local, sin inventar estrellas.
+  const masElegidos = useMemo(
+    () => [...negocios].sort((a, b) => b.clientesActivos - a.clientesActivos).slice(0, 3),
+    [negocios],
+  );
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-5 pt-6 pb-10">
-      <header className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-texto-muted">
-            Hola, {nombreCliente.split(' ')[0]} 👋
-          </p>
-          <h1 className="text-2xl font-bold text-texto">Locales que te premian</h1>
-          <p className="mt-0.5 text-xs text-texto-muted">
-            Sumás puntos distintos en cada local afiliado
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onSalir}
-          aria-label="Salir de la app"
-          className="rounded-full border border-borde bg-card p-2 text-texto-muted"
-        >
-          <ChevronLeft size={18} />
-        </button>
+    <div className="flex flex-col gap-4 px-5 pt-6 pb-10">
+      <header>
+        <p className="text-xs font-semibold text-texto-muted">Hola, {nombreCliente.split(' ')[0]} 👋</p>
+        <h1 className="text-2xl font-bold text-texto">Locales que te premian</h1>
+        <p className="mt-0.5 text-xs text-texto-muted">Sumás puntos distintos en cada local afiliado</p>
       </header>
 
       {esNuevo && filtro === 'todos' && !busqueda.trim() && negocios.length > 0 && (
@@ -209,50 +151,67 @@ export default function Marketplace({
             <button
               key={id}
               type="button"
-              onClick={() => elegirFiltro(id)}
-              className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
-                activo
-                  ? 'bg-acento text-on-acento'
-                  : 'border border-borde bg-card text-texto-muted'
+              onClick={() => setFiltro(id)}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                activo ? 'bg-acento text-on-acento' : 'border border-borde bg-card text-texto-muted'
               }`}
             >
-              {id === 'cerca' && <LocateFixed size={13} strokeWidth={2.5} />}
               {label}
             </button>
           );
         })}
       </div>
 
-      {filtro === 'cerca' && geo.estado === 'pidiendo' && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3 text-sm text-texto-muted"
-        >
-          <LocateFixed size={16} className="animate-pulse text-ubicacion" />
-          Buscando tu ubicación…
-        </motion.div>
+      {activasAhora.length > 0 && filtro === 'todos' && !busqueda.trim() && (
+        <div className="flex flex-col gap-2">
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
+            <Flame size={13} className="text-acento" /> Activo ahora
+          </p>
+          {activasAhora.map((negocio) => (
+            <button
+              key={negocio.id}
+              type="button"
+              onClick={() => onAbrirNegocio(negocio)}
+              className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3 text-left"
+            >
+              <span className="h-2 w-2 shrink-0 rounded-full bg-acento" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold text-texto">
+                  {negocio.emoji} {negocio.nombre}
+                </span>
+                <span className="block text-xs font-semibold text-texto-muted">
+                  Puntos x2 · termina a las {negocio.horarioValle?.hasta}
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
       )}
 
-      {filtro === 'cerca' && geo.estado === 'error' && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-borde bg-card px-4 py-3.5"
-        >
-          <p className="text-sm leading-snug text-texto-muted">{geo.mensaje}</p>
-          <button
-            type="button"
-            onClick={pedirUbicacion}
-            className="mt-2.5 rounded-full bg-acento px-4 py-2 text-xs font-bold text-on-acento active:bg-acento-hover"
-          >
-            Reintentar
-          </button>
-        </motion.div>
-      )}
-
-      {filtro === 'cerca' && coords && (
-        <MapaNegocios negocios={visibles} coords={coords} onAbrir={onAbrirNegocio} />
+      {masElegidos.length > 0 && filtro === 'todos' && !busqueda.trim() && (
+        <div className="flex flex-col gap-2">
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
+            <Trophy size={13} className="text-premio" /> Los más elegidos
+          </p>
+          <div className="flex flex-col gap-1.5 rounded-2xl border border-borde bg-card p-2">
+            {masElegidos.map((negocio, indice) => (
+              <button
+                key={negocio.id}
+                type="button"
+                onClick={() => onAbrirNegocio(negocio)}
+                className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-left"
+              >
+                <span className="font-titulo w-4 text-sm font-bold text-premio">{indice + 1}</span>
+                <span className="flex-1 text-sm font-semibold text-texto">
+                  {negocio.emoji} {negocio.nombre}
+                </span>
+                <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-texto-muted">
+                  <Users size={11} /> {negocio.clientesActivos}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       <div className="flex flex-col gap-3">
@@ -262,7 +221,6 @@ export default function Marketplace({
               key={negocio.id}
               negocio={negocio}
               relacion={relaciones[negocio.id]}
-              distancia={coords ? distanciaKm(coords, negocio) : null}
               onAbrir={() => onAbrirNegocio(negocio)}
             />
           ))}
@@ -284,12 +242,10 @@ export default function Marketplace({
 function TarjetaNegocio({
   negocio,
   relacion,
-  distancia,
   onAbrir,
 }: {
   negocio: Negocio;
   relacion: RelacionNegocio | undefined;
-  distancia: number | null;
   onAbrir: () => void;
 }) {
   const estilo = ESTILO_RUBRO[negocio.rubro];
@@ -326,15 +282,6 @@ function TarjetaNegocio({
             {negocio.categoria}
           </span>
         </div>
-        {distancia !== null && (
-          <span
-            className="flex shrink-0 items-center gap-1 text-xs font-bold"
-            style={{ color: estilo.acento }}
-          >
-            <MapPin size={13} strokeWidth={2.5} />
-            {formatDistancia(distancia)}
-          </span>
-        )}
       </div>
 
       {negocio.promos && negocio.promos.length > 0 && (

@@ -21,7 +21,7 @@ import { useSesion } from '../../hooks/useSesion';
 import { cargarAppCliente, canjearRecompensa, type ClienteApp } from '../../lib/panelCliente';
 import { procesarReferidoPendiente } from '../../lib/referidos';
 import AppCliente from './AppCliente';
-import Marketplace from './Marketplace';
+import MarketplaceShell from './MarketplaceShell';
 
 interface Props {
   /** Rubro elegido en la bienvenida: define el tema del marketplace y la persona logueada. */
@@ -263,10 +263,11 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
         transition={{ duration: 0.28, ease: 'easeOut' }}
       >
         {vistaNegocio ?? (
-          <Marketplace
+          <MarketplaceShell
             negocios={negocios}
             relaciones={relaciones}
             nombreCliente={clienteEfectivo.nombre}
+            cliente={clienteEfectivo}
             esNuevo={usarReal && !Object.keys(relaciones).some((id) => !idsEjemplo.has(id))}
             onAbrirNegocio={(elegido) => setNegocioId(elegido.id)}
             onSalir={onSalir}

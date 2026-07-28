@@ -167,6 +167,19 @@ export function nombreMesActual(): string {
 
 const DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 
+/**
+ * true si el horario valle configurado por el dueño está vigente en este momento
+ * (día de la semana + franja horaria reales, nunca un countdown decorativo).
+ */
+export function horarioValleActivoAhora(horario: HorarioValle): boolean {
+  const ahora = new Date();
+  if (!horario.dias.includes(ahora.getDay())) return false;
+  const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+  const [horaDesde, minDesde] = horario.desde.split(':').map(Number);
+  const [horaHasta, minHasta] = horario.hasta.split(':').map(Number);
+  return minutosAhora >= horaDesde * 60 + minDesde && minutosAhora < horaHasta * 60 + minHasta;
+}
+
 /** Texto informativo del beneficio de puntos x2 en la franja valle. */
 export function textoHorarioValle(horario: HorarioValle): string {
   const dias = horario.dias.map((dia) => DIAS_LARGOS[dia] ?? '').filter(Boolean);

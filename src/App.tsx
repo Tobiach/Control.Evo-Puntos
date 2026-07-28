@@ -2,7 +2,9 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
 import { DATA_RUBROS, parseRubro, type Cliente, type Rubro } from './data/mockClientes';
+import { NEGOCIOS } from './data/negocios';
 import Bienvenida, { type Modo } from './components/Bienvenida';
+import OnboardingPremin from './components/entrada/OnboardingPremin';
 import PortadaCliente from './components/entrada/PortadaCliente';
 import PasoCliente from './components/PasoCliente';
 import PasoCajero from './components/PasoCajero';
@@ -14,10 +16,12 @@ import LoginDueno from './components/auth/LoginDueno';
 import LoginCajero from './components/cajero/LoginCajero';
 import RestablecerPassword from './components/auth/RestablecerPassword';
 import { esModoRecuperacion, supabaseEnabled } from './lib/auth';
+import { marcarOnboardingPreminVisto, yaVioOnboardingPremin } from './lib/onboarding';
 import { capturarReferidoPendiente } from './lib/referidos';
 
 type Pantalla =
   | 'bienvenida'
+  | 'onboarding-premin'
   | 'portada-cliente'
   | 'cliente'
   | 'cajero'
@@ -61,9 +65,10 @@ const variantes = {
 export default function App() {
   const [rubro, setRubro] = useState<Rubro>(rubroInicial);
   const [modo, setModo] = useState<Modo>(() => (esEntradaDirecta() ? 'app' : 'demo'));
-  const [pantalla, setPantalla] = useState<Pantalla>(() =>
-    esEntradaDirecta() ? 'portada-cliente' : 'bienvenida',
-  );
+  const [pantalla, setPantalla] = useState<Pantalla>(() => {
+    if (!esEntradaDirecta()) return 'bienvenida';
+    return yaVioOnboardingPremin() ? 'portada-cliente' : 'onboarding-premin';
+  });
   const [direccion, setDireccion] = useState(1);
   const [clientes, setClientes] = useState<Cliente[]>(() => clonarClientes(rubro));
   const [clienteActivoId, setClienteActivoId] = useState<string | null>(null);
@@ -198,6 +203,15 @@ export default function App() {
               onComenzar={comenzar}
               onDueno={() => navegar('auth-dueno')}
               onCajero={() => navegar('auth-cajero')}
+            />
+          )}
+          {pantalla === 'onboarding-premin' && (
+            <OnboardingPremin
+              cantidadLocales={NEGOCIOS.length}
+              onTerminar={() => {
+                marcarOnboardingPreminVisto();
+                navegar('portada-cliente');
+              }}
             />
           )}
           {pantalla === 'portada-cliente' && (

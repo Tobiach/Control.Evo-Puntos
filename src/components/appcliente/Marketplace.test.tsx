@@ -11,7 +11,6 @@ const renderMarketplace = () =>
       nombreCliente="Martina Gómez"
       esNuevo={false}
       onAbrirNegocio={vi.fn()}
-      onSalir={vi.fn()}
     />,
   );
 
