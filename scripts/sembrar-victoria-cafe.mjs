@@ -12,7 +12,8 @@
 //      dueno.<negocio>.demo@gmail.com, password compartida ControlEvo2026!).
 //   2. Inserta el negocio con activo=true + es_muestra=true + rubro='cafeteria' (funciona
 //      vía el link directo ?carta=<id>, pero queda afuera del marketplace de clientes
-//      reales) y un horario parado de ejemplo (media tarde, placeholder).
+//      reales), horario parado de ejemplo (media tarde) y umbral VIP de ejemplo (300 pts) —
+//      todo placeholder, a confirmar con el dueño real.
 //   3. Inserta la carta digital completa: las 6 categorías y los 27 productos reales del
 //      menú original (Café, Cafés Fríos, Cubanitos, Otras Bebidas, Dulces, Salado), sin
 //      precio (el documento original no tenía precios visibles).
@@ -20,6 +21,10 @@
 //      menú — los puntos son PLACEHOLDER, hay que ajustarlos con el dueño real si cierra.
 //   5. Inserta el pool de premios de la ruleta semanal de este negocio, también basado
 //      en productos reales del menú.
+//   6. Crea 3 cuentas de CLIENTE demo (Auth propio cada una, distinto de la del dueño) con
+//      visitas backdateadas reales (bypass de `cobrar_con_pin`, que siempre pone NOW()) —
+//      así el panel del dueño (CRM, métricas) y la app del cliente se ven con datos de
+//      verdad, no vacíos, al mostrárselo al prospecto real.
 //
 // Uso: node scripts/sembrar-victoria-cafe.mjs
 
@@ -45,32 +50,35 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Cada identidad (dueño + cada cliente demo) usa SU PROPIO cliente de Supabase — evita
+// pisar la sesión activa al ir alternando entre auth.uid() distintos en el mismo proceso.
+const clienteNuevo = () => createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const NEGOCIO_ID = 'victoria-cafe-al-paso';
 const EMAIL_DUENO = 'dueno.victoria-cafe.demo@gmail.com';
 const PASSWORD_DEMO = 'ControlEvo2026!';
 
-async function autenticarDueno() {
+/** signUp (o signIn si ya existe de una corrida anterior) sobre el cliente Supabase dado. */
+async function autenticar(supabase, email, rol) {
   const { data: signUp, error: errSignUp } = await supabase.auth.signUp({
-    email: EMAIL_DUENO,
+    email,
     password: PASSWORD_DEMO,
   });
   if (signUp?.session) return signUp.session.user;
 
   if (errSignUp && !errSignUp.message.toLowerCase().includes('already registered')) {
-    console.error('Error en signUp:', errSignUp.message);
+    console.error(`Error en signUp (${rol}):`, errSignUp.message);
   }
 
   // Cuenta ya existente de una corrida anterior: entramos con la misma contraseña.
   const { data: signIn, error: errSignIn } = await supabase.auth.signInWithPassword({
-    email: EMAIL_DUENO,
+    email,
     password: PASSWORD_DEMO,
   });
   if (errSignIn || !signIn.session) {
     console.error(
-      'No se pudo autenticar al dueño de muestra. Si el proyecto exige confirmar el email ' +
-        'antes de dar sesión, hay que confirmarlo a mano una vez desde el dashboard de Supabase ' +
+      `No se pudo autenticar a "${rol}". Si el proyecto exige confirmar el email antes de dar ` +
+        'sesión, hay que confirmarlo a mano una vez desde el dashboard de Supabase ' +
         '(Authentication > Users) y volver a correr este script.',
     );
     if (errSignIn) console.error(errSignIn.message);
@@ -79,11 +87,13 @@ async function autenticarDueno() {
   return signIn.session.user;
 }
 
+const supabaseDueno = clienteNuevo();
+
 async function main() {
-  const usuario = await autenticarDueno();
+  const usuario = await autenticar(supabaseDueno, EMAIL_DUENO, 'dueño');
   console.log(`Autenticado como dueño de muestra: ${usuario.id}`);
 
-  const { error: errNegocio } = await supabase.from('negocios').upsert(
+  const { error: errNegocio } = await supabaseDueno.from('negocios').upsert(
     {
       id: NEGOCIO_ID,
       dueno_user_id: usuario.id,
@@ -95,6 +105,9 @@ async function main() {
       lng: -58.4282373,
       activo: true,
       es_muestra: true,
+      // Umbral VIP de ejemplo (placeholder, a confirmar con el dueño real).
+      vip_desde_puntos: 300,
+      beneficios_vip: ['Café de cortesía en cada visita'],
       // Horario parado de ejemplo (placeholder, a confirmar con el dueño real): la caída
       // típica de un café al paso es la media tarde, entre el almuerzo y la salida laboral.
       horario_valle: { desde: '15:00', hasta: '17:00', dias: [1, 2, 3, 4, 5] },
@@ -110,11 +123,11 @@ async function main() {
   // Recompensas, carta y premios no tienen una clave natural: se borra lo que hubiera de
   // este negocio y se vuelve a insertar, igual patrón que `guardarNegocioYRecompensas` en
   // la app — así el script se puede correr más de una vez sin duplicar filas.
-  await supabase.from('recompensas').delete().eq('negocio_id', NEGOCIO_ID);
+  await supabaseDueno.from('recompensas').delete().eq('negocio_id', NEGOCIO_ID);
 
   // Escalera completa entrada/media/alta con productos 100% reales del menú (nunca
   // inventados). Puntos PLACEHOLDER — se ajustan con el dueño real si cierra la venta.
-  const { error: errRecompensas } = await supabase.from('recompensas').insert([
+  const { error: errRecompensas } = await supabaseDueno.from('recompensas').insert([
     // Entrada
     { negocio_id: NEGOCIO_ID, pts: 80, descripcion: 'Café Filtrado', categoria: 'Bebidas' },
     { negocio_id: NEGOCIO_ID, pts: 120, descripcion: 'Medialunas x2', categoria: 'Comida' },
@@ -143,7 +156,7 @@ async function main() {
   // Carta digital completa: las 6 categorías y los 27 productos reales del menú, tal
   // cual el documento original (sin inventar productos ni precios — precio 0 = "sin
   // precio visible", CartaPublica.tsx ya lo oculta en vez de mostrar "$0").
-  await supabase.from('carta_items').delete().eq('negocio_id', NEGOCIO_ID);
+  await supabaseDueno.from('carta_items').delete().eq('negocio_id', NEGOCIO_ID);
   const item = (categoria, orden, nombre, descripcion = null) => ({
     negocio_id: NEGOCIO_ID,
     categoria,
@@ -192,7 +205,7 @@ async function main() {
     item('Salado', 3, 'Croissant con J y Q', 'Con harina orgánica y agregado de masa madre'),
     item('Salado', 4, 'Pizza Individual', 'De jamón y queso, con harina orgánica y agregado de masa madre'),
   ];
-  const { error: errCarta } = await supabase.from('carta_items').insert(menu);
+  const { error: errCarta } = await supabaseDueno.from('carta_items').insert(menu);
   if (errCarta) {
     console.error('Error al cargar la carta:', errCarta.message);
     process.exit(1);
@@ -210,16 +223,133 @@ async function main() {
     { label: 'Premio mayor: Docena Mixta Premium gratis', emoji: '👑', peso: 2, bueno: true, orden: 7 },
   ].map((p) => ({ ...p, negocio_id: NEGOCIO_ID }));
 
-  await supabase.from('premios_ruleta').delete().eq('negocio_id', NEGOCIO_ID);
-  const { error: errPremios } = await supabase.from('premios_ruleta').insert(premios);
+  await supabaseDueno.from('premios_ruleta').delete().eq('negocio_id', NEGOCIO_ID);
+  const { error: errPremios } = await supabaseDueno.from('premios_ruleta').insert(premios);
   if (errPremios) {
     console.error('Error al cargar los premios de la ruleta:', errPremios.message);
     process.exit(1);
   }
   console.log('Pool de premios de la ruleta cargado (basado en el menú real).');
 
+  await sembrarClientesDemo();
+
   console.log('\nListo. Link para compartir por WhatsApp:');
   console.log(`https://premia-ar.vercel.app/?carta=${NEGOCIO_ID}`);
+}
+
+const MS_DIA = 86_400_000;
+const haceDias = (dias) => new Date(Date.now() - dias * MS_DIA).toISOString();
+
+// 3 clientes demo con historial creíble (montos de ticket real de café al paso, $1.800-4.100).
+// Cada visita ya trae sus puntos (monto/100, mismo montoPorPunto que usa `cobrar_con_pin`);
+// el saldo de `relaciones_negocio` es la suma exacta de sus visitas, para que no haya
+// inconsistencia entre "tus puntos" y el gráfico de actividad si alguien mira el detalle.
+const CLIENTES_DEMO = [
+  {
+    email: 'cliente.valentina.victoriacafe.demo@gmail.com',
+    nombre: 'Valentina Ibarra',
+    telefono: '11 5544-2201',
+    visitas: [
+      { diasAtras: 2, monto: 2600, categoria: 'Bebidas' },
+      { diasAtras: 6, monto: 3400, categoria: 'Comida' },
+      { diasAtras: 9, monto: 1800, categoria: 'Bebidas' },
+      { diasAtras: 14, monto: 2900, categoria: 'Comida' },
+      { diasAtras: 18, monto: 3100, categoria: 'Comida' },
+      { diasAtras: 23, monto: 2200, categoria: 'Bebidas' },
+      { diasAtras: 28, monto: 3800, categoria: 'Comida' },
+      { diasAtras: 33, monto: 2500, categoria: 'Bebidas' },
+      { diasAtras: 38, monto: 3000, categoria: 'Comida' },
+    ],
+  },
+  {
+    // La más frecuente: cruza el umbral VIP (300 pts) configurado arriba.
+    email: 'cliente.bruno.victoriacafe.demo@gmail.com',
+    nombre: 'Bruno Aguilar',
+    telefono: '11 6677-3312',
+    visitas: [
+      { diasAtras: 1, monto: 3200, categoria: 'Comida' },
+      { diasAtras: 4, monto: 2800, categoria: 'Bebidas' },
+      { diasAtras: 8, monto: 4100, categoria: 'Comida' },
+      { diasAtras: 11, monto: 2600, categoria: 'Bebidas' },
+      { diasAtras: 15, monto: 3500, categoria: 'Comida' },
+      { diasAtras: 19, monto: 2900, categoria: 'Comida' },
+      { diasAtras: 24, monto: 3800, categoria: 'Bebidas' },
+      { diasAtras: 29, monto: 3100, categoria: 'Comida' },
+      { diasAtras: 35, monto: 2700, categoria: 'Bebidas' },
+      { diasAtras: 41, monto: 3900, categoria: 'Comida' },
+      { diasAtras: 48, monto: 3300, categoria: 'Comida' },
+    ],
+  },
+  {
+    // Recién llegada: pocas visitas, para mostrar también el arranque del club.
+    email: 'cliente.julieta.victoriacafe.demo@gmail.com',
+    nombre: 'Julieta Ferrero',
+    telefono: '11 4488-5523',
+    visitas: [
+      { diasAtras: 0, monto: 2200, categoria: 'Bebidas' },
+      { diasAtras: 4, monto: 1900, categoria: 'Comida' },
+      { diasAtras: 8, monto: 2600, categoria: 'Comida' },
+    ],
+  },
+];
+
+/**
+ * Crea (o reutiliza) las 3 cuentas de cliente demo y su historial real de visitas en
+ * Victoria Café. `cliente.bruno.victoriacafe.demo@gmail.com` es el que conviene usar para
+ * mostrarle al prospecto la app desde el lado del cliente (el más activo, ya cruza VIP).
+ */
+async function sembrarClientesDemo() {
+  for (const c of CLIENTES_DEMO) {
+    const supabaseCliente = clienteNuevo();
+    const usuarioCliente = await autenticar(supabaseCliente, c.email, c.nombre);
+
+    const { data: filaCliente, error: errCliente } = await supabaseCliente
+      .from('clientes')
+      .upsert(
+        { user_id: usuarioCliente.id, nombre: c.nombre, telefono: c.telefono },
+        { onConflict: 'telefono' },
+      )
+      .select('id')
+      .single();
+    if (errCliente) {
+      console.error(`Error al crear cliente "${c.nombre}":`, errCliente.message);
+      process.exit(1);
+    }
+
+    const totalPuntos = c.visitas.reduce((suma, v) => suma + Math.floor(v.monto / 100), 0);
+    const diasUltimaVisita = Math.min(...c.visitas.map((v) => v.diasAtras));
+
+    await supabaseDueno.from('visitas').delete().eq('cliente_id', filaCliente.id).eq('negocio_id', NEGOCIO_ID);
+    await supabaseDueno.from('relaciones_negocio').delete().eq('cliente_id', filaCliente.id).eq('negocio_id', NEGOCIO_ID);
+
+    const { error: errRelacion } = await supabaseDueno.from('relaciones_negocio').insert({
+      cliente_id: filaCliente.id,
+      negocio_id: NEGOCIO_ID,
+      puntos: totalPuntos,
+      ultima_visita_at: haceDias(diasUltimaVisita),
+      puntos_vencen_at: haceDias(diasUltimaVisita - 60),
+    });
+    if (errRelacion) {
+      console.error(`Error al crear la relación de "${c.nombre}":`, errRelacion.message);
+      process.exit(1);
+    }
+
+    const filasVisitas = c.visitas.map((v) => ({
+      cliente_id: filaCliente.id,
+      negocio_id: NEGOCIO_ID,
+      monto: v.monto,
+      puntos: Math.floor(v.monto / 100),
+      categoria: v.categoria,
+      created_at: haceDias(v.diasAtras),
+    }));
+    const { error: errVisitas } = await supabaseDueno.from('visitas').insert(filasVisitas);
+    if (errVisitas) {
+      console.error(`Error al cargar visitas de "${c.nombre}":`, errVisitas.message);
+      process.exit(1);
+    }
+
+    console.log(`Cliente "${c.nombre}" listo: ${totalPuntos} pts, ${c.visitas.length} visitas.`);
+  }
 }
 
 main();
