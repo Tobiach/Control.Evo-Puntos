@@ -27,57 +27,9 @@ const FILTROS: { id: Filtro; label: string }[] = [
   { id: 'cafeteria', label: 'Cafetería' },
 ];
 
-/** Cada tarjeta conserva el tema de SU negocio (gastro oscuro / super claro),
- *  sin depender del tema global de la página. */
-const ESTILO_RUBRO: Record<
-  Rubro,
-  {
-    fondo: string;
-    banner: string;
-    borde: string;
-    texto: string;
-    muted: string;
-    acento: string;
-    pillFondo: string;
-  }
-> = {
-  gastro: {
-    fondo: '#1A1A1A',
-    banner: 'linear-gradient(135deg, rgba(201,151,58,0.24), rgba(201,151,58,0.05))',
-    borde: 'rgba(201, 151, 58, 0.3)',
-    texto: '#F5F0E8',
-    muted: '#A89880',
-    acento: '#E5B860',
-    pillFondo: 'rgba(201, 151, 58, 0.14)',
-  },
-  super: {
-    fondo: '#FFFFFF',
-    banner: 'linear-gradient(135deg, rgba(139,0,0,0.10), rgba(139,0,0,0.02))',
-    borde: '#E5E7EB',
-    texto: '#111827',
-    muted: '#4B5563',
-    acento: '#8B0000',
-    pillFondo: 'rgba(139, 0, 0, 0.08)',
-  },
-  carniceria: {
-    fondo: '#1C1410',
-    banner: 'linear-gradient(135deg, rgba(196,74,58,0.24), rgba(196,74,58,0.05))',
-    borde: 'rgba(196, 74, 58, 0.3)',
-    texto: '#F5EDE4',
-    muted: '#A89184',
-    acento: '#E0574B',
-    pillFondo: 'rgba(196, 74, 58, 0.14)',
-  },
-  cafeteria: {
-    fondo: '#2B1D14',
-    banner: 'linear-gradient(135deg, rgba(217,165,82,0.24), rgba(217,165,82,0.05))',
-    borde: 'rgba(217, 165, 82, 0.3)',
-    texto: '#F5EBE0',
-    muted: '#B8A594',
-    acento: '#D9A552',
-    pillFondo: 'rgba(217, 165, 82, 0.14)',
-  },
-};
+/** Fondo de tarjeta unificado para los 4 rubros (verde claro), con el banner del nombre
+ *  en un nude/crema distinto — reemplaza el tema oscuro por rubro que tenía antes cada tarjeta. */
+const VERDE_TARJETA = '#E9F2DE';
 
 export default function Marketplace({ negocios, relaciones, nombreCliente, esNuevo, onAbrirNegocio }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
@@ -250,7 +202,6 @@ function TarjetaNegocio({
   relacion: RelacionNegocio | undefined;
   onAbrir: () => void;
 }) {
-  const estilo = ESTILO_RUBRO[negocio.rubro];
   const meses = mesesDesde(negocio.fechaAlta);
 
   return (
@@ -263,24 +214,16 @@ function TarjetaNegocio({
       transition={{ duration: 0.22, ease: 'easeOut' }}
       whileTap={{ scale: 0.97 }}
       onClick={onAbrir}
-      className="w-full overflow-hidden rounded-3xl border text-left shadow-sm"
-      style={{ background: estilo.fondo, borderColor: estilo.borde }}
+      className="w-full overflow-hidden rounded-3xl border border-borde text-left shadow-sm"
+      style={{ background: VERDE_TARJETA }}
     >
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3" style={{ background: estilo.banner }}>
-        <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl"
-          style={{ background: estilo.pillFondo }}
-        >
+      <div className="flex items-center gap-3 bg-fondo-medio px-4 pt-4 pb-3">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-premio-suave text-2xl">
           {negocio.emoji}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-base leading-tight font-bold" style={{ color: estilo.texto }}>
-            {negocio.nombre}
-          </p>
-          <span
-            className="mt-1 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase"
-            style={{ background: estilo.pillFondo, color: estilo.acento }}
-          >
+          <p className="text-base leading-tight font-bold text-texto">{negocio.nombre}</p>
+          <span className="mt-1 inline-block rounded-full bg-premio-suave px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
             {negocio.categoria}
           </span>
         </div>
@@ -308,8 +251,7 @@ function TarjetaNegocio({
         {negocio.recompensas.slice(0, 3).map((recompensa) => (
           <span
             key={recompensa.descripcion}
-            className="rounded-full border px-2.5 py-1 text-[10px] font-semibold"
-            style={{ borderColor: estilo.borde, color: estilo.muted }}
+            className="rounded-full border border-borde px-2.5 py-1 text-[10px] font-semibold text-texto-muted"
           >
             🎁 {recompensa.descripcion} · {formatPuntos(recompensa.pts)} pts
           </span>
@@ -318,18 +260,15 @@ function TarjetaNegocio({
 
       <div className="flex flex-col gap-1.5 px-4 pt-3 pb-4">
         {relacion ? (
-          <p className="text-sm font-bold" style={{ color: estilo.acento }}>
+          <p className="text-sm font-bold text-acento">
             Tenés {formatPuntos(relacion.puntos)} pts acá
           </p>
         ) : (
-          <p className="text-sm font-semibold" style={{ color: estilo.muted }}>
+          <p className="text-sm font-semibold text-texto-muted">
             Sumate — todavía no tenés puntos acá
           </p>
         )}
-        <span
-          className="flex items-center gap-1.5 text-[11px] font-semibold"
-          style={{ color: estilo.muted }}
-        >
+        <span className="flex items-center gap-1.5 text-[11px] font-semibold text-texto-muted">
           {negocio.clientesActivos >= 100 ? (
             <>
               <Users size={12} /> Ya lo usan {negocio.clientesActivos} personas
