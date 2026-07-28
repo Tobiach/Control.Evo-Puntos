@@ -1,10 +1,10 @@
 import type { PremioRuleta } from '../lib/ruleta';
 
-export type Rubro = 'gastro' | 'super' | 'carniceria';
+export type Rubro = 'gastro' | 'super' | 'carniceria' | 'cafeteria';
 
 /** Coacciona un valor de rubro leído del backend (texto libre) al union type seguro. */
 export function parseRubro(valor: string | null | undefined): Rubro {
-  return valor === 'super' || valor === 'carniceria' ? valor : 'gastro';
+  return valor === 'super' || valor === 'carniceria' || valor === 'cafeteria' ? valor : 'gastro';
 }
 
 export type NombreNivel = 'Nuevo' | 'Frecuente' | 'VIP';
@@ -258,6 +258,51 @@ export const DATA_RUBROS: Record<Rubro, RubroData> = {
       { diasAtras: 21, monto: 15600, puntos: 156 },
       { diasAtras: 28, monto: 6900, puntos: 69 },
       { diasAtras: 35, monto: 9300, puntos: 93 },
+    ],
+  },
+  cafeteria: {
+    rubro: 'cafeteria',
+    etiqueta: 'Cafetería',
+    nombreNegocio: 'Demo Cafetería',
+    monedaPrefijo: '$',
+    locale: 'es-AR',
+    montoPorPunto: 100, // 1 punto cada $100 (ARS)
+    montoEjemplo: 3000,
+    niveles: [
+      { nombre: 'Nuevo', min: 0 },
+      { nombre: 'Frecuente', min: 200 },
+      { nombre: 'VIP', min: 600 },
+    ],
+    recompensas: [
+      { pts: 80, descripcion: 'Café filtrado', categoria: 'Bebidas' },
+      { pts: 150, descripcion: 'Medialunas x2', categoria: 'Comida' },
+      { pts: 220, descripcion: 'Latte o capuchino', categoria: 'Bebidas' },
+      { pts: 350, descripcion: '10% off en tu pedido', categoria: 'Descuentos' },
+      { pts: 500, descripcion: 'Croissant + café de regalo', categoria: 'Comida' },
+      { pts: 750, descripcion: 'Docena de facturas de regalo', categoria: 'Regalos' },
+      { pts: 1100, descripcion: 'Desayuno completo para dos', categoria: 'Comida' },
+    ],
+    clientes: [
+      { id: 'cf1', nombre: 'Julieta Farías', telefono: '11 5502-3391', puntos: 410, ultimaVisitaDias: 1, nacimiento: '07-13' },
+      { id: 'cf2', nombre: 'Nicolás Prieto', telefono: '11 4471-2260', puntos: 620, ultimaVisitaDias: 3 },
+      { id: 'cf3', nombre: 'Agustina Molina', telefono: '11 6634-8817', puntos: 150, ultimaVisitaDias: 1 },
+      { id: 'cf4', nombre: 'Tomás Herrera', telefono: '11 3321-9945', puntos: 340, ultimaVisitaDias: 24 },
+      { id: 'cf5', nombre: 'Milagros Cabral', telefono: '11 5890-4472', puntos: 95, ultimaVisitaDias: 30 },
+      { id: 'cf6', nombre: 'Bruno Sosa', telefono: '11 2245-6631', puntos: 780, ultimaVisitaDias: 5 },
+      { id: 'cf7', nombre: 'Constanza Vega', telefono: '11 4012-7758', puntos: 260, ultimaVisitaDias: 15 },
+    ],
+    metricasSemana: { puntosAcreditados: 3980, subieronDeNivel: 2 },
+    mensajeWhatsApp:
+      'Hola! Probé la demo de Premia.ar y quiero implementarlo en mi cafetería. ¿Cómo seguimos?',
+    clienteAppId: 'cf1',
+    historialApp: [
+      { diasAtras: 1, monto: 3200, puntos: 32 },
+      { diasAtras: 3, monto: 2600, puntos: 26 },
+      { diasAtras: 8, monto: 4100, puntos: 41 },
+      { diasAtras: 12, monto: 1800, puntos: 18 },
+      { diasAtras: 17, monto: 3500, puntos: 35 },
+      { diasAtras: 23, monto: 2200, puntos: 22 },
+      { diasAtras: 29, monto: 3900, puntos: 39 },
     ],
   },
 };

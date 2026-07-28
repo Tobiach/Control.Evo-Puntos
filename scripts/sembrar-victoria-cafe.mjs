@@ -1,19 +1,24 @@
 // Siembra el negocio de MUESTRA "Victoria Café (Al Paso)" para el preview de venta.
 //
-// Requisito previo OBLIGATORIO: pegar `supabase/migrations/0014_muestra_logo_ruleta.sql`
-// en el SQL Editor de Supabase antes de correr esto (no hay CLI conectado en este
-// proyecto, así que esa migración no se aplica sola). Si las columnas/tabla nuevas no
-// existen todavía, los inserts de abajo van a fallar con un error claro de Postgres.
+// Requisitos previos OBLIGATORIOS antes de correr esto (no hay CLI conectado en este
+// proyecto, ninguna migración se aplica sola):
+//   - Pegar `supabase/migrations/0014_muestra_logo_ruleta.sql` en el SQL Editor.
+//   - Pegar `supabase/migrations/0015_rubro_cafeteria.sql` en el SQL Editor.
+// Si falta alguna, los inserts de abajo van a fallar con un error claro de Postgres.
 //
 // Qué hace:
 //   1. Crea (o reutiliza si ya existe) un usuario de Auth para el "dueño" de este negocio
 //      de muestra, mismo patrón que las 8 cuentas demo ya sembradas (email
 //      dueno.<negocio>.demo@gmail.com, password compartida ControlEvo2026!).
-//   2. Inserta el negocio con activo=true + es_muestra=true (funciona vía el link directo
-//      ?carta=<id>, pero queda afuera del marketplace de clientes reales).
-//   3. Inserta 3 recompensas de ejemplo con productos reales del menú — los puntos son
-//      PLACEHOLDER, hay que ajustarlos con el dueño real si cierra.
-//   4. Inserta el pool de premios de la ruleta semanal de este negocio, también basado
+//   2. Inserta el negocio con activo=true + es_muestra=true + rubro='cafeteria' (funciona
+//      vía el link directo ?carta=<id>, pero queda afuera del marketplace de clientes
+//      reales) y un horario parado de ejemplo (media tarde, placeholder).
+//   3. Inserta la carta digital completa: las 6 categorías y los 27 productos reales del
+//      menú original (Café, Cafés Fríos, Cubanitos, Otras Bebidas, Dulces, Salado), sin
+//      precio (el documento original no tenía precios visibles).
+//   4. Inserta 15 recompensas (escalera entrada/media/alta) con productos reales del
+//      menú — los puntos son PLACEHOLDER, hay que ajustarlos con el dueño real si cierra.
+//   5. Inserta el pool de premios de la ruleta semanal de este negocio, también basado
 //      en productos reales del menú.
 //
 // Uso: node scripts/sembrar-victoria-cafe.mjs
@@ -84,12 +89,15 @@ async function main() {
       dueno_user_id: usuario.id,
       nombre: 'Victoria Café (Al Paso)',
       categoria: 'Cafetería · Cubanitos',
-      rubro: 'gastro',
+      rubro: 'cafeteria',
       emoji: '☕',
       lat: -34.5910391,
       lng: -58.4282373,
       activo: true,
       es_muestra: true,
+      // Horario parado de ejemplo (placeholder, a confirmar con el dueño real): la caída
+      // típica de un café al paso es la media tarde, entre el almuerzo y la salida laboral.
+      horario_valle: { desde: '15:00', hasta: '17:00', dias: [1, 2, 3, 4, 5] },
     },
     { onConflict: 'id' },
   );
@@ -99,22 +107,97 @@ async function main() {
   }
   console.log(`Negocio "${NEGOCIO_ID}" creado/actualizado.`);
 
-  // Recompensas y premios no tienen una clave natural: se borra lo que hubiera de este
-  // negocio y se vuelve a insertar, igual patrón que `guardarNegocioYRecompensas` en la
-  // app — así el script se puede correr más de una vez sin duplicar filas.
+  // Recompensas, carta y premios no tienen una clave natural: se borra lo que hubiera de
+  // este negocio y se vuelve a insertar, igual patrón que `guardarNegocioYRecompensas` en
+  // la app — así el script se puede correr más de una vez sin duplicar filas.
   await supabase.from('recompensas').delete().eq('negocio_id', NEGOCIO_ID);
 
-  // Placeholder: ajustar con el dueño real en el onboarding si cierra la venta.
+  // Escalera completa entrada/media/alta con productos 100% reales del menú (nunca
+  // inventados). Puntos PLACEHOLDER — se ajustan con el dueño real si cierra la venta.
   const { error: errRecompensas } = await supabase.from('recompensas').insert([
+    // Entrada
     { negocio_id: NEGOCIO_ID, pts: 80, descripcion: 'Café Filtrado', categoria: 'Bebidas' },
-    { negocio_id: NEGOCIO_ID, pts: 180, descripcion: 'Cubanito Bañado', categoria: 'Comida' },
-    { negocio_id: NEGOCIO_ID, pts: 600, descripcion: 'Docena Mixta Premium', categoria: 'Regalos' },
+    { negocio_id: NEGOCIO_ID, pts: 120, descripcion: 'Medialunas x2', categoria: 'Comida' },
+    { negocio_id: NEGOCIO_ID, pts: 140, descripcion: 'Chipa', categoria: 'Comida' },
+    { negocio_id: NEGOCIO_ID, pts: 180, descripcion: 'Alfajor de Maicena (chico)', categoria: 'Comida' },
+    // Media
+    { negocio_id: NEGOCIO_ID, pts: 220, descripcion: 'Latte', categoria: 'Bebidas' },
+    { negocio_id: NEGOCIO_ID, pts: 280, descripcion: 'Cubanito Bañado', categoria: 'Comida' },
+    { negocio_id: NEGOCIO_ID, pts: 320, descripcion: 'Croissant con J y Q', categoria: 'Comida' },
+    { negocio_id: NEGOCIO_ID, pts: 380, descripcion: 'Cubanito Especial', categoria: 'Comida' },
+    { negocio_id: NEGOCIO_ID, pts: 450, descripcion: '10% off en tu pedido', categoria: 'Descuentos' },
+    { negocio_id: NEGOCIO_ID, pts: 520, descripcion: 'Pizza Individual', categoria: 'Comida' },
+    // Alta / aspiracional (familia de docenas, ordenadas por volumen real)
+    { negocio_id: NEGOCIO_ID, pts: 750, descripcion: 'Docena de Cubanitos Clásico', categoria: 'Regalos' },
+    { negocio_id: NEGOCIO_ID, pts: 950, descripcion: 'Docena de Cubanitos Bañados', categoria: 'Regalos' },
+    { negocio_id: NEGOCIO_ID, pts: 1150, descripcion: 'Docena de Cubanitos Especiales', categoria: 'Regalos' },
+    { negocio_id: NEGOCIO_ID, pts: 1400, descripcion: 'Docena Mixta Especial', categoria: 'Regalos' },
+    { negocio_id: NEGOCIO_ID, pts: 1800, descripcion: 'Docena Mixta Premium', categoria: 'Regalos' },
   ]);
   if (errRecompensas) {
     console.error('Error al cargar recompensas:', errRecompensas.message);
     process.exit(1);
   }
-  console.log('3 recompensas de ejemplo cargadas (puntos placeholder).');
+  console.log('15 recompensas cargadas (escalera entrada/media/alta, puntos placeholder).');
+
+  // Carta digital completa: las 6 categorías y los 27 productos reales del menú, tal
+  // cual el documento original (sin inventar productos ni precios — precio 0 = "sin
+  // precio visible", CartaPublica.tsx ya lo oculta en vez de mostrar "$0").
+  await supabase.from('carta_items').delete().eq('negocio_id', NEGOCIO_ID);
+  const item = (categoria, orden, nombre, descripcion = null) => ({
+    negocio_id: NEGOCIO_ID,
+    categoria,
+    orden,
+    nombre,
+    descripcion,
+    precio: 0,
+    disponible: true,
+  });
+  const menu = [
+    item('Café', 0, 'Filtrado'),
+
+    item('Cafés Fríos', 0, 'Americano'),
+    item('Cafés Fríos', 1, 'Espresso Tonic'),
+    item('Cafés Fríos', 2, 'Capuchino'),
+    item('Cafés Fríos', 3, 'Flat White'),
+    item('Cafés Fríos', 4, 'Latte'),
+
+    item('Cubanitos', 0, 'Cubanito Clásico', 'Relleno de dulce de leche'),
+    item('Cubanitos', 1, 'Cubanito Bañado', 'Relleno de dulce de leche, bañado en chocolate negro o blanco'),
+    item(
+      'Cubanitos',
+      2,
+      'Cubanito Especial',
+      'Relleno de dulce de leche, bañado con chocolate blanco o negro, con coco o maní crocante',
+    ),
+    item('Cubanitos', 3, 'Docena de Cubanitos Clásico'),
+    item('Cubanitos', 4, 'Docena de Cubanitos Bañados'),
+    item('Cubanitos', 5, 'Docena de Cubanitos Especiales'),
+    item('Cubanitos', 6, 'Docena Mixta Especial', '4 clásicos + 4 bañados + 4 especiales'),
+    item('Cubanitos', 7, 'Docena Mixta Premium', '6 bañados + 6 especiales'),
+
+    item('Otras Bebidas', 0, 'Licuados', 'De banana y/o durazno, con leche o agua'),
+    item('Otras Bebidas', 1, 'Limonada', 'Con menta y jengibre'),
+    item('Otras Bebidas', 2, 'Jugo de Naranja Exprimido'),
+    item('Otras Bebidas', 3, 'Agua Mineral'),
+    item('Otras Bebidas', 4, 'Gaseosas (lata)'),
+    item('Otras Bebidas', 5, 'Jugos de fruta "Estancia Los Naranjos"'),
+
+    item('Dulces', 0, 'Medialunas'),
+    item('Dulces', 1, 'Alfajor de Maicena (chico)'),
+
+    item('Salado', 0, 'Chipa'),
+    item('Salado', 1, 'Sandwich de Chipa J y Q'),
+    item('Salado', 2, 'Croissant', 'Con harina orgánica y agregado de masa madre'),
+    item('Salado', 3, 'Croissant con J y Q', 'Con harina orgánica y agregado de masa madre'),
+    item('Salado', 4, 'Pizza Individual', 'De jamón y queso, con harina orgánica y agregado de masa madre'),
+  ];
+  const { error: errCarta } = await supabase.from('carta_items').insert(menu);
+  if (errCarta) {
+    console.error('Error al cargar la carta:', errCarta.message);
+    process.exit(1);
+  }
+  console.log(`${menu.length} productos cargados en la carta digital (6 categorías, sin precio).`);
 
   const premios = [
     { label: '+30 pts de regalo', emoji: '⭐', peso: 22, bueno: false, orden: 0 },

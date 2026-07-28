@@ -15,6 +15,7 @@ const RUBROS: { valor: Rubro; etiqueta: string }[] = [
   { valor: 'gastro', etiqueta: 'Gastronomía' },
   { valor: 'super', etiqueta: 'Supermercado' },
   { valor: 'carniceria', etiqueta: 'Carnicería' },
+  { valor: 'cafeteria', etiqueta: 'Cafetería' },
 ];
 
 const DIAS_SEMANA = [

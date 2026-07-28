@@ -117,9 +117,11 @@ export default function CartaPublica({ negocioId }: Props) {
                     <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
                       <div className="flex items-baseline justify-between gap-3">
                         <p className="min-w-0 font-bold leading-tight">{item.nombre}</p>
-                        <p className="shrink-0 font-titulo font-bold text-acento">
-                          {formatPrecio(item.precio)}
-                        </p>
+                        {item.precio > 0 && (
+                          <p className="shrink-0 font-titulo font-bold text-acento">
+                            {formatPrecio(item.precio)}
+                          </p>
+                        )}
                       </div>
                       {item.descripcion && (
                         <p className="text-sm leading-snug text-texto-muted">{item.descripcion}</p>

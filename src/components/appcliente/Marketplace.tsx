@@ -31,6 +31,7 @@ const FILTROS: { id: Filtro; label: string }[] = [
   { id: 'gastro', label: 'Gastronomía' },
   { id: 'super', label: 'Supermercado' },
   { id: 'carniceria', label: 'Carnicería' },
+  { id: 'cafeteria', label: 'Cafetería' },
   { id: 'cerca', label: 'Cerca tuyo' },
 ];
 
@@ -74,6 +75,15 @@ const ESTILO_RUBRO: Record<
     muted: '#A89184',
     acento: '#E0574B',
     pillFondo: 'rgba(196, 74, 58, 0.14)',
+  },
+  cafeteria: {
+    fondo: '#2B1D14',
+    banner: 'linear-gradient(135deg, rgba(217,165,82,0.24), rgba(217,165,82,0.05))',
+    borde: 'rgba(217, 165, 82, 0.3)',
+    texto: '#F5EBE0',
+    muted: '#B8A594',
+    acento: '#D9A552',
+    pillFondo: 'rgba(217, 165, 82, 0.14)',
   },
 };
 
