@@ -68,7 +68,8 @@ export default function App() {
   const [modo, setModo] = useState<Modo>(() => (esEntradaDirecta() ? 'app' : 'demo'));
   const [pantalla, setPantalla] = useState<Pantalla>(() => {
     if (!esEntradaDirecta()) return 'bienvenida';
-    return yaVioOnboardingPremin() ? 'portada-cliente' : 'onboarding-premin';
+    // No primera vez: directo al login, sin Premín ni la portada de marca/promesa de nuevo.
+    return yaVioOnboardingPremin() ? 'auth-cliente' : 'onboarding-premin';
   });
   const [direccion, setDireccion] = useState(1);
   const [clientes, setClientes] = useState<Cliente[]>(() => clonarClientes(rubro));
