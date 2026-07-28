@@ -16,6 +16,7 @@ import LoginDueno from './components/auth/LoginDueno';
 import LoginCajero from './components/cajero/LoginCajero';
 import RestablecerPassword from './components/auth/RestablecerPassword';
 import { esModoRecuperacion, supabaseEnabled } from './lib/auth';
+import { CLIENTE_INVITADO } from './lib/invitado';
 import { marcarOnboardingPreminVisto, yaVioOnboardingPremin } from './lib/onboarding';
 import { capturarReferidoPendiente } from './lib/referidos';
 
@@ -84,7 +85,10 @@ export default function App() {
   }, []);
 
   const data = DATA_RUBROS[rubro];
-  const clienteActivo = clientes.find((cliente) => cliente.id === clienteActivoId) ?? null;
+  const clienteActivo =
+    clienteActivoId === CLIENTE_INVITADO.id
+      ? CLIENTE_INVITADO
+      : (clientes.find((cliente) => cliente.id === clienteActivoId) ?? null);
   const indice = ORDEN.indexOf(pantalla);
   const esPaso = indice >= 1 && indice <= 3;
 
@@ -122,6 +126,8 @@ export default function App() {
     navegar('app');
   };
 
+  const entrarComoInvitado = () => entrarApp(CLIENTE_INVITADO.id);
+
   const acreditarPuntos = (id: string, puntos: number) => {
     setClientes((previos) =>
       previos.map((cliente) =>
@@ -140,6 +146,13 @@ export default function App() {
     navegar('bienvenida');
   };
 
+  // Invitado navegando sin cuenta que decide sumarse de verdad: vuelve al login real,
+  // sin pasar por "bienvenida" ni reiniciar el rubro elegido.
+  const irACrearCuenta = () => {
+    setClienteActivoId(null);
+    navegar('auth-cliente');
+  };
+
   if (recuperando) {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-6">
@@ -154,7 +167,14 @@ export default function App() {
   }
 
   if (pantalla === 'app' && clienteActivo) {
-    return <MarketplaceApp data={data} cliente={clienteActivo} onSalir={reiniciar} />;
+    return (
+      <MarketplaceApp
+        data={data}
+        cliente={clienteActivo}
+        onSalir={reiniciar}
+        onCrearCuenta={irACrearCuenta}
+      />
+    );
   }
 
   return (
@@ -245,6 +265,7 @@ export default function App() {
               data={data}
               clientes={clientes}
               onEntrar={entrarApp}
+              onInvitado={entrarComoInvitado}
               onVolver={() => navegar('bienvenida')}
             />
           )}

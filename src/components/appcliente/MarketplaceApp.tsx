@@ -28,6 +28,8 @@ interface Props {
   data: RubroData;
   cliente: Cliente;
   onSalir: () => void;
+  /** Invitado navegando sin cuenta: ir al registro real para empezar a sumar puntos de verdad. */
+  onCrearCuenta: () => void;
 }
 
 // Paleta unificada Premia.ar: los 3 rubros comparten el mismo fondo, ya no varía por tema.
@@ -56,7 +58,7 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   premiosRuleta: negocio.premiosRuleta,
 });
 
-export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
+export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }: Props) {
   const { sesion } = useSesion();
   const usarReal = supabaseEnabled && !!sesion;
 
@@ -271,6 +273,7 @@ export default function MarketplaceApp({ data, cliente, onSalir }: Props) {
             esNuevo={usarReal && !Object.keys(relaciones).some((id) => !idsEjemplo.has(id))}
             onAbrirNegocio={(elegido) => setNegocioId(elegido.id)}
             onSalir={onSalir}
+            onCrearCuenta={onCrearCuenta}
           />
         )}
       </motion.div>

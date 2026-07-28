@@ -92,7 +92,9 @@ export default function Marketplace({ negocios, relaciones, nombreCliente, esNue
         negocio.categoria.toLowerCase().includes(texto),
     );
     if (filtro !== 'todos') {
-      lista = lista.filter((negocio) => negocio.rubro === filtro);
+      lista = lista.filter(
+        (negocio) => negocio.rubro === filtro || negocio.rubrosSecundarios?.includes(filtro),
+      );
     }
     return lista;
   }, [negocios, busqueda, filtro]);

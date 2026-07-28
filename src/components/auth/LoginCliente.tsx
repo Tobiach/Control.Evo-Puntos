@@ -18,10 +18,12 @@ interface Props {
   clientes: Cliente[];
   /** Entra a la app del cliente con el socio elegido (demo) o el logueado (real). */
   onEntrar: (clienteId: string) => void;
+  /** Entra a navegar TODA la app sin cuenta: mismo marketplace, sin puntos propios. */
+  onInvitado: () => void;
   onVolver: () => void;
 }
 
-export default function LoginCliente({ data, clientes, onEntrar, onVolver }: Props) {
+export default function LoginCliente({ data, clientes, onEntrar, onInvitado, onVolver }: Props) {
   return (
     <div className="flex flex-1 flex-col gap-5 py-6">
       <header className="flex items-center gap-3">
@@ -44,6 +46,14 @@ export default function LoginCliente({ data, clientes, onEntrar, onVolver }: Pro
       ) : (
         <SelectorDemo data={data} clientes={clientes} onEntrar={onEntrar} />
       )}
+
+      <button
+        type="button"
+        onClick={onInvitado}
+        className="self-center py-1 text-xs font-semibold text-texto-muted underline underline-offset-4"
+      >
+        Continuar como invitado
+      </button>
     </div>
   );
 }

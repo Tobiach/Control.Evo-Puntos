@@ -60,7 +60,12 @@ export default function TabMapa({ negocios, onAbrirNegocio }: Props) {
   };
 
   const visibles = useMemo(
-    () => (filtro === 'todos' ? negocios : negocios.filter((negocio) => negocio.rubro === filtro)),
+    () =>
+      filtro === 'todos'
+        ? negocios
+        : negocios.filter(
+            (negocio) => negocio.rubro === filtro || negocio.rubrosSecundarios?.includes(filtro),
+          ),
     [negocios, filtro],
   );
 

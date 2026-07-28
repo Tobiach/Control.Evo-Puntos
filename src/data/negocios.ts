@@ -29,6 +29,10 @@ export interface Negocio {
   nombre: string;
   categoria: string;
   rubro: Rubro;
+  /** Rubros ADICIONALES solo para que el negocio aparezca también en esos filtros/categorías
+   *  (ej. un bar que también sirve café real). No cambia el tema visual de la tarjeta, que
+   *  sigue siendo el de `rubro`. */
+  rubrosSecundarios?: Rubro[];
   emoji: string;
   lat: number;
   lng: number;
@@ -70,6 +74,7 @@ export const NEGOCIOS: Negocio[] = [
     nombre: 'Café Nardo',
     categoria: 'Café',
     rubro: 'gastro',
+    rubrosSecundarios: ['cafeteria'],
     emoji: '☕',
     lat: -34.5862,
     lng: -58.4254,
@@ -305,6 +310,7 @@ export const NEGOCIOS: Negocio[] = [
     nombre: 'Confitería Gorriti',
     categoria: 'Panadería',
     rubro: 'gastro',
+    rubrosSecundarios: ['cafeteria'],
     emoji: '🥐',
     lat: -34.5908,
     lng: -58.4258,

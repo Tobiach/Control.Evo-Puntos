@@ -18,6 +18,7 @@ interface Props {
   esNuevo: boolean;
   onAbrirNegocio: (negocio: Negocio) => void;
   onSalir: () => void;
+  onCrearCuenta: () => void;
 }
 
 const TABS: { id: Tab; label: string; icono: LucideIcon }[] = [
@@ -40,6 +41,7 @@ export default function MarketplaceShell({
   esNuevo,
   onAbrirNegocio,
   onSalir,
+  onCrearCuenta,
 }: Props) {
   const [tab, setTab] = useState<Tab>('inicio');
 
@@ -68,7 +70,9 @@ export default function MarketplaceShell({
             {tab === 'mis-locales' && (
               <TabMisLocales negocios={negocios} relaciones={relaciones} onAbrirNegocio={onAbrirNegocio} />
             )}
-            {tab === 'perfil' && <TabPerfilMarketplace cliente={cliente} onSalir={onSalir} />}
+            {tab === 'perfil' && (
+              <TabPerfilMarketplace cliente={cliente} onSalir={onSalir} onCrearCuenta={onCrearCuenta} />
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
