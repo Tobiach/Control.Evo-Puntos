@@ -11,6 +11,7 @@ const renderMarketplace = () =>
       nombreCliente="Martina Gómez"
       esNuevo={false}
       onAbrirNegocio={vi.fn()}
+      onIrAMapa={vi.fn()}
     />,
   );
 
@@ -18,7 +19,9 @@ describe('Marketplace', () => {
   it('muestra todos los locales al inicio', () => {
     renderMarketplace();
     expect(screen.getByText('Café Nardo')).toBeInTheDocument(); // gastro
-    expect(screen.getByText('Súper Charcas')).toBeInTheDocument(); // super
+    // Súper Charcas es #1 en clientesActivos: aparece tanto en "Los más elegidos" como
+    // en la lista completa, es la duplicación esperada de esa sección.
+    expect(screen.getAllByText('Súper Charcas').length).toBeGreaterThan(0); // super
   });
 
   it('filtra por rubro', async () => {
@@ -32,7 +35,7 @@ describe('Marketplace', () => {
 
   it('filtra por búsqueda de texto (nombre)', async () => {
     renderMarketplace();
-    fireEvent.change(screen.getByPlaceholderText(/Buscar por nombre o categoría/), {
+    fireEvent.change(screen.getByPlaceholderText(/Buscar cafés, restaurantes o comercios/), {
       target: { value: 'nardo' },
     });
 
@@ -42,7 +45,7 @@ describe('Marketplace', () => {
 
   it('filtra por búsqueda de texto (categoría)', async () => {
     renderMarketplace();
-    fireEvent.change(screen.getByPlaceholderText(/Buscar por nombre o categoría/), {
+    fireEvent.change(screen.getByPlaceholderText(/Buscar cafés, restaurantes o comercios/), {
       target: { value: 'pizzería' },
     });
 
@@ -52,7 +55,7 @@ describe('Marketplace', () => {
 
   it('avisa cuando no hay coincidencias', () => {
     renderMarketplace();
-    fireEvent.change(screen.getByPlaceholderText(/Buscar por nombre o categoría/), {
+    fireEvent.change(screen.getByPlaceholderText(/Buscar cafés, restaurantes o comercios/), {
       target: { value: 'zzzzz' },
     });
     expect(screen.getByText(/No encontramos locales con esa búsqueda/)).toBeInTheDocument();

@@ -5,34 +5,34 @@
   --font-titulo: 'Space Grotesk', 'Inter', sans-serif;
   --font-nota: 'Caveat', cursive;
 
-  /* Paleta oficial Premia.ar v2 (2026-07-28) — extraída del logo/mascota Premín,
+  /* Paleta oficial Premia.ar v3 (2026-07-28) — refinada del logo/mascota Premín,
      única para los 4 rubros: la marca ya no cambia de colores por tipo de negocio,
-     solo el emoji/ícono. Roles: fondo = Mint Background, acento = Energy (Coral),
-     premio = Reward (Gold), verde-ok = Success/Community (Emerald), texto = Primary
-     (Graphite). Los valores marcados "derivado" no vinieron en la referencia exacta,
-     son una extrapolación mía a partir del resto de la paleta. */
-  --color-fondo:            #EEF7EE;
-  --color-fondo-medio:      #E7F4E4;
-  --color-card:             #F8FAF5;
-  --color-borde:            #E5EDE3;
-  --color-borde-fuerte:     #C7D6C2; /* derivado: versión más marcada del borde suave */
+     solo el emoji/ícono. Roles: fondo = bg-app, acento = coral (CTA), premio = dorado
+     (recompensa), verde-ok = verde de marca (comunidad/progreso), texto = grafito. */
+  --color-fondo:            #F3F8F1;
+  --color-fondo-medio:      #EEF7EE;
+  --color-card:             #FFFFFF;
+  --color-borde:            #E3EAE1;
+  --color-borde-fuerte:     #D7E0D5;
   --color-acento:           #F28A63;
-  --color-acento-hover:     #DD724A;
-  /* Blanco da 2.45:1 sobre el coral (no pasa WCAG AA ni para texto grande) —
-     el grafito de --color-texto da 6.37:1, y es el mismo color que ya definimos
-     como "de alto contraste" en la paleta de referencia. */
+  --color-acento-hover:     #D96E49;
+  --color-acento-suave:     #FFE2D7;
+  /* Blanco da 2.45:1 sobre el coral (no pasa WCAG AA ni para texto grande) — el
+     grafito de --color-texto da 6.37:1, y es el mismo tono ya pensado como
+     "texto de alto contraste" en la paleta de referencia. */
   --color-on-acento:        #1E2430;
   --color-texto:            #1E2430;
-  --color-texto-muted:      #5E6472;
-  --color-texto-disabled:   #B0B5BF;
+  --color-texto-muted:      #667085;
+  --color-texto-disabled:   #8B95A5;
   --color-premio:           #D89B2B;
-  --color-premio-suave:     #FBF0D9; /* derivado: tinte pálido del dorado */
+  --color-premio-suave:     #FFF3D7;
   --color-premio-claro:     #F2C15A; /* brillos/highlights sobre el dorado */
-  --color-acento-claro:     #F6A985; /* hover/degradados sobre el coral */
   --color-verde-ok:         #34C759;
-  --color-verde-suave:      #DDEFD9;
+  --color-verde-hover:      #238B45;
+  --color-verde-suave:      #E7F7EA;
   --color-verde:            #34C759; /* alias de verde-ok: ya se usaba text-verde/bg-verde en 2 pantallas */
-  --color-rojo:             #EF4444;
+  --color-exito:            #2E9B55; /* success genérico (formularios, checks), distinto del verde de marca */
+  --color-rojo:             #D75B4C;
   --color-whatsapp:         #25D366;
   /* Uso exclusivo: pin del mapa, ícono de ubicación/brújula, onboarding de dirección.
      Nunca en botones ni texto general (ese rol es de --color-acento). */
@@ -40,7 +40,7 @@
   /* Superficies oscuras deliberadas sobre el tema claro: bottom nav, overlays de
      modales y pantallas celebratorias (canje/regalo), nunca el fondo general. */
   --color-surface-dark:     #1A1A1D;
-  --color-surface-mid:      #141416; /* derivado: variante cercana a surface-dark */
+  --color-surface-mid:      #17191D;
   /* Líneas decorativas muy sutiles (fondos de onboarding/portada, nunca UI interactiva). */
   --color-lineas-conexion:  #F8F5EA;
 }

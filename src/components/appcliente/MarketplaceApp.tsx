@@ -34,10 +34,10 @@ interface Props {
 
 // Paleta unificada Premia.ar: los 3 rubros comparten el mismo fondo, ya no varía por tema.
 const COLOR_BARRA: Record<Rubro, string> = {
-  gastro: '#EEF7EE',
-  super: '#EEF7EE',
-  carniceria: '#EEF7EE',
-  cafeteria: '#EEF7EE',
+  gastro: '#F3F8F1',
+  super: '#F3F8F1',
+  carniceria: '#F3F8F1',
+  cafeteria: '#F3F8F1',
 };
 
 /** Los locales del marketplace están en Palermo (Buenos Aires): siempre ARS. */
