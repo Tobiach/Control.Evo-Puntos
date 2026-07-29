@@ -27,10 +27,6 @@ const FILTROS: { id: Filtro; label: string }[] = [
   { id: 'cafeteria', label: 'Cafetería' },
 ];
 
-/** Fondo de tarjeta unificado para los 4 rubros (verde claro), con el banner del nombre
- *  en un nude/crema distinto — reemplaza el tema oscuro por rubro que tenía antes cada tarjeta. */
-const VERDE_TARJETA = '#E9F2DE';
-
 export default function Marketplace({ negocios, relaciones, nombreCliente, esNuevo, onAbrirNegocio }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [busqueda, setBusqueda] = useState('');
@@ -214,10 +210,9 @@ function TarjetaNegocio({
       transition={{ duration: 0.22, ease: 'easeOut' }}
       whileTap={{ scale: 0.97 }}
       onClick={onAbrir}
-      className="w-full overflow-hidden rounded-3xl border border-borde text-left shadow-sm"
-      style={{ background: VERDE_TARJETA }}
+      className="w-full overflow-hidden rounded-3xl border border-borde bg-fondo text-left shadow-sm"
     >
-      <div className="flex items-center gap-3 bg-fondo-medio px-4 pt-4 pb-3">
+      <div className="flex items-center gap-3 bg-card px-4 pt-4 pb-3">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-premio-suave text-2xl">
           {negocio.emoji}
         </div>
