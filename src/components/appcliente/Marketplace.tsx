@@ -160,6 +160,36 @@ export default function Marketplace({
         </div>
       )}
 
+      {filtro === 'todos' && !busqueda.trim() && (
+        <div className="overflow-hidden rounded-[28px] border border-borde bg-linear-to-b from-fondo-medio to-fondo">
+          <div className="px-5 pt-5 pb-4">
+            <p className="text-[11px] font-extrabold tracking-[0.18em] text-verde-ok uppercase">
+              Comunidad Premia
+            </p>
+            <h2 className="mt-2 max-w-[18ch] text-[26px] leading-[1.15] font-extrabold text-texto">
+              Cada compra puede conectarte con algo nuevo.
+            </h2>
+            <p className="mt-2.5 max-w-[32ch] text-sm leading-relaxed text-texto-muted">
+              Descubrí comercios, compartí beneficios y formá parte de una comunidad que te premia
+              por volver.
+            </p>
+            <button
+              type="button"
+              onClick={onIrAMapa}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-surface-dark px-5 py-3 text-sm font-bold text-white active:opacity-90"
+            >
+              Explorar comunidad
+              <ChevronRight size={16} strokeWidth={2.8} className="text-acento" />
+            </button>
+          </div>
+          <img
+            src="/banner-comunidad.png"
+            alt="Premín conectando gente con cafés, restaurantes, almacenes, bares y carnicerías del barrio"
+            className="aspect-square w-full object-cover object-right"
+          />
+        </div>
+      )}
+
       {esNuevo && filtro === 'todos' && !busqueda.trim() && negocios.length > 0 && (
         <button
           type="button"
