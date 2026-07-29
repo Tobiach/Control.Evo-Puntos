@@ -300,8 +300,12 @@ export default function Marketplace({
                   <span className={`font-titulo w-5 shrink-0 text-center text-lg font-extrabold ${colorNumero}`}>
                     {indice + 1}
                   </span>
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-fondo-medio text-xl">
-                    {negocio.emoji}
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-fondo-medio text-xl">
+                    {negocio.logoUrl ? (
+                      <img src={negocio.logoUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      negocio.emoji
+                    )}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
@@ -374,8 +378,12 @@ function TarjetaNegocio({
       className="w-full overflow-hidden rounded-3xl border border-borde bg-fondo text-left shadow-sm"
     >
       <div className="flex items-center gap-3 bg-card px-4 pt-4 pb-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-premio-suave text-2xl">
-          {negocio.emoji}
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-premio-suave text-2xl">
+          {negocio.logoUrl ? (
+            <img src={negocio.logoUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            negocio.emoji
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-base leading-tight font-bold text-texto">{negocio.nombre}</p>
