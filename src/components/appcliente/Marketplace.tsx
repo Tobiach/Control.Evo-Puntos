@@ -1,6 +1,19 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { CalendarDays, ChevronRight, Flame, Search, TrendingUp, Trophy, Users } from 'lucide-react';
+import {
+  Beef,
+  CalendarDays,
+  ChevronRight,
+  Coffee,
+  LayoutGrid,
+  ShoppingCart,
+  Search,
+  TrendingUp,
+  Trophy,
+  UtensilsCrossed,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
 import type { Recompensa, Rubro } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import { formatPuntos } from '../../lib/club';
@@ -21,12 +34,12 @@ interface Props {
   onIrAMapa: () => void;
 }
 
-const FILTROS: { id: Filtro; label: string }[] = [
-  { id: 'todos', label: 'Todos' },
-  { id: 'gastro', label: 'Gastronomía' },
-  { id: 'super', label: 'Supermercado' },
-  { id: 'carniceria', label: 'Carnicería' },
-  { id: 'cafeteria', label: 'Cafetería' },
+const FILTROS: { id: Filtro; label: string; icono: LucideIcon }[] = [
+  { id: 'todos', label: 'Todos', icono: LayoutGrid },
+  { id: 'gastro', label: 'Gastro', icono: UtensilsCrossed },
+  { id: 'super', label: 'Súper', icono: ShoppingCart },
+  { id: 'carniceria', label: 'Carnicería', icono: Beef },
+  { id: 'cafeteria', label: 'Cafetería', icono: Coffee },
 ];
 
 export default function Marketplace({
@@ -87,6 +100,12 @@ export default function Marketplace({
     () => [...negocios].sort((a, b) => b.clientesActivos - a.clientesActivos).slice(0, 3),
     [negocios],
   );
+
+  // Destacado: preferimos uno con oferta real vigente ahora; si no hay ninguno, mostramos
+  // el más elegido como descubrimiento (sin fingir que tiene una oferta que no tiene).
+  const destacado = activasAhora[0] ?? masElegidos[0] ?? null;
+  const destacadoActivo = destacado ? activasAhora.includes(destacado) : false;
+  const destacadoPromo = destacado?.promos?.[0];
 
   return (
     <div className="flex flex-col gap-4 px-5 pt-6 pb-10">
@@ -170,47 +189,65 @@ export default function Marketplace({
         />
       </label>
 
-      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {FILTROS.map(({ id, label }) => {
+      <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {FILTROS.map(({ id, label, icono: Icono }) => {
           const activo = filtro === id;
           return (
             <button
               key={id}
               type="button"
               onClick={() => setFiltro(id)}
-              className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
-                activo ? 'bg-acento text-on-acento' : 'border border-borde bg-card text-texto-muted'
-              }`}
+              className="flex w-14 shrink-0 flex-col items-center gap-1.5"
             >
-              {label}
+              <span
+                className={`flex h-[46px] w-[46px] items-center justify-center rounded-full shadow-[0_4px_10px_rgba(30,36,48,0.10)] ${
+                  activo ? 'bg-acento' : 'bg-card'
+                }`}
+              >
+                <Icono size={19} className={activo ? 'text-on-acento' : 'text-texto-muted'} strokeWidth={2.2} />
+              </span>
+              <span className={`text-center text-[10px] font-bold ${activo ? 'text-acento' : 'text-texto'}`}>
+                {label}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {activasAhora.length > 0 && filtro === 'todos' && !busqueda.trim() && (
+      {destacado && filtro === 'todos' && !busqueda.trim() && (
         <div className="flex flex-col gap-2">
-          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
-            <Flame size={13} className="text-acento" /> Activo ahora
+          <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
+            {destacadoActivo ? '🔥 Destacado ahora' : '✨ Destacado para vos'}
           </p>
-          {activasAhora.map((negocio) => (
-            <button
-              key={negocio.id}
-              type="button"
-              onClick={() => onAbrirNegocio(negocio)}
-              className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3 text-left"
-            >
-              <span className="h-2 w-2 shrink-0 rounded-full bg-acento" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold text-texto">
-                  {negocio.emoji} {negocio.nombre}
-                </span>
-                <span className="block text-xs font-semibold text-texto-muted">
-                  Puntos x2 · termina a las {negocio.horarioValle?.hasta}
-                </span>
+          <button
+            type="button"
+            onClick={() => onAbrirNegocio(destacado)}
+            className="relative flex h-[148px] items-center justify-center overflow-hidden rounded-[20px] bg-linear-to-br from-premio to-acento text-left text-5xl"
+          >
+            <span aria-hidden>{destacado.emoji}</span>
+            <span className="absolute inset-0 bg-linear-to-t from-surface-dark/70 from-0% to-surface-dark/0 to-55%" />
+            {destacadoActivo && (
+              <span className="absolute top-2.5 left-2.5 rounded-full bg-surface-dark/80 px-2.5 py-1 text-[10px] font-bold text-white">
+                Termina a las {destacado.horarioValle?.hasta}
               </span>
-            </button>
-          ))}
+            )}
+            {destacadoPromo && (
+              <span
+                className="absolute top-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-full text-center text-[10px] leading-none font-extrabold"
+                style={{ background: META_PROMO[destacadoPromo.tipo].color, color: '#1E2430' }}
+              >
+                {META_PROMO[destacadoPromo.tipo].etiqueta}
+              </span>
+            )}
+            <span className="absolute right-3 bottom-2.5 left-3 text-white">
+              <span className="block text-sm font-extrabold">{destacado.nombre}</span>
+              <span className="block text-[10px] opacity-85">
+                {destacadoActivo
+                  ? `Puntos x2 · ${destacado.clientesActivos} activos`
+                  : `${destacado.categoria} · ${destacado.clientesActivos} activos`}
+              </span>
+            </span>
+          </button>
         </div>
       )}
 

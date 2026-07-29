@@ -192,22 +192,25 @@ export default function TabInicio({
   }, [temporada.completa]);
 
   return (
-    <div className="flex flex-col gap-5 px-5 pt-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-texto-muted">Hola, {primerNombre} 👋</p>
-          <h1 className="text-2xl font-bold text-texto">{data.nombreNegocio}</h1>
-        </div>
+    <div className="flex flex-col gap-5 pt-6">
+      <div className="relative -mt-6 flex h-32 items-center justify-center bg-linear-to-br from-premio to-acento text-5xl">
+        <span aria-hidden>{data.emoji ?? '🏪'}</span>
+        <span className="absolute inset-0 bg-linear-to-t from-surface-dark/70 from-0% to-surface-dark/0 to-60%" />
         <button
           type="button"
           onClick={onSalir}
           aria-label="Salir de la app"
-          className="rounded-full border border-borde bg-card p-2 text-texto-muted"
+          className="absolute top-4 left-5 rounded-full bg-surface-dark/50 p-2 text-white"
         >
           <ChevronLeft size={18} />
         </button>
-      </header>
+        <div className="absolute right-5 bottom-3.5 left-5 text-white">
+          <p className="text-xs font-semibold opacity-80">Hola, {primerNombre} 👋</p>
+          <h1 className="text-xl leading-tight font-extrabold">{data.nombreNegocio}</h1>
+        </div>
+      </div>
 
+      <div className="flex flex-col gap-5 px-5">
       {esNuevo && (
         <div className="flex items-start gap-3 rounded-2xl bg-premio-suave px-4 py-3.5">
           <Sparkles size={18} className="mt-0.5 shrink-0 text-acento" strokeWidth={2.4} />
@@ -474,6 +477,7 @@ export default function TabInicio({
         faltan={faltanSorpresa}
         onUsar={() => setSorpresasUsadas((valor) => valor + 1)}
       />
+      </div>
     </div>
   );
 }

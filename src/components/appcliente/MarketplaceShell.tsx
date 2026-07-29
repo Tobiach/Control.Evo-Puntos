@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Gift, Home, Map, User, type LucideIcon } from 'lucide-react';
 import type { Cliente } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
+import type { PermisoNotif } from '../../lib/notificaciones';
 import Marketplace from './Marketplace';
 import TabMapa from './TabMapa';
 import TabMisLocales from './TabMisLocales';
@@ -16,6 +17,8 @@ interface Props {
   nombreCliente: string;
   cliente: Cliente;
   esNuevo: boolean;
+  permisoNotif: PermisoNotif;
+  onPedirPermisoNotif: () => Promise<void>;
   onAbrirNegocio: (negocio: Negocio) => void;
   onSalir: () => void;
   onCrearCuenta: () => void;
@@ -41,6 +44,8 @@ export default function MarketplaceShell({
   nombreCliente,
   cliente,
   esNuevo,
+  permisoNotif,
+  onPedirPermisoNotif,
   onAbrirNegocio,
   onSalir,
   onCrearCuenta,
@@ -74,7 +79,15 @@ export default function MarketplaceShell({
               <TabMisLocales negocios={negocios} relaciones={relaciones} onAbrirNegocio={onAbrirNegocio} />
             )}
             {tab === 'perfil' && (
-              <TabPerfilMarketplace cliente={cliente} onSalir={onSalir} onCrearCuenta={onCrearCuenta} />
+              <TabPerfilMarketplace
+                cliente={cliente}
+                negocios={negocios}
+                relaciones={relaciones}
+                permisoNotif={permisoNotif}
+                onPedirPermisoNotif={onPedirPermisoNotif}
+                onSalir={onSalir}
+                onCrearCuenta={onCrearCuenta}
+              />
             )}
           </motion.div>
         </AnimatePresence>
@@ -90,24 +103,20 @@ export default function MarketplaceShell({
               onClick={() => setTab(id)}
               className="relative flex flex-1 flex-col items-center justify-center gap-1"
             >
-              {activo && (
+              {activo ? (
                 <motion.span
-                  layoutId="marketplace-tab-activo"
-                  className="absolute top-0 h-0.5 w-8 rounded-full bg-acento"
-                />
+                  layoutId="marketplace-tab-elevado"
+                  transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                  className="absolute -top-[18px] flex h-[46px] w-[46px] items-center justify-center rounded-full bg-acento shadow-[0_6px_14px_rgba(242,138,99,0.4)] ring-4 ring-fondo"
+                >
+                  <Icono size={19} strokeWidth={2.6} className="text-on-acento" />
+                </motion.span>
+              ) : (
+                <Icono size={20} strokeWidth={2} className="text-[#8B8E96]" />
               )}
               <span
-                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-                  activo ? 'bg-acento/15' : ''
-                }`}
+                className={`text-[11px] font-semibold ${activo ? 'mt-6 text-acento' : 'text-[#9CA3AF]'}`}
               >
-                <Icono
-                  size={20}
-                  strokeWidth={activo ? 2.6 : 2}
-                  className={activo ? 'text-acento' : 'text-[#8B8E96]'}
-                />
-              </span>
-              <span className={`text-[11px] font-semibold ${activo ? 'text-acento' : 'text-[#9CA3AF]'}`}>
                 {label}
               </span>
             </button>

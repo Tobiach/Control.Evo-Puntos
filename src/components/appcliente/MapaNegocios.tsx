@@ -5,6 +5,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Negocio } from '../../data/negocios';
 import { distanciaKm, formatDistancia, type Coordenadas } from '../../lib/geo';
+import { horarioValleActivoAhora } from '../../lib/misiones';
 
 /** Centro aproximado de Palermo, para saber si el usuario está en el barrio. */
 const CENTRO_PALERMO: Coordenadas = { lat: -34.5855, lng: -58.428 };
@@ -18,11 +19,12 @@ const TILES = {
 const ATRIBUCION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-/** Pin de negocio: burbuja con el emoji del local y borde en el acento del tema. */
-const iconoNegocio = (emoji: string) =>
+/** Pin de negocio: burbuja con el emoji del local. Borde verde real cuando el negocio tiene
+ *  una oferta vigente AHORA (horario valle configurado por el dueño), no un adorno fijo. */
+const iconoNegocio = (emoji: string, activo: boolean) =>
   L.divIcon({
     className: 'pin-club',
-    html: `<span class="pin-club-burbuja">${emoji}</span><span class="pin-club-punta"></span>`,
+    html: `<span class="pin-club-burbuja${activo ? ' pin-club-burbuja--activo' : ''}">${emoji}</span><span class="pin-club-punta${activo ? ' pin-club-punta--activo' : ''}"></span>`,
     iconSize: [38, 46],
     iconAnchor: [19, 44],
     popupAnchor: [0, -42],
@@ -54,6 +56,8 @@ const ESTILOS_MAPA = `
   border-left: 6px solid transparent; border-right: 6px solid transparent;
   border-top: 8px solid var(--color-ubicacion);
 }
+.pin-club-burbuja--activo { border-color: var(--color-verde-ok); }
+.pin-club-punta--activo { border-top-color: var(--color-verde-ok); }
 .pin-club-usuario {
   position: relative; display: block; width: 22px; height: 22px;
   border-radius: 9999px; background: #0EA5A4; border: 3px solid #FFFFFF;
@@ -139,11 +143,13 @@ export default function MapaNegocios({
           <TileLayer key={urlTiles} url={urlTiles} attribution={ATRIBUCION} />
           <AjustarVista puntos={puntos} />
 
-          {negocios.map((negocio) => (
+          {negocios.map((negocio) => {
+            const activo = Boolean(negocio.horarioValle && horarioValleActivoAhora(negocio.horarioValle));
+            return (
             <Marker
               key={negocio.id}
               position={[negocio.lat, negocio.lng]}
-              icon={iconoNegocio(negocio.emoji)}
+              icon={iconoNegocio(negocio.emoji, activo)}
               alt={negocio.nombre}
             >
               <Popup>
@@ -154,6 +160,11 @@ export default function MapaNegocios({
                   <p className="text-[11px] font-semibold text-texto-muted">
                     {negocio.categoria} · {formatDistancia(distanciaKm(coords, negocio))}
                   </p>
+                  {activo && (
+                    <p className="text-[11px] font-bold text-verde-ok">
+                      🟢 Puntos x2 · termina a las {negocio.horarioValle?.hasta}
+                    </p>
+                  )}
                   <button
                     type="button"
                     onClick={() => onAbrir(negocio)}
@@ -164,7 +175,8 @@ export default function MapaNegocios({
                 </div>
               </Popup>
             </Marker>
-          ))}
+            );
+          })}
 
           {usuarioEnZona && (
             <Marker position={[coords.lat, coords.lng]} icon={ICONO_USUARIO} alt="Tu ubicación">

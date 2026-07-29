@@ -44,6 +44,7 @@ const COLOR_BARRA: Record<Rubro, string> = {
 const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined): RubroData => ({
   ...DATA_RUBROS[negocio.rubro],
   nombreNegocio: negocio.nombre,
+  emoji: negocio.emoji,
   monedaPrefijo: '$',
   locale: 'es-AR',
   montoPorPunto: 100,
@@ -271,6 +272,8 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
             nombreCliente={clienteEfectivo.nombre}
             cliente={clienteEfectivo}
             esNuevo={usarReal && !Object.keys(relaciones).some((id) => !idsEjemplo.has(id))}
+            permisoNotif={permisoNotif}
+            onPedirPermisoNotif={pedirPermisoNotif}
             onAbrirNegocio={(elegido) => setNegocioId(elegido.id)}
             onSalir={onSalir}
             onCrearCuenta={onCrearCuenta}

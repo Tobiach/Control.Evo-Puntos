@@ -26,7 +26,7 @@ describe('Marketplace', () => {
 
   it('filtra por rubro', async () => {
     renderMarketplace();
-    fireEvent.click(screen.getByRole('button', { name: 'Supermercado' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Súper' }));
 
     expect(screen.getByText('Almacén Guatemala')).toBeInTheDocument(); // super
     // Los locales gastro salen de la lista tras la animación de salida.

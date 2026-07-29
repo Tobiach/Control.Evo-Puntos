@@ -95,6 +95,8 @@ export interface RubroData {
   rubro: Rubro;
   etiqueta: string;
   nombreNegocio: string;
+  /** Emoji del negocio real (ver Negocio.emoji). Sólo en la vista de un local. */
+  emoji?: string;
   monedaPrefijo: string;
   locale: string;
   montoPorPunto: number;
