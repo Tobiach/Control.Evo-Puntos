@@ -300,9 +300,13 @@ export default function Marketplace({
                   <span className={`font-titulo w-5 shrink-0 text-center text-lg font-extrabold ${colorNumero}`}>
                     {indice + 1}
                   </span>
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-fondo-medio text-xl">
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-xl ${
+                      negocio.logoUrl ? 'bg-white' : 'bg-fondo-medio'
+                    }`}
+                  >
                     {negocio.logoUrl ? (
-                      <img src={negocio.logoUrl} alt="" className="h-full w-full object-cover" />
+                      <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-1" />
                     ) : (
                       negocio.emoji
                     )}
@@ -378,9 +382,13 @@ function TarjetaNegocio({
       className="w-full overflow-hidden rounded-3xl border border-borde bg-fondo text-left shadow-sm"
     >
       <div className="flex items-center gap-3 bg-card px-4 pt-4 pb-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-premio-suave text-2xl">
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-2xl ${
+            negocio.logoUrl ? 'bg-white' : 'bg-premio-suave'
+          }`}
+        >
           {negocio.logoUrl ? (
-            <img src={negocio.logoUrl} alt="" className="h-full w-full object-cover" />
+            <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-1" />
           ) : (
             negocio.emoji
           )}

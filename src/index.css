@@ -5,28 +5,28 @@
   --font-titulo: 'Space Grotesk', 'Inter', sans-serif;
   --font-nota: 'Caveat', cursive;
 
-  /* Paleta oficial Premia.ar v3 (2026-07-28) — refinada del logo/mascota Premín,
+  /* Paleta oficial Premia.ar v4 (2026-07-30) — refinada del logo/mascota Premín,
      única para los 4 rubros: la marca ya no cambia de colores por tipo de negocio,
-     solo el emoji/ícono. Roles: fondo = bg-app, acento = coral (CTA), premio = dorado
-     (recompensa), verde-ok = verde de marca (comunidad/progreso), texto = grafito. */
+     solo el emoji/ícono. Roles invertidos a pedido: acento = dorado Premín (CTA),
+     premio = coral (recompensa), verde-ok = verde de marca (comunidad/progreso),
+     texto = grafito. */
   --color-fondo:            #F3F8F1;
   --color-fondo-medio:      #EEF7EE;
   --color-card:             #FFFFFF;
   --color-borde:            #E3EAE1;
   --color-borde-fuerte:     #D7E0D5;
-  --color-acento:           #F28A63;
-  --color-acento-hover:     #D96E49;
-  --color-acento-suave:     #FFE2D7;
-  /* Blanco da 2.45:1 sobre el coral (no pasa WCAG AA ni para texto grande) — el
-     grafito de --color-texto da 6.37:1, y es el mismo tono ya pensado como
-     "texto de alto contraste" en la paleta de referencia. */
+  --color-acento:           #D89B2B;
+  --color-acento-hover:     #B8801F; /* derivado: dorado más oscuro para estados activos */
+  --color-acento-suave:     #FFF3D7;
+  /* Grafito da 6.41:1 sobre el dorado (blanco daba 2.45:1 sobre el coral anterior y
+     no pasaba WCAG AA) — mismo criterio de alto contraste que ya usa el resto de la paleta. */
   --color-on-acento:        #1E2430;
   --color-texto:            #1E2430;
   --color-texto-muted:      #667085;
   --color-texto-disabled:   #8B95A5;
-  --color-premio:           #D89B2B;
-  --color-premio-suave:     #FFF3D7;
-  --color-premio-claro:     #F2C15A; /* brillos/highlights sobre el dorado */
+  --color-premio:           #F28A63;
+  --color-premio-suave:     #FFE2D7;
+  --color-premio-claro:     #F6A985; /* derivado: coral más claro para brillos/highlights */
   --color-verde-ok:         #34C759;
   --color-verde-hover:      #238B45;
   --color-verde-suave:      #E7F7EA;

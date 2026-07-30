@@ -26,7 +26,7 @@ export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: 
   return (
     <div className="flex flex-col gap-4 px-5 pt-6 pb-10">
       <div>
-        <h1 className="text-2xl font-bold text-texto">Mis premios</h1>
+        <h1 className="text-2xl font-bold text-verde-ok">Mis premios</h1>
         <p className="mt-0.5 text-xs text-texto-muted">Tu progreso en cada local donde ya sumás</p>
       </div>
 
@@ -47,9 +47,13 @@ export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: 
                 className="flex flex-col gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3.5 text-left"
               >
                 <span className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-premio-suave text-xl">
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-xl ${
+                      negocio.logoUrl ? 'bg-white' : 'bg-premio-suave'
+                    }`}
+                  >
                     {negocio.logoUrl ? (
-                      <img src={negocio.logoUrl} alt="" className="h-full w-full object-cover" />
+                      <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-1" />
                     ) : (
                       negocio.emoji
                     )}
