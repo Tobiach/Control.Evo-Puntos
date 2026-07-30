@@ -3,11 +3,15 @@ import { AnimatePresence, motion } from 'motion/react';
 import {
   Beef,
   CalendarDays,
+  Camera,
   ChevronRight,
   Coffee,
+  Compass,
+  History,
   LayoutGrid,
   ShoppingCart,
   Search,
+  Sparkles,
   TrendingUp,
   Trophy,
   UtensilsCrossed,
@@ -16,7 +20,7 @@ import {
 } from 'lucide-react';
 import type { Recompensa, Rubro } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
-import { formatPuntos } from '../../lib/club';
+import { fechaDeVisita, formatPuntos, historialCruzado } from '../../lib/club';
 import { horarioValleActivoAhora } from '../../lib/misiones';
 import { mesesDesde } from '../../lib/geo';
 import { META_PROMO } from '../../lib/promos';
@@ -42,6 +46,17 @@ const FILTROS: { id: Filtro; label: string; icono: LucideIcon }[] = [
   { id: 'cafeteria', label: 'Cafetería', icono: Coffee },
 ];
 
+/**
+ * Filtro por intención ("¿qué tenés ganas de hacer?"), ortogonal al rubro. Derivado 100% de
+ * `categoria` real de cada negocio — no es una etiqueta de ocasión inventada (por eso no hay
+ * "en pareja"/"con amigos"/"en familia": no hay ningún dato real que distinga eso hoy).
+ */
+const INTENCIONES: { id: string; label: string; categorias: string[] }[] = [
+  { id: 'tomar-algo', label: 'Tomar algo', categorias: ['Bar de tragos', 'Cervecería', 'Wine bar', 'Rooftop'] },
+  { id: 'desayunar', label: 'Desayunar', categorias: ['Café', 'Panadería'] },
+  { id: 'comer-afuera', label: 'Comer afuera', categorias: ['Bistró', 'Pizzería', 'Sushi', 'Rotisería'] },
+];
+
 export default function Marketplace({
   negocios,
   relaciones,
@@ -51,6 +66,7 @@ export default function Marketplace({
   onIrAMapa,
 }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
+  const [intencion, setIntencion] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState('');
 
   const visibles = useMemo(() => {
@@ -66,8 +82,14 @@ export default function Marketplace({
         (negocio) => negocio.rubro === filtro || negocio.rubrosSecundarios?.includes(filtro),
       );
     }
+    if (intencion) {
+      const categorias = INTENCIONES.find((item) => item.id === intencion)?.categorias ?? [];
+      lista = lista.filter((negocio) => categorias.includes(negocio.categoria));
+    }
     return lista;
-  }, [negocios, busqueda, filtro]);
+  }, [negocios, busqueda, filtro, intencion]);
+
+  const sinCuraduria = filtro !== 'todos' || !!intencion || !!busqueda.trim();
 
   // Resumen personal: suma real de puntos donde el cliente ya tiene relación, más la
   // recompensa real más cercana entre TODOS sus negocios. Nunca implica que los puntos
@@ -101,11 +123,28 @@ export default function Marketplace({
     [negocios],
   );
 
-  // Destacado: preferimos uno con oferta real vigente ahora; si no hay ninguno, mostramos
-  // el más elegido como descubrimiento (sin fingir que tiene una oferta que no tiene).
-  const destacado = activasAhora[0] ?? masElegidos[0] ?? null;
-  const destacadoActivo = destacado ? activasAhora.includes(destacado) : false;
-  const destacadoPromo = destacado?.promos?.[0];
+  // "Hoy pasa esto": SOLO negocios con puntos dobles vigentes ahora mismo. Sin fallback de
+  // descubrimiento — si no hay ninguno activo en este momento, la sección no aparece
+  // (mejor no mostrar nada que fingir una oferta que no existe).
+  const hoyPasaEsto = activasAhora[0] ?? null;
+
+  // Nuevos para vos: negocios donde el cliente todavía NO tiene relación (nunca fue), no
+  // necesariamente nuevos en Premia.ar. Ordenados por clientes activos para priorizar calidad.
+  const nuevosParaVos = useMemo(
+    () =>
+      negocios
+        .filter((negocio) => !relaciones[negocio.id])
+        .sort((a, b) => b.clientesActivos - a.clientesActivos)
+        .slice(0, 3),
+    [negocios, relaciones],
+  );
+
+  // Premia recomienda: solo negocios con historiaCorta cargada (ver negocios.ts) — nunca se
+  // fuerza copy genérico para completar la sección.
+  const premiaRecomienda = useMemo(() => negocios.filter((negocio) => negocio.historiaCorta).slice(0, 4), [negocios]);
+
+  // Tu historia reciente: preview corta del mismo cruce que se ve completo en Perfil.
+  const historiaReciente = useMemo(() => historialCruzado(negocios, relaciones, 3), [negocios, relaciones]);
 
   return (
     <div className="flex flex-col gap-4 px-5 pt-6 pb-10">
@@ -120,7 +159,7 @@ export default function Marketplace({
         <img src="/premin.png" alt="Premín" className="h-11 w-11 shrink-0 object-contain" />
       </header>
 
-      {filtro === 'todos' && !busqueda.trim() && (
+      {!sinCuraduria && (
         <div className="overflow-hidden rounded-[28px] border border-borde bg-linear-to-b from-fondo-medio to-fondo">
           <div className="px-5 pt-5 pb-4">
             <p className="text-[11px] font-extrabold tracking-[0.18em] text-verde-ok uppercase">
@@ -149,6 +188,27 @@ export default function Marketplace({
           />
         </div>
       )}
+
+      <div className="flex flex-col gap-2">
+        <p className="text-xs font-semibold text-texto-muted">¿Qué tenés ganas de hacer?</p>
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {INTENCIONES.map(({ id, label }) => {
+            const activo = intencion === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setIntencion(activo ? null : id)}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                  activo ? 'bg-acento text-on-acento' : 'border border-borde bg-card text-texto-muted'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {resumen && (
         <div className="rounded-3xl border border-borde bg-card p-5">
@@ -190,7 +250,7 @@ export default function Marketplace({
         </div>
       )}
 
-      {esNuevo && filtro === 'todos' && !busqueda.trim() && negocios.length > 0 && (
+      {esNuevo && !sinCuraduria && negocios.length > 0 && (
         <button
           type="button"
           onClick={onIrAMapa}
@@ -244,44 +304,39 @@ export default function Marketplace({
         })}
       </div>
 
-      {destacado && filtro === 'todos' && !busqueda.trim() && (
+      {nuevosParaVos.length > 0 && !sinCuraduria && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
-            {destacadoActivo ? '🔥 Destacado ahora' : '✨ Destacado para vos'}
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
+            <Compass size={13} className="text-acento" /> Nuevos para vos
           </p>
-          <button
-            type="button"
-            onClick={() => onAbrirNegocio(destacado)}
-            className="relative flex h-[148px] items-center justify-center overflow-hidden rounded-[20px] bg-linear-to-br from-premio to-acento text-left text-5xl"
-          >
-            <span aria-hidden>{destacado.emoji}</span>
-            <span className="absolute inset-0 bg-linear-to-t from-surface-dark/70 from-0% to-surface-dark/0 to-55%" />
-            {destacadoActivo && (
-              <span className="absolute top-2.5 left-2.5 rounded-full bg-surface-dark/80 px-2.5 py-1 text-[10px] font-bold text-white">
-                Termina a las {destacado.horarioValle?.hasta}
-              </span>
-            )}
-            {destacadoPromo && (
-              <span
-                className="absolute top-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-full text-center text-[10px] leading-none font-extrabold"
-                style={{ background: META_PROMO[destacadoPromo.tipo].color, color: '#1E2430' }}
+          <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {nuevosParaVos.map((negocio) => (
+              <button
+                key={negocio.id}
+                type="button"
+                onClick={() => onAbrirNegocio(negocio)}
+                className="flex w-[132px] shrink-0 flex-col gap-1.5 rounded-2xl border border-borde bg-card p-2.5 text-left"
               >
-                {META_PROMO[destacadoPromo.tipo].etiqueta}
-              </span>
-            )}
-            <span className="absolute right-3 bottom-2.5 left-3 text-white">
-              <span className="block text-sm font-extrabold">{destacado.nombre}</span>
-              <span className="block text-[10px] opacity-85">
-                {destacadoActivo
-                  ? `Puntos x2 · ${destacado.clientesActivos} activos`
-                  : `${destacado.categoria} · ${destacado.clientesActivos} activos`}
-              </span>
-            </span>
-          </button>
+                <span
+                  className={`flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl text-base ${
+                    negocio.logoUrl ? 'bg-white' : 'bg-premio-suave'
+                  }`}
+                >
+                  {negocio.logoUrl ? (
+                    <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-1" />
+                  ) : (
+                    negocio.emoji
+                  )}
+                </span>
+                <span className="truncate text-xs font-bold text-texto">{negocio.nombre}</span>
+                <span className="text-[10px] text-texto-muted">{negocio.categoria} · nunca fuiste</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
-      {masElegidos.length > 0 && filtro === 'todos' && !busqueda.trim() && (
+      {masElegidos.length > 0 && !sinCuraduria && (
         <div className="flex flex-col gap-2">
           <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
             <Trophy size={13} className="text-premio" /> Los más elegidos
@@ -329,6 +384,91 @@ export default function Marketplace({
                 </button>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {hoyPasaEsto && !sinCuraduria && (
+        <button
+          type="button"
+          onClick={() => onAbrirNegocio(hoyPasaEsto)}
+          className="rounded-2xl bg-surface-dark px-4 py-3.5 text-left"
+        >
+          <p className="text-[10px] font-extrabold tracking-widest text-premio-claro uppercase">🔥 Hoy pasa esto</p>
+          <p className="mt-1.5 text-sm font-bold text-white">
+            {hoyPasaEsto.nombre}
+            {hoyPasaEsto.promos?.[0] ? ` — ${hoyPasaEsto.promos[0].titulo}` : ''}
+          </p>
+          <p className="mt-0.5 text-xs text-white/60">
+            Puntos dobles hasta las {hoyPasaEsto.horarioValle?.hasta}
+          </p>
+        </button>
+      )}
+
+      {premiaRecomienda.length > 0 && !sinCuraduria && (
+        <div className="flex flex-col gap-2">
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
+            <Sparkles size={13} className="text-premio" /> Premia recomienda
+          </p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {premiaRecomienda.map((negocio) => (
+              <button
+                key={negocio.id}
+                type="button"
+                onClick={() => onAbrirNegocio(negocio)}
+                className="overflow-hidden rounded-2xl border border-borde bg-card text-left"
+              >
+                {negocio.portadaUrl ? (
+                  <img src={negocio.portadaUrl} alt="" className="h-24 w-full object-cover" />
+                ) : (
+                  <div className="flex h-24 w-full flex-col items-center justify-center gap-1 border-b border-dashed border-borde-fuerte bg-fondo-medio">
+                    <Camera size={18} className="text-texto-disabled" />
+                    <span className="text-[9px] font-bold text-texto-disabled">Foto pendiente</span>
+                  </div>
+                )}
+                <div className="px-2.5 py-2">
+                  <p className="text-[9px] font-bold tracking-wide text-texto-muted uppercase">{negocio.categoria}</p>
+                  <p className="mt-0.5 text-xs leading-tight font-bold text-texto">{negocio.historiaCorta}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {historiaReciente.length > 0 && !sinCuraduria && (
+        <div className="flex flex-col gap-2">
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
+            <History size={13} className="text-texto-muted" /> Tu historia reciente
+          </p>
+          <div className="flex flex-col gap-2">
+            {historiaReciente.map(({ negocio, visita }, indice) => (
+              <button
+                key={`${negocio.id}-${indice}`}
+                type="button"
+                onClick={() => onAbrirNegocio(negocio)}
+                className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3 text-left"
+              >
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-base ${
+                    negocio.logoUrl ? 'bg-white' : 'bg-premio-suave'
+                  }`}
+                >
+                  {negocio.logoUrl ? (
+                    <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-0.5" />
+                  ) : (
+                    negocio.emoji
+                  )}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-texto">{negocio.nombre}</p>
+                  <p className="text-xs text-texto-muted capitalize">{fechaDeVisita(visita.diasAtras, 'es-AR')}</p>
+                </div>
+                <span className="font-titulo shrink-0 text-sm font-bold text-premio">
+                  +{formatPuntos(visita.puntos)} pts
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       )}

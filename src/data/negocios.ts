@@ -59,6 +59,12 @@ export interface Negocio {
   portadaUrl?: string;
   /** Pool de premios de la ruleta semanal de ESTE local. Sin esto, se usa el pool genérico. */
   premiosRuleta?: PremioRuleta[];
+  /**
+   * Copy editorial corto para "Premia recomienda" (Home). BORRADOR pendiente de revisión de
+   * Tobias — recién hay 4 cargados a modo de ejemplo, ninguno es texto de marketing final.
+   * Sin este campo, el negocio no aparece en esa sección (no se fuerza contenido genérico).
+   */
+  historiaCorta?: string;
 }
 
 /** Relación de puntos del cliente con UN negocio (independiente por local). */
@@ -76,6 +82,9 @@ export const NEGOCIOS: Negocio[] = [
     rubro: 'gastro',
     rubrosSecundarios: ['cafeteria'],
     emoji: '☕',
+    logoUrl: '/logos/cafe.jpg',
+    portadaUrl: '/portadas/cafe.jpg',
+    historiaCorta: 'Café recién tostado y medialunas calentitas, todas las mañanas.',
     lat: -34.5862,
     lng: -58.4254,
     clientesActivos: 168,
@@ -128,6 +137,8 @@ export const NEGOCIOS: Negocio[] = [
     categoria: 'Cervecería',
     rubro: 'gastro',
     emoji: '🍺',
+    portadaUrl: '/portadas/cerveceria.jpg',
+    historiaCorta: 'Tu primera birra después de una semana larga.',
     lat: -34.5823,
     lng: -58.4337,
     clientesActivos: 235,
@@ -176,6 +187,9 @@ export const NEGOCIOS: Negocio[] = [
     categoria: 'Bistró',
     rubro: 'gastro',
     emoji: '🍽️',
+    logoUrl: '/logos/restaurante.jpg',
+    portadaUrl: '/portadas/bistro.jpg',
+    historiaCorta: 'Una mesa donde nadie mira el reloj.',
     lat: -34.589,
     lng: -58.4289,
     clientesActivos: 76,
@@ -453,6 +467,8 @@ export const NEGOCIOS: Negocio[] = [
     rubro: 'carniceria',
     emoji: '🥩',
     logoUrl: '/logos/carniceria.jpg',
+    portadaUrl: '/portadas/carniceria.jpg',
+    historiaCorta: 'El asado del finde, resuelto antes del mediodía.',
     lat: -34.5851,
     lng: -58.4276,
     clientesActivos: 214,

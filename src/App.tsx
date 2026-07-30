@@ -154,6 +154,11 @@ export default function App() {
     navegar('auth-cliente');
   };
 
+  // "Salir de la app" en el marketplace: un cliente real (entrada ?club) vuelve a su login,
+  // nunca a la pantalla interna de ventas de Tobias. Sólo en modo demo tiene sentido reiniciar
+  // todo hasta "bienvenida".
+  const salirDelMarketplace = () => (modo === 'app' ? irACrearCuenta() : reiniciar());
+
   if (recuperando) {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-6">
@@ -172,7 +177,7 @@ export default function App() {
       <MarketplaceApp
         data={data}
         cliente={clienteActivo}
-        onSalir={reiniciar}
+        onSalir={salirDelMarketplace}
         onCrearCuenta={irACrearCuenta}
       />
     );

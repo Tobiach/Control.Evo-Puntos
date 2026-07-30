@@ -7,6 +7,7 @@ import {
   type RubroData,
   type Visita,
 } from '../data/mockClientes';
+import type { Negocio, RelacionNegocio } from '../data/negocios';
 
 const MS_DIA = 86_400_000;
 
@@ -154,6 +155,28 @@ export function fechaDeVisita(diasAtras: number, locale: string): string {
     day: '2-digit',
     month: 'short',
   });
+}
+
+export interface VisitaCruzada {
+  negocio: Negocio;
+  visita: Visita;
+}
+
+/**
+ * Todas las visitas de todos los negocios con relación real, juntas y ordenadas por más
+ * reciente primero. Usado tanto en el Home (preview corta) como en Perfil (lista completa) —
+ * misma fuente de verdad, mismo dato real, un solo lugar para no duplicar la lógica.
+ */
+export function historialCruzado(
+  negocios: Negocio[],
+  relaciones: Record<string, RelacionNegocio>,
+  limite = 8,
+): VisitaCruzada[] {
+  return negocios
+    .filter((negocio) => relaciones[negocio.id])
+    .flatMap((negocio) => relaciones[negocio.id].historial.map((visita) => ({ negocio, visita })))
+    .sort((a, b) => a.visita.diasAtras - b.visita.diasAtras)
+    .slice(0, limite);
 }
 
 // ── Favoritos ───────────────────────────────────────────────────
