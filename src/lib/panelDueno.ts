@@ -57,6 +57,10 @@ export interface ClienteDelNegocio {
   valorTotal: number;
   /** Cantidad real de recompensas canjeadas en este negocio (tabla `canjes`, 0017). */
   recompensasUsadas: number;
+  /** Nota libre del dueño sobre este cliente, o `null` si no cargó ninguna (0019). */
+  nota: string | null;
+  /** Etiquetas libres del dueño (ej. "VIP", "alérgico a maní"). Array vacío si no cargó ninguna. */
+  etiquetas: string[];
 }
 
 export type ResultadoPanel<T> = { ok: true; valor: T } | { ok: false; error: string };
@@ -110,6 +114,8 @@ interface FilaClienteCrm {
   cantidad_visitas: number | string | null;
   valor_total: number | string | null;
   recompensas_usadas: number | string | null;
+  nota: string | null;
+  etiquetas: string[] | null;
 }
 
 interface FilaRecompensa {
@@ -371,8 +377,32 @@ export async function cargarClientesDelNegocio(
       cantidadVisitas: Number(fila.cantidad_visitas ?? 0),
       valorTotal: Number(fila.valor_total ?? 0),
       recompensasUsadas: Number(fila.recompensas_usadas ?? 0),
+      nota: fila.nota,
+      etiquetas: fila.etiquetas ?? [],
     })),
   };
+}
+
+/**
+ * Guarda la nota y las etiquetas que el dueño cargó para un cliente puntual. Pasa por la
+ * RPC `actualizar_nota_cliente` (0019) — mismo criterio que el resto del panel: nunca un
+ * UPDATE directo desde el cliente, aunque la policy ya lo permitiría.
+ */
+export async function actualizarNotaCliente(
+  negocioId: string,
+  clienteId: string,
+  nota: string,
+  etiquetas: string[],
+): Promise<ResultadoPanel<void>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.rpc('actualizar_nota_cliente', {
+    p_negocio_id: negocioId,
+    p_cliente_id: clienteId,
+    p_nota: nota,
+    p_etiquetas: etiquetas,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: undefined };
 }
 
 /**

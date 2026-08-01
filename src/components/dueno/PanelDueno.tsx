@@ -301,7 +301,14 @@ export default function PanelDueno(props: Props) {
             clientes={clientes}
             cargando={cargandoClientes}
             esPreview={esPreview}
+            negocioId={negocio.id}
             vipDesdePuntos={negocio.vipDesdePuntos}
+            onClienteActualizado={(clienteId, cambios) => {
+              setClientes(
+                (prev) =>
+                  prev?.map((c) => (c.clienteId === clienteId ? { ...c, ...cambios } : c)) ?? prev,
+              );
+            }}
           />
         )}
         {seccion === 'recompensas' && (
