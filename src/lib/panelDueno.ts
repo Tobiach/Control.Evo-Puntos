@@ -43,12 +43,7 @@ export interface DatosNegocioForm {
   portadaUrl: string | null;
 }
 
-export interface MetricasNegocio {
-  clientesConRelacion: number;
-  puntosAcreditados: number;
-}
-
-/** Un cliente del negocio para el mini-CRM del dueño (viene de la RPC `clientes_del_negocio`). */
+/** Un cliente del negocio para el CRM del dueño (viene de la RPC `clientes_del_negocio`). */
 export interface ClienteDelNegocio {
   clienteId: string;
   nombre: string;
@@ -56,6 +51,12 @@ export interface ClienteDelNegocio {
   puntos: number;
   /** ISO de la última visita, o `null` si todavía no registró ninguna. */
   ultimaVisitaAt: string | null;
+  /** Cantidad real de visitas registradas en este negocio. */
+  cantidadVisitas: number;
+  /** Suma real de `visitas.monto` en este negocio ("valor estimado" del CRM). */
+  valorTotal: number;
+  /** Cantidad real de recompensas canjeadas en este negocio (tabla `canjes`, 0017). */
+  recompensasUsadas: number;
 }
 
 export type ResultadoPanel<T> = { ok: true; valor: T } | { ok: false; error: string };
@@ -99,13 +100,16 @@ interface FilaNegocio {
   portada_url: string | null;
 }
 
-/** Fila cruda que devuelve la RPC `clientes_del_negocio` (ver 0006_crm_clientes_del_negocio.sql). */
+/** Fila cruda que devuelve la RPC `clientes_del_negocio` (ver 0006 + 0018 que la extiende). */
 interface FilaClienteCrm {
   cliente_id: string;
   nombre: string | null;
   telefono: string | null;
   puntos: number | null;
   ultima_visita_at: string | null;
+  cantidad_visitas: number | string | null;
+  valor_total: number | string | null;
+  recompensas_usadas: number | string | null;
 }
 
 interface FilaRecompensa {
@@ -342,25 +346,6 @@ export async function borrarItemCarta(id: number): Promise<ResultadoPanel<void>>
   return { ok: true, valor: undefined };
 }
 
-/** Métricas reales del negocio: clientes con relación y puntos acreditados. */
-export async function cargarMetricas(negocioId: string): Promise<ResultadoPanel<MetricasNegocio>> {
-  if (!supabase) return { ok: false, error: 'sin-conexion' };
-  const { data, error } = await supabase
-    .from('relaciones_negocio')
-    .select('puntos')
-    .eq('negocio_id', negocioId);
-  if (error) return { ok: false, error: error.message };
-
-  const filas = (data ?? []) as { puntos: number | null }[];
-  return {
-    ok: true,
-    valor: {
-      clientesConRelacion: filas.length,
-      puntosAcreditados: filas.reduce((total, fila) => total + (fila.puntos ?? 0), 0),
-    },
-  };
-}
-
 /**
  * Lista de clientes del negocio (mini-CRM del dueño): nombre, teléfono, puntos y última
  * visita, ordenados por la más reciente. Pasa por la RPC SECURITY DEFINER
@@ -383,6 +368,9 @@ export async function cargarClientesDelNegocio(
       telefono: fila.telefono ?? '',
       puntos: fila.puntos ?? 0,
       ultimaVisitaAt: fila.ultima_visita_at,
+      cantidadVisitas: Number(fila.cantidad_visitas ?? 0),
+      valorTotal: Number(fila.valor_total ?? 0),
+      recompensasUsadas: Number(fila.recompensas_usadas ?? 0),
     })),
   };
 }
@@ -591,4 +579,386 @@ export async function borrarEvento(id: number): Promise<ResultadoPanel<void>> {
   const { error } = await supabase.from('eventos_negocio').delete().eq('id', id);
   if (error) return { ok: false, error: error.message };
   return { ok: true, valor: undefined };
+}
+
+// ============================================================
+// PANEL OPERATIVO — resumen, copiloto de acciones y las 6 secciones de datos reales
+// (ver docs/ARQUITECTURA.md / KICKOFF-PANEL-PRO.md para el porqué de cada una). Todo sale
+// de tablas ya existentes; ninguna sección se muestra si no hay dato real que la sostenga.
+// ============================================================
+
+const MS_SEMANA = 7 * MS_DIA;
+
+export interface ResumenSemanal {
+  clientesActivos: number;
+  nuevosEstaSemana: number;
+  /** % de clientes con relación que registran 2 o más visitas reales en este negocio. */
+  recurrenciaPct: number;
+  puntosAcreditadosSemana: number;
+  /** Variación real vs. los 7 días anteriores (puede ser negativa). `null` si no hay base de comparación (0 en la semana previa). */
+  variacionPuntosPct: number | null;
+  consumoRegistradoSemana: number;
+}
+
+/** Resumen de "Inicio": clientes, recurrencia real y puntos/consumo de los últimos 7 días. */
+export async function cargarResumenSemanal(negocioId: string): Promise<ResultadoPanel<ResumenSemanal>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+
+  const { data: relaciones, error: errRel } = await supabase
+    .from('relaciones_negocio')
+    .select('created_at')
+    .eq('negocio_id', negocioId);
+  if (errRel) return { ok: false, error: errRel.message };
+
+  const ahora = Date.now();
+  const filasRel = (relaciones ?? []) as { created_at: string | null }[];
+  const nuevosEstaSemana = filasRel.filter(
+    (f) => f.created_at && ahora - new Date(f.created_at).getTime() <= MS_SEMANA,
+  ).length;
+
+  const { data: visitasCliente, error: errVc } = await supabase
+    .from('visitas')
+    .select('cliente_id')
+    .eq('negocio_id', negocioId);
+  if (errVc) return { ok: false, error: errVc.message };
+  const conteoPorCliente = new Map<string, number>();
+  for (const fila of (visitasCliente ?? []) as { cliente_id: string }[]) {
+    conteoPorCliente.set(fila.cliente_id, (conteoPorCliente.get(fila.cliente_id) ?? 0) + 1);
+  }
+  const conVarias = [...conteoPorCliente.values()].filter((n) => n >= 2).length;
+  const recurrenciaPct = filasRel.length > 0 ? Math.round((conVarias / filasRel.length) * 100) : 0;
+
+  const { data: visitas2Semanas, error: errV } = await supabase
+    .from('visitas')
+    .select('puntos, monto, created_at')
+    .eq('negocio_id', negocioId)
+    .gte('created_at', new Date(ahora - 2 * MS_SEMANA).toISOString());
+  if (errV) return { ok: false, error: errV.message };
+
+  let puntosEstaSemana = 0;
+  let puntosSemanaAnterior = 0;
+  let consumoEstaSemana = 0;
+  for (const v of (visitas2Semanas ?? []) as { puntos: number | null; monto: number | null; created_at: string }[]) {
+    const antiguedad = ahora - new Date(v.created_at).getTime();
+    if (antiguedad <= MS_SEMANA) {
+      puntosEstaSemana += v.puntos ?? 0;
+      consumoEstaSemana += v.monto ?? 0;
+    } else if (antiguedad <= 2 * MS_SEMANA) {
+      puntosSemanaAnterior += v.puntos ?? 0;
+    }
+  }
+
+  return {
+    ok: true,
+    valor: {
+      clientesActivos: filasRel.length,
+      nuevosEstaSemana,
+      recurrenciaPct,
+      puntosAcreditadosSemana: puntosEstaSemana,
+      variacionPuntosPct:
+        puntosSemanaAnterior > 0
+          ? Math.round(((puntosEstaSemana - puntosSemanaAnterior) / puntosSemanaAnterior) * 100)
+          : null,
+      consumoRegistradoSemana: consumoEstaSemana,
+    },
+  };
+}
+
+export type AccionReal =
+  | { tipo: 'puntos_por_vencer'; clienteNombre: string; puntos: number; diasRestantes: number }
+  | { tipo: 'referido_a_un_paso'; clienteNombre: string; visitasFaltantes: number }
+  | { tipo: 'recompensa_sin_canjear'; descripcion: string; diasSinCanjes: number };
+
+interface FilaAccionRpc {
+  tipo: string;
+  cliente_nombre: string | null;
+  puntos: number | null;
+  dias_restantes: number | null;
+  visitas_faltantes: number | null;
+}
+
+/**
+ * El copiloto de "Para hacer hoy": puntos por vencer + referidos a un paso (RPC
+ * `panel_acciones_reales`, 0018, porque necesita el nombre real del cliente) + recompensas
+ * activas hace más de 30 días sin ningún canje (consulta directa, sin nombre de por medio).
+ * Se ordena por urgencia real, nunca por una heurística inventada.
+ */
+export async function cargarAccionesReales(negocioId: string): Promise<ResultadoPanel<AccionReal[]>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+
+  const { data: filasRpc, error: errRpc } = await supabase.rpc('panel_acciones_reales', {
+    p_negocio_id: negocioId,
+  });
+  if (errRpc) return { ok: false, error: errRpc.message };
+
+  const acciones: AccionReal[] = [];
+  for (const fila of (filasRpc ?? []) as FilaAccionRpc[]) {
+    if (fila.tipo === 'puntos_por_vencer' && fila.cliente_nombre) {
+      acciones.push({
+        tipo: 'puntos_por_vencer',
+        clienteNombre: fila.cliente_nombre,
+        puntos: fila.puntos ?? 0,
+        diasRestantes: fila.dias_restantes ?? 0,
+      });
+    } else if (fila.tipo === 'referido_a_un_paso' && fila.cliente_nombre) {
+      acciones.push({
+        tipo: 'referido_a_un_paso',
+        clienteNombre: fila.cliente_nombre,
+        visitasFaltantes: fila.visitas_faltantes ?? 1,
+      });
+    }
+  }
+
+  const treintaDiasAtras = new Date(Date.now() - 30 * MS_DIA).toISOString();
+  const { data: recompensas, error: errRec } = await supabase
+    .from('recompensas')
+    .select('descripcion, created_at')
+    .eq('negocio_id', negocioId)
+    .eq('activa', true)
+    .lte('created_at', treintaDiasAtras);
+  if (errRec) return { ok: false, error: errRec.message };
+
+  const { data: canjesDesc, error: errCan } = await supabase
+    .from('canjes')
+    .select('descripcion')
+    .eq('negocio_id', negocioId);
+  if (errCan) return { ok: false, error: errCan.message };
+  const conCanje = new Set((canjesDesc ?? []).map((c) => (c as { descripcion: string }).descripcion));
+
+  for (const r of (recompensas ?? []) as { descripcion: string; created_at: string }[]) {
+    if (conCanje.has(r.descripcion)) continue;
+    const dias = Math.floor((Date.now() - new Date(r.created_at).getTime()) / MS_DIA);
+    acciones.push({ tipo: 'recompensa_sin_canjear', descripcion: r.descripcion, diasSinCanjes: dias });
+  }
+
+  const urgencia = (a: AccionReal) =>
+    a.tipo === 'puntos_por_vencer' ? a.diasRestantes : a.tipo === 'referido_a_un_paso' ? 3 : 10;
+  acciones.sort((a, b) => urgencia(a) - urgencia(b));
+  return { ok: true, valor: acciones };
+}
+
+export interface PuntosSemana {
+  etiqueta: string;
+  acreditados: number;
+  redimidos: number;
+}
+
+/** Puntos acreditados (`visitas`) vs. redimidos (`canjes`, 0017) de las últimas 6 semanas. */
+export async function cargarPuntosSemanales(negocioId: string): Promise<ResultadoPanel<PuntosSemana[]>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const desde = new Date(Date.now() - 6 * MS_SEMANA).toISOString();
+
+  const [{ data: visitas, error: errV }, { data: canjes, error: errC }] = await Promise.all([
+    supabase.from('visitas').select('puntos, created_at').eq('negocio_id', negocioId).gte('created_at', desde),
+    supabase.from('canjes').select('pts, created_at').eq('negocio_id', negocioId).gte('created_at', desde),
+  ]);
+  if (errV) return { ok: false, error: errV.message };
+  if (errC) return { ok: false, error: errC.message };
+
+  const semanas: PuntosSemana[] = Array.from({ length: 6 }, (_, i) => ({
+    etiqueta: `S${i + 1}`,
+    acreditados: 0,
+    redimidos: 0,
+  }));
+  const ahora = Date.now();
+  const indiceSemana = (fecha: string) => {
+    const antiguedad = ahora - new Date(fecha).getTime();
+    const i = 5 - Math.floor(antiguedad / MS_SEMANA);
+    return i >= 0 && i <= 5 ? i : null;
+  };
+  for (const v of (visitas ?? []) as { puntos: number | null; created_at: string }[]) {
+    const i = indiceSemana(v.created_at);
+    if (i !== null) semanas[i].acreditados += v.puntos ?? 0;
+  }
+  for (const c of (canjes ?? []) as { pts: number | null; created_at: string }[]) {
+    const i = indiceSemana(c.created_at);
+    if (i !== null) semanas[i].redimidos += c.pts ?? 0;
+  }
+  return { ok: true, valor: semanas };
+}
+
+export interface RankingRecompensa {
+  descripcion: string;
+  pts: number;
+  canjes: number;
+}
+
+/** Ranking real de recompensas por canjes (tabla `canjes`, 0017) — incluye las de 0 canjes. */
+export async function cargarRankingRecompensas(negocioId: string): Promise<ResultadoPanel<RankingRecompensa[]>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const [{ data: recompensas, error: errRec }, { data: canjes, error: errCan }] = await Promise.all([
+    supabase.from('recompensas').select('descripcion, pts').eq('negocio_id', negocioId).eq('activa', true),
+    supabase.from('canjes').select('descripcion').eq('negocio_id', negocioId),
+  ]);
+  if (errRec) return { ok: false, error: errRec.message };
+  if (errCan) return { ok: false, error: errCan.message };
+
+  const conteo = new Map<string, number>();
+  for (const c of (canjes ?? []) as { descripcion: string }[]) {
+    conteo.set(c.descripcion, (conteo.get(c.descripcion) ?? 0) + 1);
+  }
+  const ranking = ((recompensas ?? []) as { descripcion: string; pts: number }[]).map((r) => ({
+    descripcion: r.descripcion,
+    pts: r.pts,
+    canjes: conteo.get(r.descripcion) ?? 0,
+  }));
+  ranking.sort((a, b) => b.canjes - a.canjes);
+  return { ok: true, valor: ranking };
+}
+
+export interface EfectoHorarioValle {
+  promedioDentro: number;
+  promedioFueraPorDia: number;
+  desde: string;
+  hasta: string;
+}
+
+/**
+ * Efecto real del horario valle: visitas promedio POR FRANJA (cuando cae un día/horario
+ * configurado) vs. visitas promedio POR DÍA en el resto del horario — no son la misma unidad
+ * de tiempo, por eso el panel las etiqueta distinto en vez de compararlas como si lo fueran.
+ */
+export async function cargarEfectoHorarioValle(
+  negocioId: string,
+  horarioValle: HorarioValle,
+): Promise<ResultadoPanel<EfectoHorarioValle>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const DIAS_LOOKBACK = 30;
+  const desde = new Date(Date.now() - DIAS_LOOKBACK * MS_DIA);
+  const { data, error } = await supabase
+    .from('visitas')
+    .select('created_at')
+    .eq('negocio_id', negocioId)
+    .gte('created_at', desde.toISOString());
+  if (error) return { ok: false, error: error.message };
+
+  const [hDesde] = horarioValle.desde.split(':').map(Number);
+  const [hHasta] = horarioValle.hasta.split(':').map(Number);
+  let dentro = 0;
+  let fuera = 0;
+  let apariciones = 0;
+  for (let i = 0; i < DIAS_LOOKBACK; i += 1) {
+    const dia = new Date(desde.getTime() + i * MS_DIA).getDay();
+    if (horarioValle.dias.includes(dia)) apariciones += 1;
+  }
+  for (const v of (data ?? []) as { created_at: string }[]) {
+    const fecha = new Date(v.created_at);
+    const esDiaValle = horarioValle.dias.includes(fecha.getDay());
+    const hora = fecha.getHours();
+    if (esDiaValle && hora >= hDesde && hora < hHasta) dentro += 1;
+    else fuera += 1;
+  }
+
+  return {
+    ok: true,
+    valor: {
+      promedioDentro: apariciones > 0 ? Math.round(dentro / apariciones) : 0,
+      promedioFueraPorDia: Math.round(fuera / DIAS_LOOKBACK),
+      desde: horarioValle.desde,
+      hasta: horarioValle.hasta,
+    },
+  };
+}
+
+export interface ReferidosFunnel {
+  registrados: number;
+  convertidos: number;
+}
+
+/** Referidos reales: registrados (tabla `referidos`) vs. convertidos (`premiado_at` no nulo). */
+export async function cargarReferidosFunnel(negocioId: string): Promise<ResultadoPanel<ReferidosFunnel>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase.from('referidos').select('premiado_at').eq('negocio_id', negocioId);
+  if (error) return { ok: false, error: error.message };
+  const filas = (data ?? []) as { premiado_at: string | null }[];
+  return {
+    ok: true,
+    valor: {
+      registrados: filas.length,
+      convertidos: filas.filter((f) => f.premiado_at !== null).length,
+    },
+  };
+}
+
+export interface ActividadEvento {
+  nombre: string;
+  visitasDurante: number;
+  promedioNormalPorDia: number;
+}
+
+/**
+ * Compara el evento más reciente (ya empezado) contra el promedio diario de las 4 semanas
+ * previas al evento — para saber si el evento realmente movió la aguja, sin inventar un
+ * porcentaje: son dos conteos reales, uno al lado del otro.
+ */
+export async function cargarActividadEventoReciente(
+  negocioId: string,
+): Promise<ResultadoPanel<ActividadEvento | null>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data: eventos, error: errEv } = await supabase
+    .from('eventos_negocio')
+    .select('nombre, fecha_inicio, fecha_fin')
+    .eq('negocio_id', negocioId)
+    .lte('fecha_inicio', new Date().toISOString().slice(0, 10))
+    .order('fecha_inicio', { ascending: false })
+    .limit(1);
+  if (errEv) return { ok: false, error: errEv.message };
+  const evento = (eventos ?? [])[0] as { nombre: string; fecha_inicio: string; fecha_fin: string } | undefined;
+  if (!evento) return { ok: true, valor: null };
+
+  const inicio = new Date(evento.fecha_inicio);
+  const fin = new Date(evento.fecha_fin);
+  const diasEvento = Math.max(1, Math.round((fin.getTime() - inicio.getTime()) / MS_DIA) + 1);
+  const previoDesde = new Date(inicio.getTime() - 28 * MS_DIA);
+
+  const { data: visitas, error: errV } = await supabase
+    .from('visitas')
+    .select('created_at')
+    .eq('negocio_id', negocioId)
+    .gte('created_at', previoDesde.toISOString())
+    .lte('created_at', fin.toISOString());
+  if (errV) return { ok: false, error: errV.message };
+
+  let durante = 0;
+  let antes = 0;
+  for (const v of (visitas ?? []) as { created_at: string }[]) {
+    const t = new Date(v.created_at).getTime();
+    if (t >= inicio.getTime()) durante += 1;
+    else antes += 1;
+  }
+
+  return {
+    ok: true,
+    valor: {
+      nombre: evento.nombre,
+      visitasDurante: durante,
+      promedioNormalPorDia: Math.round((antes / 28) * diasEvento),
+    },
+  };
+}
+
+export interface DesafiosPorEstado {
+  cumplidos: number;
+  enCurso: number;
+  fallados: number;
+}
+
+/** Desafíos entre amigos (0009) por estado real, derivado de `premiado_at`/`vence_at`. */
+export async function cargarDesafiosPorEstado(negocioId: string): Promise<ResultadoPanel<DesafiosPorEstado>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase
+    .from('desafios_amigos')
+    .select('premiado_at, vence_at')
+    .eq('negocio_id', negocioId);
+  if (error) return { ok: false, error: error.message };
+
+  const ahora = Date.now();
+  const filas = (data ?? []) as { premiado_at: string | null; vence_at: string }[];
+  const resultado = { cumplidos: 0, enCurso: 0, fallados: 0 };
+  for (const f of filas) {
+    if (f.premiado_at) resultado.cumplidos += 1;
+    else if (new Date(f.vence_at).getTime() < ahora) resultado.fallados += 1;
+    else resultado.enCurso += 1;
+  }
+  return { ok: true, valor: resultado };
 }

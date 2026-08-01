@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Clock, Coins, Crown, Loader2, Phone, Search, Users } from 'lucide-react';
+import { Clock, Coins, Crown, Gift, Loader2, Phone, Search, TrendingUp, Users } from 'lucide-react';
 import { formatPuntos } from '../../lib/club';
+import { formatPrecio } from '../../lib/carta';
 import { textoUltimaVisita, type ClienteDelNegocio } from '../../lib/panelDueno';
 
 interface Props {
@@ -80,7 +81,7 @@ export default function SeccionClientes({ clientes, cargando, esPreview, vipDesd
                     </span>
                   )}
                 </p>
-                <p className="mt-0.5 flex items-center gap-3 text-xs text-texto-muted">
+                <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-texto-muted">
                   {cliente.telefono && (
                     <span className="flex items-center gap-1">
                       <Phone size={12} className="shrink-0" />
@@ -91,6 +92,17 @@ export default function SeccionClientes({ clientes, cargando, esPreview, vipDesd
                     <Clock size={12} className="shrink-0" />
                     {textoUltimaVisita(cliente.ultimaVisitaAt, ahora)}
                   </span>
+                  <span className="flex items-center gap-1">
+                    <TrendingUp size={12} className="shrink-0" />
+                    {cliente.cantidadVisitas} {cliente.cantidadVisitas === 1 ? 'visita' : 'visitas'} ·{' '}
+                    {formatPrecio(cliente.valorTotal)}
+                  </span>
+                  {cliente.recompensasUsadas > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Gift size={12} className="shrink-0" />
+                      {cliente.recompensasUsadas} {cliente.recompensasUsadas === 1 ? 'canje' : 'canjes'}
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1 rounded-xl bg-premio-suave px-2.5 py-1.5">

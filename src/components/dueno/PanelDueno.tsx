@@ -19,13 +19,11 @@ import type { Recompensa } from '../../data/mockClientes';
 import {
   cambiarEstadoNegocio,
   cargarClientesDelNegocio,
-  cargarMetricas,
   cargarNegocioDelDueno,
   cargarPerfilDueno,
   guardarNegocioYRecompensas,
   type ClienteDelNegocio,
   type DatosNegocioForm,
-  type MetricasNegocio,
 } from '../../lib/panelDueno';
 import SeccionNegocio from './SeccionNegocio';
 import SeccionPerfil from './SeccionPerfil';
@@ -90,11 +88,9 @@ export default function PanelDueno(props: Props) {
   const [negocio, setNegocio] = useState<DatosNegocioForm>(NEGOCIO_VACIO);
   const [perfilNombre, setPerfilNombre] = useState('');
   const [recompensas, setRecompensas] = useState<Recompensa[]>([]);
-  const [metricas, setMetricas] = useState<MetricasNegocio | null>(null);
   const [clientes, setClientes] = useState<ClienteDelNegocio[] | null>(null);
   const [clientesCargados, setClientesCargados] = useState(false);
   const [cargandoInicial, setCargandoInicial] = useState(!esPreview);
-  const [cargandoMetricas, setCargandoMetricas] = useState(false);
   const [cargandoClientes, setCargandoClientes] = useState(false);
   const [cambiandoEstado, setCambiandoEstado] = useState(false);
   const [guardando, setGuardando] = useState(false);
@@ -102,15 +98,8 @@ export default function PanelDueno(props: Props) {
 
   const duenoUserId = props.modo === 'conectado' ? props.duenoUserId : null;
 
-  const refrescarMetricas = async (negocioId: string | null) => {
-    if (!negocioId) return;
-    setCargandoMetricas(true);
-    const resultado = await cargarMetricas(negocioId);
-    if (resultado.ok) setMetricas(resultado.valor);
-    setCargandoMetricas(false);
-  };
-
-  // Carga inicial (solo modo conectado): trae el negocio ya cargado + sus recompensas + métricas.
+  // Carga inicial (solo modo conectado): trae el negocio ya cargado + sus recompensas.
+  // Las métricas/copiloto ahora las carga SeccionMetricas por su cuenta (ver ese componente).
   useEffect(() => {
     if (!duenoUserId) return;
     let activo = true;
@@ -120,7 +109,6 @@ export default function PanelDueno(props: Props) {
       if (resultado.ok && resultado.valor) {
         setNegocio(resultado.valor.negocio);
         setRecompensas(resultado.valor.recompensas);
-        void refrescarMetricas(resultado.valor.negocio.id);
       }
       setCargandoInicial(false);
     });
@@ -196,7 +184,6 @@ export default function PanelDueno(props: Props) {
     }
     setNegocio((previo) => ({ ...previo, id: resultado.valor.id }));
     setAviso({ tipo: 'ok', texto: 'Tu negocio quedó guardado.' });
-    void refrescarMetricas(resultado.valor.id);
   };
 
   if (cargandoInicial) {
@@ -327,12 +314,7 @@ export default function PanelDueno(props: Props) {
           />
         )}
         {seccion === 'metricas' && (
-          <SeccionMetricas
-            metricas={metricas}
-            cantidadRecompensas={recompensas.length}
-            cargando={cargandoMetricas}
-            esPreview={esPreview}
-          />
+          <SeccionMetricas negocioId={negocio.id} horarioValle={negocio.horarioValle} esPreview={esPreview} />
         )}
         {seccion === 'perfil' && (
           <SeccionPerfil
