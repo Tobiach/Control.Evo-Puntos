@@ -54,6 +54,14 @@ function esEntradaDirecta(): boolean {
   return new URLSearchParams(window.location.search).has('club');
 }
 
+/**
+ * Link directo para un dueño real (`?admin`): entra derecho a su login, sin pasar por la
+ * pantalla de bienvenida interna (rubro + demo/app) que ve Tobias. Mismo criterio que `?club`.
+ */
+function esEntradaDirectaDueno(): boolean {
+  return new URLSearchParams(window.location.search).has('admin');
+}
+
 const clonarClientes = (rubro: Rubro): Cliente[] =>
   DATA_RUBROS[rubro].clientes.map((cliente) => ({ ...cliente }));
 
@@ -67,6 +75,7 @@ export default function App() {
   const [rubro, setRubro] = useState<Rubro>(rubroInicial);
   const [modo, setModo] = useState<Modo>(() => (esEntradaDirecta() ? 'app' : 'demo'));
   const [pantalla, setPantalla] = useState<Pantalla>(() => {
+    if (esEntradaDirectaDueno()) return 'auth-dueno';
     if (!esEntradaDirecta()) return 'bienvenida';
     // No primera vez: directo al login, sin Premín ni la portada de marca/promesa de nuevo.
     return yaVioOnboardingPremin() ? 'auth-cliente' : 'onboarding-premin';
@@ -159,6 +168,16 @@ export default function App() {
   // todo hasta "bienvenida".
   const salirDelMarketplace = () => (modo === 'app' ? irACrearCuenta() : reiniciar());
 
+  // "Volver" desde el login de dueño: un dueño real (entrada ?admin) no tiene a dónde volver
+  // más que a su propio login — nunca a la pantalla interna de ventas de Tobias.
+  const volverDeAuthDueno = () => {
+    if (esEntradaDirectaDueno()) {
+      window.location.reload();
+      return;
+    }
+    navegar('bienvenida');
+  };
+
   if (recuperando) {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-6">
@@ -181,6 +200,13 @@ export default function App() {
         onCrearCuenta={irACrearCuenta}
       />
     );
+  }
+
+  // El panel del dueño necesita más ancho que el resto de la app en escritorio (es donde
+  // más lo revisa) — escapa del contenedor angosto compartido, igual que MarketplaceApp.
+  // LoginDueno se encarga de dar el ancho correcto según esté mostrando el login o el panel.
+  if (pantalla === 'auth-dueno') {
+    return <LoginDueno onVolver={volverDeAuthDueno} />;
   }
 
   return (
@@ -275,7 +301,6 @@ export default function App() {
               onVolver={() => navegar('bienvenida')}
             />
           )}
-          {pantalla === 'auth-dueno' && <LoginDueno onVolver={() => navegar('bienvenida')} />}
           {pantalla === 'auth-cajero' && (
             <LoginCajero data={data} onVolver={() => navegar('bienvenida')} />
           )}

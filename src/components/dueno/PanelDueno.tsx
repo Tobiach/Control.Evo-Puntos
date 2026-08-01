@@ -209,45 +209,20 @@ export default function PanelDueno(props: Props) {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 py-5">
-      <header className="flex items-center gap-3">
+    <div className="flex flex-1 flex-col gap-4 py-5 md:flex-row md:items-start md:gap-8">
+      {/* Sidebar: solo desktop. En mobile la navegación sigue siendo las pestañas de siempre. */}
+      <aside className="hidden shrink-0 md:sticky md:top-6 md:flex md:w-56 md:flex-col md:gap-1">
         <button
           type="button"
           onClick={props.onVolver}
-          aria-label="Volver"
-          className="rounded-full border border-borde bg-card p-2 text-texto-muted"
+          className="mb-3 flex items-center gap-2 self-start rounded-full border border-borde bg-card px-3 py-1.5 text-xs font-bold text-texto-muted"
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={14} /> Volver
         </button>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-2xl font-bold tracking-tight">Mi panel</h2>
-          <p className="truncate text-sm text-texto-muted">
-            {props.modo === 'conectado' ? props.emailSesion : 'Modo demostración'}
-          </p>
-        </div>
-      </header>
-
-      {props.modo === 'conectado' && negocio.id && !negocio.activo && (
-        <div className="flex items-start gap-3 rounded-2xl border border-rojo/40 bg-rojo/10 px-4 py-3">
-          <PauseCircle size={18} className="mt-0.5 shrink-0 text-rojo" />
-          <p className="text-sm leading-snug text-texto">
-            <span className="font-bold">Tu club está pausado.</span> No aparece en el marketplace de
-            los clientes. Reactivalo cuando quieras desde la pestaña “Negocio”.
-          </p>
-        </div>
-      )}
-
-      {esPreview && (
-        <div className="flex items-start gap-3 rounded-2xl border border-premio/40 bg-premio-suave px-4 py-3">
-          <Store size={18} className="mt-0.5 shrink-0 text-acento" />
-          <p className="text-sm leading-snug text-texto">
-            <span className="font-bold">Vista previa.</span> Cargá todo y probá cómo se ve. Se va a
-            guardar de verdad cuando conectemos tu negocio.
-          </p>
-        </div>
-      )}
-
-      <div className="flex gap-1.5 rounded-2xl border border-borde bg-card p-1.5">
+        <h2 className="px-1 text-xl font-bold tracking-tight">Mi panel</h2>
+        <p className="mb-4 truncate px-1 text-xs text-texto-muted">
+          {props.modo === 'conectado' ? props.emailSesion : 'Modo demostración'}
+        </p>
         {SECCIONES.map(({ clave, etiqueta, icono: Icono }) => {
           const activo = seccion === clave;
           return (
@@ -255,19 +230,76 @@ export default function PanelDueno(props: Props) {
               key={clave}
               type="button"
               onClick={() => setSeccion(clave)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition-colors ${
+              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors ${
                 activo ? 'bg-acento text-on-acento' : 'text-texto-muted'
               }`}
             >
-              <Icono size={15} className="shrink-0" />
+              <Icono size={16} className="shrink-0" />
               <span>{etiqueta}</span>
             </button>
           );
         })}
-      </div>
+      </aside>
 
-      <div className="flex-1">
-        {seccion === 'negocio' && (
+      <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <header className="flex items-center gap-3 md:hidden">
+          <button
+            type="button"
+            onClick={props.onVolver}
+            aria-label="Volver"
+            className="rounded-full border border-borde bg-card p-2 text-texto-muted"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-2xl font-bold tracking-tight">Mi panel</h2>
+            <p className="truncate text-sm text-texto-muted">
+              {props.modo === 'conectado' ? props.emailSesion : 'Modo demostración'}
+            </p>
+          </div>
+        </header>
+
+        {props.modo === 'conectado' && negocio.id && !negocio.activo && (
+          <div className="flex items-start gap-3 rounded-2xl border border-rojo/40 bg-rojo/10 px-4 py-3">
+            <PauseCircle size={18} className="mt-0.5 shrink-0 text-rojo" />
+            <p className="text-sm leading-snug text-texto">
+              <span className="font-bold">Tu club está pausado.</span> No aparece en el marketplace de
+              los clientes. Reactivalo cuando quieras desde la pestaña “Negocio”.
+            </p>
+          </div>
+        )}
+
+        {esPreview && (
+          <div className="flex items-start gap-3 rounded-2xl border border-premio/40 bg-premio-suave px-4 py-3">
+            <Store size={18} className="mt-0.5 shrink-0 text-acento" />
+            <p className="text-sm leading-snug text-texto">
+              <span className="font-bold">Vista previa.</span> Cargá todo y probá cómo se ve. Se va a
+              guardar de verdad cuando conectemos tu negocio.
+            </p>
+          </div>
+        )}
+
+        <div className="flex gap-1.5 rounded-2xl border border-borde bg-card p-1.5 md:hidden">
+          {SECCIONES.map(({ clave, etiqueta, icono: Icono }) => {
+            const activo = seccion === clave;
+            return (
+              <button
+                key={clave}
+                type="button"
+                onClick={() => setSeccion(clave)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition-colors ${
+                  activo ? 'bg-acento text-on-acento' : 'text-texto-muted'
+                }`}
+              >
+                <Icono size={15} className="shrink-0" />
+                <span>{etiqueta}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex-1">
+          {seccion === 'negocio' && (
           <div className="flex flex-col gap-5">
             <SeccionNegocio negocio={negocio} onCambiar={cambiarNegocio} />
             {props.modo === 'conectado' && negocio.id && (
@@ -340,6 +372,7 @@ export default function PanelDueno(props: Props) {
       </motion.button>
 
       {props.modo === 'conectado' && <CerrarSesion onCerrarSesion={props.onCerrarSesion} />}
+      </div>
     </div>
   );
 }

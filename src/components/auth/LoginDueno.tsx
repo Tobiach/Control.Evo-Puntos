@@ -74,26 +74,34 @@ export default function LoginDueno({ onVolver }: Props) {
     // En éxito con sesión inmediata, `useSesion` la detecta y se muestra el panel.
   };
 
-  // Dueño logueado de verdad → panel real, con persistencia en Supabase.
+  // Dueño logueado de verdad → panel real, con persistencia en Supabase. Contenedor ancho:
+  // es la pantalla que un dueño más revisa desde la computadora, no solo desde el celular.
   if (!cargando && sesion) {
     return (
-      <PanelDueno
-        modo="conectado"
-        duenoUserId={sesion.user.id}
-        emailSesion={sesion.user.email ?? ''}
-        onVolver={onVolver}
-        onCerrarSesion={cerrarSesion}
-      />
+      <div className="mx-auto min-h-dvh w-full max-w-6xl px-5 pb-6 md:px-8">
+        <PanelDueno
+          modo="conectado"
+          duenoUserId={sesion.user.id}
+          emailSesion={sesion.user.email ?? ''}
+          onVolver={onVolver}
+          onCerrarSesion={cerrarSesion}
+        />
+      </div>
     );
   }
 
-  // Vista previa (sin backend conectado): panel en memoria, sin persistir.
+  // Vista previa (sin backend conectado): panel en memoria, sin persistir. Mismo ancho que el panel real.
   if (previsualizando) {
-    return <PanelDueno modo="preview" onVolver={() => setPrevisualizando(false)} />;
+    return (
+      <div className="mx-auto min-h-dvh w-full max-w-6xl px-5 pb-6 md:px-8">
+        <PanelDueno modo="preview" onVolver={() => setPrevisualizando(false)} />
+      </div>
+    );
   }
 
+  // El formulario de login sigue angosto y centrado — no tiene sentido estirarlo en desktop.
   return (
-    <div className="flex flex-1 flex-col gap-5 py-6">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
       <header className="flex items-center gap-3">
         <button
           type="button"
