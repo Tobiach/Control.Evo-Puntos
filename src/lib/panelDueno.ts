@@ -906,8 +906,12 @@ export async function cargarActividadEventoReciente(
   const evento = (eventos ?? [])[0] as { nombre: string; fecha_inicio: string; fecha_fin: string } | undefined;
   if (!evento) return { ok: true, valor: null };
 
-  const inicio = new Date(evento.fecha_inicio);
-  const fin = new Date(evento.fecha_fin);
+  // `fecha_inicio`/`fecha_fin` son DATE (sin hora). `new Date('2026-08-01')` a secas se
+  // parsea como medianoche UTC — en Argentina (UTC-3) eso cae la tarde/noche del día
+  // ANTERIOR, así que las visitas reales de ESE mismo día quedaban afuera del filtro.
+  // Agregar la hora explícita fuerza el parseo en la zona horaria local del navegador.
+  const inicio = new Date(`${evento.fecha_inicio}T00:00:00`);
+  const fin = new Date(`${evento.fecha_fin}T23:59:59`);
   const diasEvento = Math.max(1, Math.round((fin.getTime() - inicio.getTime()) / MS_DIA) + 1);
   const previoDesde = new Date(inicio.getTime() - 28 * MS_DIA);
 

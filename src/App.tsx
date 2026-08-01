@@ -262,7 +262,11 @@ export default function App() {
               cantidadLocales={NEGOCIOS.length}
               onTerminar={() => {
                 marcarOnboardingPreminVisto();
-                navegar('portada-cliente');
+                // Directo al login: la portada de marca (2 pantallas más, Premín de nuevo)
+                // quedaba pegada acá y hacía el link ?club demasiado largo para compartir —
+                // el onboarding ya cubrió la propuesta de valor. Portada sigue existiendo
+                // para la demo interna (Bienvenida → "App del cliente" → Comenzar).
+                navegar('auth-cliente');
               }}
             />
           )}

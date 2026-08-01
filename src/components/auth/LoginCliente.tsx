@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { AtSign, ChevronLeft, Loader2, Lock, Phone, Sparkles, User } from 'lucide-react';
 import type { Cliente, RubroData } from '../../data/mockClientes';
@@ -12,6 +12,7 @@ import {
   validarPassword,
   validarTelefono,
 } from '../../lib/auth';
+import { useSesion } from '../../hooks/useSesion';
 
 interface Props {
   data: RubroData;
@@ -24,6 +25,23 @@ interface Props {
 }
 
 export default function LoginCliente({ data, clientes, onEntrar, onInvitado, onVolver }: Props) {
+  // Si el navegador ya tiene una sesión real (entró antes y no cerró sesión), saltea el
+  // formulario de login por completo y entra directo al Home — mismo criterio que ya
+  // usa LoginDueno.tsx para el panel del dueño.
+  const { sesion, cargando: cargandoSesion } = useSesion();
+  useEffect(() => {
+    if (!cargandoSesion && sesion) onEntrar(data.clienteAppId);
+  }, [cargandoSesion, sesion, data.clienteAppId, onEntrar]);
+
+  if (supabaseEnabled && (cargandoSesion || sesion)) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-texto-muted">
+        <Loader2 size={24} className="animate-spin" />
+        <p className="text-sm font-medium">Entrando…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-5 py-6">
       <header className="flex items-center gap-3">

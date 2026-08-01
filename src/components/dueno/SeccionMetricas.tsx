@@ -182,9 +182,9 @@ export default function SeccionMetricas({ negocioId, horarioValle, esPreview }: 
             <BarChart3 size={15} className="text-acento" /> Puntos: acreditados vs. redimidos
           </p>
           <p className="mt-0.5 text-xs text-texto-muted">Últimas 6 semanas</p>
-          <div className="mt-4 flex h-28 items-end justify-between gap-2">
+          <div className="mt-4 flex h-28 justify-between gap-2">
             {puntosSemanales.map((s, i) => (
-              <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
+              <div key={i} className="flex h-full flex-1 flex-col items-center gap-1.5">
                 <div className="flex w-full flex-1 items-end justify-center gap-1">
                   <div
                     className="w-2.5 rounded-t-sm bg-acento"
