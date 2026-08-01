@@ -13,11 +13,13 @@
 -- 1. El dueño lee referidos y desafíos de SU negocio
 -- ============================================================
 
+DROP POLICY IF EXISTS "El dueño ve los referidos de su negocio" ON referidos;
 CREATE POLICY "El dueño ve los referidos de su negocio" ON referidos
   FOR SELECT USING (
     auth.uid() = (SELECT dueno_user_id FROM negocios WHERE id = negocio_id)
   );
 
+DROP POLICY IF EXISTS "El dueño ve los desafíos de su negocio" ON desafios_amigos;
 CREATE POLICY "El dueño ve los desafíos de su negocio" ON desafios_amigos
   FOR SELECT USING (
     auth.uid() = (SELECT dueno_user_id FROM negocios WHERE id = negocio_id)
@@ -26,7 +28,11 @@ CREATE POLICY "El dueño ve los desafíos de su negocio" ON desafios_amigos
 -- ============================================================
 -- 2. clientes_del_negocio (0006): se agrega visitas/valor/recompensas usadas —
 --    todo lo que el CRM completo necesita para no quedar en una tabla plana.
+--    Postgres no permite CREATE OR REPLACE cuando cambian las columnas de salida
+--    (RETURNS TABLE) — hay que borrar la función vieja primero.
 -- ============================================================
+
+DROP FUNCTION IF EXISTS clientes_del_negocio(TEXT);
 
 CREATE OR REPLACE FUNCTION clientes_del_negocio(p_negocio_id TEXT)
 RETURNS TABLE (
