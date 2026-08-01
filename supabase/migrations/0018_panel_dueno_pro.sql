@@ -68,17 +68,17 @@ BEGIN
   FROM relaciones_negocio r
   JOIN clientes c ON c.id = r.cliente_id
   LEFT JOIN (
-    SELECT cliente_id, COUNT(*) AS cantidad, SUM(monto) AS total
+    SELECT visitas.cliente_id AS cid, COUNT(*) AS cantidad, SUM(monto) AS total
     FROM visitas
     WHERE negocio_id = p_negocio_id
-    GROUP BY cliente_id
-  ) v ON v.cliente_id = r.cliente_id
+    GROUP BY visitas.cliente_id
+  ) v ON v.cid = r.cliente_id
   LEFT JOIN (
-    SELECT cliente_id, COUNT(*) AS cantidad
+    SELECT canjes.cliente_id AS cid, COUNT(*) AS cantidad
     FROM canjes
     WHERE negocio_id = p_negocio_id
-    GROUP BY cliente_id
-  ) k ON k.cliente_id = r.cliente_id
+    GROUP BY canjes.cliente_id
+  ) k ON k.cid = r.cliente_id
   WHERE r.negocio_id = p_negocio_id
   ORDER BY r.ultima_visita_at DESC NULLS LAST;
 END;
