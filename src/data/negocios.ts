@@ -106,7 +106,7 @@ export const NEGOCIOS: Negocio[] = [
     horarioValle: { desde: '15:00', hasta: '17:00', dias: [1, 2, 3] },
     promos: [
       { tipo: '2x1', titulo: '2x1 en café con leche', detalle: 'Todas las mañanas hasta las 11' },
-      { tipo: 'delivery-gratis', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $6.000' },
+      { tipo: 'descuento', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $6.000' },
     ],
     beneficiosVip: ['Mesa preferencial sin espera', 'Probás el café de origen antes que nadie'],
   },
@@ -218,7 +218,7 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 550, descripcion: 'Pizza de autor de regalo', categoria: 'Regalos' },
     ],
     promos: [
-      { tipo: 'delivery-gratis', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $8.000' },
+      { tipo: 'descuento', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $8.000' },
       { tipo: '2x1', titulo: '2x1 en fainá', detalle: 'Todos los lunes' },
     ],
     beneficiosVip: ['Elegís la pizza del mes de la carta', 'Horno a leña reservado para tu grupo'],
@@ -261,7 +261,7 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 1000, descripcion: 'Vale de compra $10.000', categoria: 'Descuentos' },
     ],
     promos: [
-      { tipo: 'delivery-gratis', titulo: 'Envío gratis', detalle: 'En compras desde $15.000' },
+      { tipo: 'descuento', titulo: 'Envío gratis', detalle: 'En compras desde $15.000' },
       { tipo: 'descuento', titulo: '15% en frescos', detalle: 'Los miércoles de feria' },
     ],
     beneficiosVip: ['Caja rápida exclusiva sin fila', 'Ofertas de la semana antes que el resto'],
@@ -319,7 +319,7 @@ export const NEGOCIOS: Negocio[] = [
     ],
     promos: [
       { tipo: '2x1', titulo: '2x1 en cuartos', detalle: 'Martes y jueves' },
-      { tipo: 'delivery-gratis', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $5.000' },
+      { tipo: 'descuento', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $5.000' },
     ],
     beneficiosVip: ['Probás los gustos nuevos antes que nadie', 'Cucurucho extra en tu cumple'],
   },
@@ -361,7 +361,7 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 650, descripcion: '15% off en tu pedido', categoria: 'Descuentos' },
     ],
     promos: [
-      { tipo: 'delivery-gratis', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $12.000' },
+      { tipo: 'descuento', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $12.000' },
       { tipo: 'descuento', titulo: '25% take away', detalle: 'Retirando por el local, de lunes a miércoles' },
     ],
     beneficiosVip: ['Roll de autor fuera de carta', 'Reserva de barra frente al itamae'],
@@ -413,7 +413,7 @@ export const NEGOCIOS: Negocio[] = [
     horarioValle: { desde: '08:00', hasta: '10:00', dias: [1, 2, 3, 4, 5] },
     promos: [
       { tipo: 'horario', titulo: 'Feria de la mañana', detalle: 'Frescos con 15% off de 8 a 10' },
-      { tipo: 'delivery-gratis', titulo: 'Envío al barrio sin cargo', detalle: 'En compras desde $8.000' },
+      { tipo: 'descuento', titulo: 'Envío al barrio sin cargo', detalle: 'En compras desde $8.000' },
     ],
     beneficiosVip: ['Te apartamos lo más fresco del día', 'Bolsón armado a tu gusto'],
   },
@@ -434,7 +434,7 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 540, descripcion: '10% off en tu pedido', categoria: 'Descuentos' },
     ],
     promos: [
-      { tipo: 'delivery-gratis', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $9.000' },
+      { tipo: 'descuento', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $9.000' },
       { tipo: '2x1', titulo: '2x1 en empanadas', detalle: 'Los domingos al mediodía' },
     ],
     beneficiosVip: ['Reservás la bandeja del finde', 'Guarnición extra en cada combo'],
@@ -480,7 +480,7 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 900, descripcion: 'Matambre de cerdo de regalo', categoria: 'Regalos' },
     ],
     promos: [
-      { tipo: 'delivery-gratis', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $12.000' },
+      { tipo: 'descuento', titulo: 'Envío sin cargo', detalle: 'En pedidos desde $12.000' },
       { tipo: 'descuento', titulo: '15% en achuras', detalle: 'Sábados de feria' },
     ],
     comboFinde: {
@@ -557,7 +557,7 @@ export const NEGOCIOS: Negocio[] = [
       { pts: 620, descripcion: '12% off en tu compra', categoria: 'Descuentos' },
     ],
     promos: [
-      { tipo: 'delivery-gratis', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $10.000' },
+      { tipo: 'descuento', titulo: 'Delivery sin cargo', detalle: 'En pedidos desde $10.000' },
     ],
     comboFinde: {
       descripcion: 'Combo cerdo a la parrilla: bondiola + matambre + chorizo',

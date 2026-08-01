@@ -76,7 +76,7 @@ export interface EventoNegocio {
 }
 
 /** Tipo de promo permanente del local (no es canjeable con puntos: es un beneficio siempre activo). */
-export type TipoPromo = '2x1' | 'horario' | 'delivery-gratis' | 'descuento';
+export type TipoPromo = '2x1' | 'horario' | 'descuento';
 
 /** Promo estructurada del negocio: se muestra como badge/banner destacado. */
 export interface Promo {

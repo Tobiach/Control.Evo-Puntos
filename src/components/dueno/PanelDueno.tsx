@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   Gift,
   Loader2,
+  Megaphone,
   Pause,
   PauseCircle,
   Play,
@@ -30,10 +31,11 @@ import SeccionNegocio from './SeccionNegocio';
 import SeccionPerfil from './SeccionPerfil';
 import SeccionRecompensas from './SeccionRecompensas';
 import SeccionCarta from './SeccionCarta';
+import SeccionPromos from './SeccionPromos';
 import SeccionMetricas from './SeccionMetricas';
 import SeccionClientes from './SeccionClientes';
 
-type Seccion = 'negocio' | 'recompensas' | 'carta' | 'clientes' | 'metricas' | 'perfil';
+type Seccion = 'negocio' | 'recompensas' | 'carta' | 'promos' | 'clientes' | 'metricas' | 'perfil';
 
 type Aviso = { tipo: 'ok' | 'error'; texto: string } | null;
 
@@ -76,6 +78,7 @@ const SECCIONES: { clave: Seccion; etiqueta: string; icono: typeof Store }[] = [
   { clave: 'negocio', etiqueta: 'Negocio', icono: Store },
   { clave: 'recompensas', etiqueta: 'Premios', icono: Gift },
   { clave: 'carta', etiqueta: 'Carta', icono: UtensilsCrossed },
+  { clave: 'promos', etiqueta: 'Promos', icono: Megaphone },
   { clave: 'clientes', etiqueta: 'Clientes', icono: Users },
   { clave: 'metricas', etiqueta: 'Métricas', icono: BarChart3 },
   { clave: 'perfil', etiqueta: 'Perfil', icono: UserRound },
@@ -273,6 +276,7 @@ export default function PanelDueno(props: Props) {
           </div>
         )}
         {seccion === 'carta' && <SeccionCarta negocioId={negocio.id} esPreview={esPreview} />}
+        {seccion === 'promos' && <SeccionPromos negocioId={negocio.id} esPreview={esPreview} />}
         {seccion === 'clientes' && (
           <SeccionClientes
             clientes={clientes}

@@ -27,7 +27,7 @@ interface Props {
   ultimaRuletaTs?: number;
   onGirarRuleta: () => void;
   onCanjear: (recompensa: Recompensa) => void;
-  onRegalar: (cantidad: number) => void;
+  onRegalar: (telefonoDestino: string, cantidad: number) => Promise<{ ok: boolean; error?: string }>;
   onSalir: () => void;
   /** Si está presente, muestra el botón "← Volver al marketplace" arriba de todo. */
   onVolverMarketplace?: () => void;

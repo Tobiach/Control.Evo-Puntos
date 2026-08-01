@@ -18,7 +18,12 @@ import { nivelesDeNegocio } from '../../lib/club';
 import { usePermisoNotificaciones } from '../../lib/notificaciones';
 import { supabase, supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
-import { cargarAppCliente, canjearRecompensa, type ClienteApp } from '../../lib/panelCliente';
+import {
+  cargarAppCliente,
+  canjearRecompensa,
+  regalarPuntosReal,
+  type ClienteApp,
+} from '../../lib/panelCliente';
 import { procesarReferidoPendiente } from '../../lib/referidos';
 import AppCliente from './AppCliente';
 import MarketplaceShell from './MarketplaceShell';
@@ -196,17 +201,29 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
     });
   };
 
-  // Regalar puntos es parte de lo social: sigue siendo demo local (no persiste en Supabase).
-  const regalarPuntos = (cantidad: number) => {
-    if (!negocio) return;
+  // Real: pega contra `regalar_puntos` (server, acotado al mismo negocio). En modo demo
+  // (sin backend) sigue siendo local, para no romper el recorrido de venta.
+  const regalarPuntos = async (telefonoDestino: string, cantidad: number) => {
+    if (!negocio) return { ok: false, error: 'Elegí un negocio primero.' };
+    if (!usarReal) {
+      setRelaciones((previas) => {
+        const actual = previas[negocio.id];
+        if (!actual) return previas;
+        return {
+          ...previas,
+          [negocio.id]: { ...actual, puntos: Math.max(0, actual.puntos - cantidad) },
+        };
+      });
+      return { ok: true };
+    }
+    const resultado = await regalarPuntosReal(negocio.id, telefonoDestino, cantidad);
+    if (!resultado.ok) return { ok: false, error: resultado.error };
     setRelaciones((previas) => {
       const actual = previas[negocio.id];
       if (!actual) return previas;
-      return {
-        ...previas,
-        [negocio.id]: { ...actual, puntos: Math.max(0, actual.puntos - cantidad) },
-      };
+      return { ...previas, [negocio.id]: { ...actual, puntos: resultado.valor.puntosRestantes } };
     });
+    return { ok: true };
   };
 
   const girarRuleta = () => {

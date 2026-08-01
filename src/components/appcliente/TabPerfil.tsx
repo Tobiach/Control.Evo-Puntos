@@ -5,6 +5,7 @@ import {
   Check,
   Crown,
   Gift,
+  Loader2,
   Phone,
   Swords,
   Trophy,
@@ -14,7 +15,7 @@ import {
 import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
 import { formatPuntos, nivelDe } from '../../lib/club';
 import { lanzarConfetti } from '../../lib/confetti';
-import { AMIGOS_MOCK, desafioSemanal, rankingGrupo } from '../../lib/social';
+import { desafioSemanal, rankingGrupo } from '../../lib/social';
 import SeccionReferidos from './SeccionReferidos';
 import SeccionDesafios from './SeccionDesafios';
 
@@ -26,7 +27,8 @@ interface Props {
   historial: Visita[];
   cumpleForzado: boolean;
   onToggleCumple: () => void;
-  onRegalar: (cantidad: number) => void;
+  /** Real: pega contra el servidor y solo funciona con alguien del MISMO negocio. */
+  onRegalar: (telefonoDestino: string, cantidad: number) => Promise<{ ok: boolean; error?: string }>;
 }
 
 interface Puesto {
@@ -60,16 +62,25 @@ export default function TabPerfil({
   const nivelMax = data.niveles[data.niveles.length - 1];
   const esVip = nivelActual.nombre === nivelMax.nombre;
 
-  // Regalar puntos
-  const [amigoRegalo, setAmigoRegalo] = useState(AMIGOS_MOCK[0].id);
+  // Regalar puntos — real, solo a alguien que también es cliente de ESTE negocio.
+  const [telefonoRegalo, setTelefonoRegalo] = useState('');
   const [montoRegalo, setMontoRegalo] = useState(MONTOS_REGALO[0]);
-  const [regalado, setRegalado] = useState<{ amigo: string; monto: number } | null>(null);
+  const [regalado, setRegalado] = useState<{ monto: number } | null>(null);
+  const [enviandoRegalo, setEnviandoRegalo] = useState(false);
+  const [errorRegalo, setErrorRegalo] = useState<string | null>(null);
 
-  const confirmarRegalo = () => {
-    if (montoRegalo > cliente.puntos) return;
-    const amigo = AMIGOS_MOCK.find((a) => a.id === amigoRegalo) ?? AMIGOS_MOCK[0];
-    onRegalar(montoRegalo);
-    setRegalado({ amigo: amigo.nombre, monto: montoRegalo });
+  const confirmarRegalo = async () => {
+    if (montoRegalo > cliente.puntos || !telefonoRegalo.trim()) return;
+    setEnviandoRegalo(true);
+    setErrorRegalo(null);
+    const resultado = await onRegalar(telefonoRegalo.trim(), montoRegalo);
+    setEnviandoRegalo(false);
+    if (!resultado.ok) {
+      setErrorRegalo(resultado.error ?? 'No pudimos regalar los puntos.');
+      return;
+    }
+    setRegalado({ monto: montoRegalo });
+    setTelefonoRegalo('');
     lanzarConfetti();
   };
 
@@ -197,25 +208,19 @@ export default function TabPerfil({
         </p>
         <div className="rounded-3xl border border-borde bg-card p-4">
           <p className="text-sm text-texto-muted">
-            Regalale puntos a un amigo. Tenés{' '}
+            Regalale puntos a alguien que también sea cliente de este negocio. Tenés{' '}
             <span className="font-bold text-texto">{formatPuntos(cliente.puntos)} pts</span>.
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {AMIGOS_MOCK.map((amigo) => (
-              <button
-                key={amigo.id}
-                type="button"
-                onClick={() => setAmigoRegalo(amigo.id)}
-                className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
-                  amigoRegalo === amigo.id
-                    ? 'bg-acento text-on-acento'
-                    : 'border border-borde bg-fondo text-texto-muted'
-                }`}
-              >
-                {amigo.emoji} {amigo.nombre}
-              </button>
-            ))}
-          </div>
+          <label className="mt-3 flex items-center gap-3 rounded-2xl border border-borde bg-fondo px-4 py-3">
+            <Phone size={16} className="shrink-0 text-texto-muted" />
+            <input
+              type="tel"
+              value={telefonoRegalo}
+              onChange={(e) => setTelefonoRegalo(e.target.value)}
+              placeholder="Teléfono de tu amigo/a"
+              className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-texto-muted/60"
+            />
+          </label>
           <div className="mt-3 flex gap-2">
             {MONTOS_REGALO.map((monto) => {
               const alcanza = monto <= cliente.puntos;
@@ -238,14 +243,16 @@ export default function TabPerfil({
               );
             })}
           </div>
+          {errorRegalo && <p className="mt-2 px-1 text-xs font-semibold text-rojo">{errorRegalo}</p>}
           <motion.button
             type="button"
             whileTap={{ scale: 0.97 }}
-            disabled={montoRegalo > cliente.puntos}
+            disabled={montoRegalo > cliente.puntos || !telefonoRegalo.trim() || enviandoRegalo}
             onClick={confirmarRegalo}
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover disabled:opacity-50"
           >
-            <Gift size={16} /> Regalar {montoRegalo} pts
+            {enviandoRegalo ? <Loader2 size={16} className="animate-spin" /> : <Gift size={16} />}
+            Regalar {montoRegalo} pts
           </motion.button>
         </div>
       </section>
@@ -358,10 +365,8 @@ export default function TabPerfil({
               </div>
               <h2 className="text-xl font-bold text-white">¡Regalo enviado!</h2>
               <p className="mt-1 text-sm text-white/60">
-                Le regalaste{' '}
-                <span className="font-bold text-acento">{regalado.monto} pts</span> a{' '}
-                <span className="font-bold text-white">{regalado.amigo}</span> en{' '}
-                {data.nombreNegocio}.
+                Le regalaste <span className="font-bold text-acento">{regalado.monto} pts</span> a
+                tu amigo/a en {data.nombreNegocio}.
               </p>
               <button
                 type="button"

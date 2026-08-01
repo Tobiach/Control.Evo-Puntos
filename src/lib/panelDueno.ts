@@ -1,6 +1,14 @@
 import { supabase } from './supabase';
 import { COLUMNAS_CARTA, mapearItemCarta, type FilaItemCarta, type ItemCarta } from './carta';
-import type { CategoriaRecompensa, HorarioValle, Recompensa, Rubro } from '../data/mockClientes';
+import type {
+  CategoriaRecompensa,
+  EventoNegocio,
+  HorarioValle,
+  Promo,
+  Recompensa,
+  Rubro,
+  TipoPromo,
+} from '../data/mockClientes';
 import { parseRubro } from '../data/mockClientes';
 
 // Capa de datos del panel del dueño. Todo null-safe: sin backend conectado
@@ -432,6 +440,155 @@ export async function guardarPerfilDueno(
     },
     { onConflict: 'dueno_user_id' },
   );
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: undefined };
+}
+
+// ============================================================
+// PROMOS — CRUD por item (ver 0016_promos_y_regalos.sql). Antes solo existían en el
+// marketplace ficticio; el dueño real las carga acá, mismo patrón que la carta digital.
+// ============================================================
+
+export interface PromoInput {
+  id: number | null;
+  tipo: TipoPromo;
+  titulo: string;
+  detalle: string;
+  activa: boolean;
+}
+
+interface FilaPromo {
+  id: number;
+  tipo: string;
+  titulo: string;
+  detalle: string | null;
+  activa: boolean;
+  orden: number | null;
+}
+
+const TIPOS_PROMO_VALIDOS: readonly TipoPromo[] = ['2x1', 'horario', 'descuento'];
+
+function filaAPromo(fila: FilaPromo): Promo & { id: number; activa: boolean } {
+  const tipo = TIPOS_PROMO_VALIDOS.includes(fila.tipo as TipoPromo) ? (fila.tipo as TipoPromo) : 'descuento';
+  return {
+    id: fila.id,
+    tipo,
+    titulo: fila.titulo,
+    ...(fila.detalle ? { detalle: fila.detalle } : {}),
+    activa: fila.activa,
+  };
+}
+
+export async function cargarPromosDelNegocio(
+  negocioId: string,
+): Promise<ResultadoPanel<(Promo & { id: number; activa: boolean })[]>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase
+    .from('promos')
+    .select('id, tipo, titulo, detalle, activa, orden')
+    .eq('negocio_id', negocioId)
+    .order('orden', { ascending: true })
+    .order('id', { ascending: true });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: (data ?? []).map((f) => filaAPromo(f as FilaPromo)) };
+}
+
+export async function guardarPromo(
+  negocioId: string,
+  promo: PromoInput,
+): Promise<ResultadoPanel<Promo & { id: number; activa: boolean }>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const fila = {
+    negocio_id: negocioId,
+    tipo: promo.tipo,
+    titulo: promo.titulo,
+    detalle: promo.detalle.trim() || null,
+    activa: promo.activa,
+  };
+  const query =
+    promo.id != null
+      ? supabase.from('promos').update(fila).eq('id', promo.id)
+      : supabase.from('promos').insert(fila);
+  const { data, error } = await query.select('id, tipo, titulo, detalle, activa, orden').single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: filaAPromo(data as FilaPromo) };
+}
+
+export async function borrarPromo(id: number): Promise<ResultadoPanel<void>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.from('promos').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: undefined };
+}
+
+// ============================================================
+// EVENTOS CON FECHA — CRUD por item (tabla `eventos_negocio`, ver 0001_schema.sql). La
+// lectura del lado del cliente ya existía; esto habilita que el dueño los cree/edite.
+// ============================================================
+
+export interface EventoInput {
+  id: number | null;
+  nombre: string;
+  fechaInicio: string;
+  fechaFin: string;
+  recompensaExtra: string;
+}
+
+interface FilaEventoDueno {
+  id: number;
+  nombre: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  recompensa_extra: string;
+}
+
+function filaAEventoDueno(fila: FilaEventoDueno): EventoNegocio & { id: number } {
+  return {
+    id: fila.id,
+    nombre: fila.nombre,
+    fechaInicio: fila.fecha_inicio,
+    fechaFin: fila.fecha_fin,
+    recompensaExtra: fila.recompensa_extra,
+  };
+}
+
+export async function cargarEventosDelNegocio(
+  negocioId: string,
+): Promise<ResultadoPanel<(EventoNegocio & { id: number })[]>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase
+    .from('eventos_negocio')
+    .select('id, nombre, fecha_inicio, fecha_fin, recompensa_extra')
+    .eq('negocio_id', negocioId)
+    .order('fecha_inicio', { ascending: true });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: (data ?? []).map((f) => filaAEventoDueno(f as FilaEventoDueno)) };
+}
+
+export async function guardarEvento(
+  negocioId: string,
+  evento: EventoInput,
+): Promise<ResultadoPanel<EventoNegocio & { id: number }>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const fila = {
+    negocio_id: negocioId,
+    nombre: evento.nombre,
+    fecha_inicio: evento.fechaInicio,
+    fecha_fin: evento.fechaFin,
+    recompensa_extra: evento.recompensaExtra,
+  };
+  const query =
+    evento.id != null
+      ? supabase.from('eventos_negocio').update(fila).eq('id', evento.id)
+      : supabase.from('eventos_negocio').insert(fila);
+  const { data, error } = await query.select('id, nombre, fecha_inicio, fecha_fin, recompensa_extra').single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, valor: filaAEventoDueno(data as FilaEventoDueno) };
+}
+
+export async function borrarEvento(id: number): Promise<ResultadoPanel<void>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.from('eventos_negocio').delete().eq('id', id);
   if (error) return { ok: false, error: error.message };
   return { ok: true, valor: undefined };
 }

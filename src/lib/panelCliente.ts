@@ -346,3 +346,30 @@ export async function canjearRecompensa(
   const fila = (data ?? {}) as { puntos_restantes?: number };
   return { ok: true, valor: { puntosRestantes: fila.puntos_restantes ?? 0 } };
 }
+
+const ERRORES_REGALO: Record<string, string> = {
+  destino_no_existe: 'No encontramos a nadie con ese teléfono en Premia.ar.',
+  destino_invalido: 'No podés regalarte puntos a vos mismo.',
+  sin_relacion_origen: 'Todavía no tenés puntos en este negocio.',
+  puntos_insuficientes: 'No tenés suficientes puntos para regalar esa cantidad.',
+  destino_no_es_cliente_de_este_local: 'Esa persona todavía no es cliente de este negocio.',
+};
+
+/** Regala puntos a otro cliente REAL, acotado al mismo negocio (ver 0016_promos_y_regalos.sql). */
+export async function regalarPuntosReal(
+  negocioId: string,
+  telefonoDestino: string,
+  pts: number,
+): Promise<ResultadoPanel<{ puntosRestantes: number }>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase.rpc('regalar_puntos', {
+    p_negocio_id: negocioId,
+    p_telefono_destino: telefonoDestino,
+    p_pts: pts,
+  });
+  if (error) {
+    return { ok: false, error: ERRORES_REGALO[error.message] ?? 'No pudimos regalar los puntos.' };
+  }
+  const fila = (data ?? {}) as { puntos_restantes?: number };
+  return { ok: true, valor: { puntosRestantes: fila.puntos_restantes ?? 0 } };
+}
