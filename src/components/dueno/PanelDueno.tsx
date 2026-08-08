@@ -283,7 +283,7 @@ export default function PanelDueno(props: Props) {
           </div>
         )}
 
-        <div className="flex gap-1.5 rounded-2xl border border-borde bg-card p-1.5 md:hidden">
+        <div className="flex gap-1.5 overflow-x-auto rounded-2xl border border-borde bg-card p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden">
           {SECCIONES.map(({ clave, etiqueta, icono: Icono }) => {
             const activo = seccion === clave;
             return (
@@ -291,7 +291,7 @@ export default function PanelDueno(props: Props) {
                 key={clave}
                 type="button"
                 onClick={() => setSeccion(clave)}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition-colors ${
+                className={`flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition-colors ${
                   activo ? 'bg-acento text-on-acento' : 'text-texto-muted'
                 }`}
               >

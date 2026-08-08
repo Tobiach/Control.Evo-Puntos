@@ -183,7 +183,7 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
       </div>
 
       <Campo etiqueta="Rubro">
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2 md:flex">
           {RUBROS.map(({ valor, etiqueta }) => {
             const activo = negocio.rubro === valor;
             return (
@@ -191,7 +191,7 @@ export default function SeccionNegocio({ negocio, onCambiar }: Props) {
                 key={valor}
                 type="button"
                 onClick={() => onCambiar({ rubro: valor })}
-                className={`flex-1 rounded-2xl border px-4 py-3 text-sm font-bold transition-colors ${
+                className={`rounded-2xl border px-4 py-3 text-sm font-bold transition-colors md:flex-1 ${
                   activo
                     ? 'border-acento bg-acento text-on-acento'
                     : 'border-borde bg-card text-texto-muted'
