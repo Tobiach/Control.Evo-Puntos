@@ -95,6 +95,7 @@ export default function PanelDueno(props: Props) {
   const [cambiandoEstado, setCambiandoEstado] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState<Aviso>(null);
+  const [logoRoto, setLogoRoto] = useState(false);
 
   const duenoUserId = props.modo === 'conectado' ? props.duenoUserId : null;
 
@@ -206,6 +207,14 @@ export default function PanelDueno(props: Props) {
         >
           <ChevronLeft size={14} /> Volver
         </button>
+        {negocio.logoUrl && !logoRoto && (
+          <img
+            src={negocio.logoUrl}
+            alt={negocio.nombre || 'Logo del negocio'}
+            onError={() => setLogoRoto(true)}
+            className="mb-3 h-16 w-16 rounded-2xl border border-borde object-cover"
+          />
+        )}
         <h2 className="px-1 text-xl font-bold tracking-tight">Mi panel</h2>
         <p className="mb-4 truncate px-1 text-xs text-texto-muted">
           {props.modo === 'conectado' ? props.emailSesion : 'Modo demostración'}
@@ -238,6 +247,14 @@ export default function PanelDueno(props: Props) {
           >
             <ChevronLeft size={18} />
           </button>
+          {negocio.logoUrl && !logoRoto && (
+            <img
+              src={negocio.logoUrl}
+              alt={negocio.nombre || 'Logo del negocio'}
+              onError={() => setLogoRoto(true)}
+              className="h-12 w-12 shrink-0 rounded-2xl border border-borde object-cover"
+            />
+          )}
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold tracking-tight">Mi panel</h2>
             <p className="truncate text-sm text-texto-muted">
