@@ -45,11 +45,20 @@ curl). Hay una alerta activa (`id 17399089`, proyecto `javascript-react-premia` 
 equipo `notificaciones-premia`, con reenvío automático a miembros activos si el equipo no
 tiene notificaciones configuradas.
 
-**Uptime (caída total del sitio): todavía NO** — Sentry avisa de errores DENTRO de la app
-corriendo, no si el sitio deja de responder por completo. Sigue pendiente un check externo
-(UptimeRobot o similar) contra `premia-ar.vercel.app`. Ver
-`controlevo-os/playbooks/technical/uptime-monitoring.md` para el patrón ya usado en otros
-proyectos.
+**Uptime (caída total del sitio): sí, activo desde el 9/8/2026.** UptimeRobot (cuenta propia
+de Premia.ar, `premia.latam@gmail.com` — separada de la cuenta general que usa Tobias para
+otros proyectos) chequea `https://premia-ar.vercel.app` cada 5 minutos (mínimo del plan
+free), monitor `id 803700757`, con el contacto de email confirmado enganchado (`id 8705870`)
+— verificado por API, no asumido: `getMonitors` con `alert_contacts=1` devuelve el contacto
+realmente linkeado al monitor, no solo existiendo suelto en la cuenta.
+
+Límite conocido: no se pudo simular una caída real para confirmar que el email de alerta se
+dispara de punta a punta — forzar eso significaría tirar abajo producción a propósito, que no
+tiene sentido solo para probarlo. Si en algún momento el sitio se cae de verdad, ahí queda
+confirmado; hasta entonces, la configuración está verificada pero el disparo real de la
+alerta no.
+
+Ver `controlevo-os/playbooks/technical/uptime-monitoring.md` — actualizado con este proyecto.
 
 ## 4. ¿Alguien puede hackearse puntos gratis?
 
