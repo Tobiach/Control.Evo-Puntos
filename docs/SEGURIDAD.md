@@ -36,16 +36,20 @@ No hay infraestructura propia — ni servidores, ni base de datos self-hosted.
 
 ## 3. ¿Qué pasa si el sistema (app web) se cae?
 
-**No hay monitoreo activo hoy — verificado, no hay Sentry, no hay UptimeRobot ni
-equivalente, no hay `vercel.json` con configuración de alertas.** Es un gap real, no un "sí
-pero...". Coincide con lo que ya se había marcado como prioridad técnica #1 antes de
-verificarlo — queda confirmado, no es una suposición.
+**Error tracking: sí, activo desde el 9/8/2026 — verificado, no es una promesa.** Sentry
+conectado (`src/lib/sentry.ts`, null-safe igual criterio que Supabase — PAT-001), probado en
+vivo (un error real disparó el request al ingest de Sentry antes de darlo por hecho) y
+deployado a producción (DSN horneada en el bundle de `premia-ar.vercel.app`, confirmado con
+curl). Hay una alerta activa (`id 17399089`, proyecto `javascript-react-premia` en la org
+`control-evo`) que avisa por email ante cualquier error nuevo o una regresión — apunta al
+equipo `notificaciones-premia`, con reenvío automático a miembros activos si el equipo no
+tiene notificaciones configuradas.
 
-Pendiente: dar de alta Sentry (error tracking del frontend) + un uptime check simple
+**Uptime (caída total del sitio): todavía NO** — Sentry avisa de errores DENTRO de la app
+corriendo, no si el sitio deja de responder por completo. Sigue pendiente un check externo
 (UptimeRobot o similar) contra `premia-ar.vercel.app`. Ver
-`controlevo-os/playbooks/technical/sentry-setup.md` y
-`.../uptime-monitoring.md` para el patrón ya usado en otros proyectos — no está aplicado
-todavía en este.
+`controlevo-os/playbooks/technical/uptime-monitoring.md` para el patrón ya usado en otros
+proyectos.
 
 ## 4. ¿Alguien puede hackearse puntos gratis?
 
