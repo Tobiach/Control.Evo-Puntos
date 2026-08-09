@@ -82,6 +82,26 @@ cuenta individual, no el caso de un comercio completo dándose de baja.
 Queda un placeholder marcado en `docs/TERMINOS.md` §6 — hay que decidir la política antes de
 que un prospecto lo pregunte en la mesa.
 
+## 5.1 Rate limiting en endpoints de puntos/canjes/referidos
+
+**No existe — verificado.** Ninguna RPC (`cobrar_con_pin`, `canjear_recompensa`,
+`registrar_referido`, `revisar_premio_referido`, `crear_desafio`, `revisar_desafios`) tiene
+ningún control de frecuencia, cooldown ni límite por IP/usuario/negocio. Hoy nada impide que
+alguien con el PIN de un cajero automatice llamadas a `cobrar_con_pin` en loop, o que un
+cliente automatice `registrar_referido` con distintas cuentas. Con pocos usuarios el riesgo es
+bajo (a nadie le conviene todavía), pero es una prioridad real antes de escalar — no es
+"CONFIRMAR", es un "NO, falta construirlo".
+
+## 5.2 Otras preguntas de infraestructura que NO se pueden verificar desde el código
+
+Estas requieren mirar el dashboard de Supabase/Vercel directamente, o son decisiones de
+Tobias — no están en el repo, así que no se pueden responder "con certeza" sin ese paso:
+
+- ¿Qué plan de Supabase (Free/Pro/Team) está activo hoy? Define límites reales de conexiones
+  concurrentes y storage.
+- ¿Hay backups automáticos configurados? ¿Con qué frecuencia y retención?
+- ¿Quién tiene acceso a la base de datos de producción hoy, y con qué nivel?
+
 ## 6. ¿Para qué es el QR que se menciona?
 
 No es una función de la app — no hay generación de QR en el código. Es el link de la carta
