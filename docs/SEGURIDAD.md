@@ -1,0 +1,91 @@
+# Seguridad — preguntas que un prospecto/inversor va a hacer
+
+Respuestas verificadas contra el código real (migraciones de `supabase/migrations/` y
+`src/`), no supuestos. Última verificación: 2026-08-09. Si se agrega una tabla o una RPC
+nueva, volver a correr las verificaciones de abajo antes de reafirmar cualquiera de estas
+respuestas.
+
+## 1. ¿Dónde están alojados los datos?
+
+Supabase (Postgres administrado sobre AWS), proyecto `ajydiowgrdtivndthidh.supabase.co`.
+No hay infraestructura propia — ni servidores, ni base de datos self-hosted.
+
+## 2. ¿Un comercio puede ver datos de otro comercio o de otro cliente?
+
+**No — verificado, no asumido.**
+
+- Las 21 tablas de la base (13 en el schema inicial + 8 agregadas después) tienen Row Level
+  Security habilitado — se verificó contando cada `CREATE TABLE` contra cada
+  `ENABLE ROW LEVEL SECURITY` en las 20 migraciones: el número coincide exactamente, ninguna
+  tabla quedó afuera.
+- El patrón de policy es consistente en todo el proyecto: las tablas del dueño se filtran por
+  `auth.uid() = dueno_user_id` (vía join a `negocios`), las del cliente por
+  `auth.uid() = user_id` (vía join a `clientes`). Un dueño autenticado solo puede leer filas de
+  SU `negocio_id`; un cliente solo las suyas.
+- Las únicas 3 policies con `USING (true)` (lectura pública sin auth) son deliberadas y no
+  filtran nada sensible: `niveles` (tabla de referencia estática, no hay dato de negocio
+  puntual), `eventos_negocio` (contenido de marketing pensado para verse sin login, mismo
+  criterio que la carta pública) y el INSERT de `notificaciones_enviadas` (el sistema
+  registra, no expone lectura).
+- Ya hubo una vulnerabilidad real de este tipo y se corrigió: el PIN del cajero vivía como
+  columna en `negocios` (RLS filtra FILAS, no columnas — cualquiera con la key pública podía
+  pedir `negocios?select=pin_cajero` y leer el PIN de cualquier negocio). Se movió a
+  `negocio_pin`, una tabla aparte sin ninguna policy pública — ver
+  `supabase/migrations/0005_seguridad_pin_cajero.sql` para el detalle completo, incluida la
+  nota de qué se rompía y por qué.
+
+## 3. ¿Qué pasa si el sistema (app web) se cae?
+
+**No hay monitoreo activo hoy — verificado, no hay Sentry, no hay UptimeRobot ni
+equivalente, no hay `vercel.json` con configuración de alertas.** Es un gap real, no un "sí
+pero...". Coincide con lo que ya se había marcado como prioridad técnica #1 antes de
+verificarlo — queda confirmado, no es una suposición.
+
+Pendiente: dar de alta Sentry (error tracking del frontend) + un uptime check simple
+(UptimeRobot o similar) contra `premia-ar.vercel.app`. Ver
+`controlevo-os/playbooks/technical/sentry-setup.md` y
+`.../uptime-monitoring.md` para el patrón ya usado en otros proyectos — no está aplicado
+todavía en este.
+
+## 4. ¿Alguien puede hackearse puntos gratis?
+
+**No — verificado a nivel de RLS y de código, no es una promesa.**
+
+- `relaciones_negocio` (la tabla que tiene la columna `puntos`) NO tiene ninguna policy de
+  INSERT ni UPDATE para el rol de cliente — solo tiene SELECT ("El cliente ve su propia
+  relación"). Un cliente autenticado como sí mismo no puede escribir ahí ni con una llamada
+  directa a la API; Postgres deniega por default sin policy que lo permita.
+- Todo lo que cambia puntos pasa por funciones `SECURITY DEFINER` (corren con privilegios del
+  dueño de la función, no del que la llama, y validan todo contra datos reales antes de
+  tocar nada):
+  - `cobrar_con_pin` — valida el PIN contra `negocio_pin` (tabla sin policy pública) antes de
+    acreditar; el monto y los puntos se calculan server-side (`floor(monto / monto_por_punto)`).
+  - `canjear_recompensa` — chequea `puntos_actuales >= pts_requeridos` antes de descontar.
+  - `registrar_referido` / `revisar_premio_referido` — el premio se acredita solo si
+    `COUNT(*)` de visitas REALES del referido en `visitas` llega a 4, contado en el momento
+    de la llamada, nunca confiado del cliente.
+  - `crear_desafio` / `revisar_desafios` — mismo patrón: cuenta visitas reales dentro de la
+    ventana del desafío antes de premiar.
+- `src/lib/panelCliente.ts` (la capa de datos que usa la app del cliente) no tiene ningún
+  `.update()` ni `.insert()` — es de solo lectura del lado del cliente. No hay una ruta
+  alternativa en el frontend que escriba puntos directo.
+
+## 5. ¿Qué pasa con los datos de un comercio si deja de usar Premia.ar?
+
+**No hay una política oficial todavía — esto es una decisión de negocio pendiente, no algo
+que se pueda verificar en el código.** `docs/TERMINOS.md` §6 dice que dar de baja a un
+negocio no afecta los puntos de sus clientes EN OTROS negocios del marketplace, pero no dice
+qué pasa con los puntos/datos DENTRO de ese negocio puntual (¿se congelan? ¿se borran? ¿se
+exportan?). `docs/PRIVACIDAD.md` §5 solo cubre el caso de un CLIENTE pidiendo borrar su
+cuenta individual, no el caso de un comercio completo dándose de baja.
+
+Queda un placeholder marcado en `docs/TERMINOS.md` §6 — hay que decidir la política antes de
+que un prospecto lo pregunte en la mesa.
+
+## 6. ¿Para qué es el QR que se menciona?
+
+No es una función de la app — no hay generación de QR en el código. Es el link de la carta
+digital pública (`?carta=<negocioId>`, sin login) pensado para imprimirse como QR físico en
+la mesa del comercio (ver el texto de ayuda en `SeccionCarta.tsx`: "Ideal para un QR en la
+mesa"). El QR en sí se genera con cualquier herramienta externa a partir de ese link — no
+hace falta construir nada nuevo en la app para esto.

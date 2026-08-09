@@ -46,6 +46,12 @@ datos de otros negocios o clientes sin autorización, ni usar el Servicio para f
   capacidad real para honrarlas.
 - Control.Evo puede dar de baja a un negocio que no cumple sus obligaciones de pago, sin que
   eso afecte los puntos ya acumulados por los clientes en otros negocios del marketplace.
+- **[PENDIENTE — DECISIÓN DE TOBIAS, no completar con algo plausible]**: qué pasa con los
+  datos y los puntos DENTRO del negocio que se da de baja o deja de usar el Servicio — ¿se
+  borran los datos del comercio? ¿se exportan? ¿los puntos ya acumulados por sus clientes en
+  ESE negocio quedan congelados (canjeables si el negocio vuelve) o se pierden? Sin esto
+  definido, no hay una respuesta oficial para cuando un comercio real lo pregunte. Ver
+  `docs/SEGURIDAD.md` §5.
 
 ## 7. Disponibilidad del Servicio
 
