@@ -1,20 +1,20 @@
-# Términos y Condiciones — Control.Evo Club de Puntos
+# Términos y Condiciones — Premia.ar
 
 *Borrador base para revisión legal antes de publicar con usuarios reales — ver nota al final.*
 
-Última actualización: 14 de julio de 2026.
+Última actualización: 10 de agosto de 2026.
 
 ## 1. Aceptación
 
-Al usar Control.Evo Club de Puntos ("el Servicio") aceptás estos términos. Si sos dueño de un
-negocio afiliado, además aceptás las condiciones comerciales acordadas con Control.Evo (setup +
+Al usar Premia.ar ("el Servicio") aceptás estos términos. Si sos dueño de un
+negocio afiliado, además aceptás las condiciones comerciales acordadas con Premia.ar (setup +
 mensualidad, según el plan contratado).
 
 ## 2. Qué es el Servicio
 
 Una plataforma de fidelización que permite a los negocios afiliados acreditar puntos a sus
 clientes por consumo, y a los clientes canjear esos puntos por recompensas definidas por cada
-negocio. Control.Evo provee la plataforma técnica; **cada negocio es responsable de las
+negocio. Premia.ar provee la plataforma técnica; **cada negocio es responsable de las
 recompensas que ofrece y de honrarlas**.
 
 ## 3. Puntos y recompensas
@@ -24,14 +24,14 @@ recompensas que ofrece y de honrarlas**.
 - Los puntos vencen a los 60 días de la última visita registrada en ese negocio.
 - Las recompensas, sus umbrales de puntos y su disponibilidad las define cada negocio y pueden
   cambiar sin aviso previo.
-- Control.Evo no es responsable si un negocio deja de operar o no honra una recompensa —
+- Premia.ar no es responsable si un negocio deja de operar o no honra una recompensa —
   cualquier reclamo sobre el canje de una recompensa específica es entre el cliente y el
   negocio correspondiente.
 
 ## 4. Cuentas
 
 Sos responsable de mantener la confidencialidad de tu contraseña (clientes) o PIN (personal de
-caja). Control.Evo puede suspender cuentas usadas de forma fraudulenta.
+caja). Premia.ar puede suspender cuentas usadas de forma fraudulenta.
 
 ## 5. Uso aceptable
 
@@ -41,16 +41,16 @@ datos de otros negocios o clientes sin autorización, ni usar el Servicio para f
 ## 6. Para negocios afiliados
 
 - El plan comercial (setup + mensual) se acuerda por fuera de estos términos, directamente con
-  Control.Evo.
+  Premia.ar.
 - El negocio es responsable de la veracidad de las recompensas que carga y de tener stock/
   capacidad real para honrarlas.
-- Control.Evo puede dar de baja a un negocio que no cumple sus obligaciones de pago, sin que
+- Premia.ar puede dar de baja a un negocio que no cumple sus obligaciones de pago, sin que
   eso afecte los puntos ya acumulados por los clientes en otros negocios del marketplace.
 - **Datos al cancelar (decisión vigente desde el 10/8/2026):** ante la cancelación del
   servicio, el comercio dispone de 30 días para exportar su información (datos del local,
   lista de clientes, historial de puntos y canjes). Transcurridos 60 días desde la
-  cancelación, Control.Evo procederá a la eliminación definitiva e irreversible de todos los
-  datos asociados al comercio y a sus clientes en ese contexto. Control.Evo notificará al
+  cancelación, Premia.ar procederá a la eliminación definitiva e irreversible de todos los
+  datos asociados al comercio y a sus clientes en ese contexto. Premia.ar notificará al
   comercio por el canal de contacto registrado antes de ejecutar la eliminación.
 
 ## 7. Disponibilidad del Servicio
@@ -60,7 +60,7 @@ cuando sea posible.
 
 ## 8. Límite de responsabilidad
 
-Control.Evo no es responsable por daños indirectos derivados del uso del Servicio, ni garantiza
+Premia.ar no es responsable por daños indirectos derivados del uso del Servicio, ni garantiza
 que las recompensas ofrecidas por los negocios estén siempre disponibles.
 
 ## 9. Cambios a estos términos

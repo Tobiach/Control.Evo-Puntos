@@ -1,14 +1,14 @@
-# Política de Privacidad — Control.Evo Club de Puntos
+# Política de Privacidad — Premia.ar
 
 *Borrador base para revisión legal antes de publicar con usuarios reales — ver nota al final.*
 
-Última actualización: 14 de julio de 2026.
+Última actualización: 10 de agosto de 2026.
 
 ## 1. Quién trata tus datos
 
-Control.Evo Club de Puntos ("el Servicio") es operado por Control.Evo. Cada negocio afiliado
-(bar, café, supermercado, etc.) es responsable de sus propios datos de clientes dentro del
-Servicio; Control.Evo actúa como proveedor de la plataforma técnica.
+Premia.ar ("el Servicio") es la plataforma que sostiene este club de fidelización. Cada
+negocio afiliado (bar, café, supermercado, etc.) es responsable de sus propios datos de
+clientes dentro del Servicio; Premia.ar actúa como proveedor de la plataforma técnica.
 
 ## 2. Qué datos recolectamos
 
@@ -37,7 +37,7 @@ propios clientes en ese negocio — nunca tus datos en otros negocios del market
 ## 5. Cuánto tiempo guardamos tus datos
 
 Mientras tengas una cuenta activa. Podés pedir la eliminación de tu cuenta y tus datos en
-cualquier momento contactando al negocio o a Control.Evo.
+cualquier momento contactando al negocio o a Premia.ar.
 
 Si el negocio donde sos socio cancela el servicio, tus datos y puntos EN ESE negocio
 puntual (no tu cuenta general, que sigue existiendo en los demás negocios donde participás)
@@ -62,7 +62,7 @@ Podemos actualizar esta política. Los cambios importantes se van a avisar dentr
 
 ## 9. Contacto
 
-Para consultas sobre tus datos, escribí a través del negocio donde sos socio, o a Control.Evo
+Para consultas sobre tus datos, escribí a través del negocio donde sos socio, o a Premia.ar
 directamente.
 
 ---
