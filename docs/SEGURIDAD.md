@@ -85,15 +85,20 @@ Ver `controlevo-os/playbooks/technical/uptime-monitoring.md` — actualizado con
 
 ## 5. ¿Qué pasa con los datos de un comercio si deja de usar Premia.ar?
 
-**No hay una política oficial todavía — esto es una decisión de negocio pendiente, no algo
-que se pueda verificar en el código.** `docs/TERMINOS.md` §6 dice que dar de baja a un
-negocio no afecta los puntos de sus clientes EN OTROS negocios del marketplace, pero no dice
-qué pasa con los puntos/datos DENTRO de ese negocio puntual (¿se congelan? ¿se borran? ¿se
-exportan?). `docs/PRIVACIDAD.md` §5 solo cubre el caso de un CLIENTE pidiendo borrar su
-cuenta individual, no el caso de un comercio completo dándose de baja.
+**Decisión tomada (10/8/2026):** 30 días para exportar (datos del local, clientes, historial
+de puntos y canjes) tras la cancelación, eliminación definitiva e irreversible a los 60 días,
+con aviso al comercio antes de ejecutar el borrado. Ya está redactado en `docs/TERMINOS.md`
+§6.
 
-Queda un placeholder marcado en `docs/TERMINOS.md` §6 — hay que decidir la política antes de
-que un prospecto lo pregunte en la mesa.
+**Lo que sigue sin existir es la implementación** — verificado en el código, no asumido: no
+hay ninguna función de export (CSV/JSON) de datos de un negocio, ni ningún flujo de
+"cancelar/dar de baja" distinto del botón de "pausar" que ya existe en el panel
+(`cambiarEstadoNegocio`, `PanelDueno.tsx`). Pausar es reversible y no dispara ningún
+conteo de días; cancelar todavía no es un estado que la app modele. Mientras no se construya,
+la política queda escrita pero no hay un mecanismo real que la ejecute — si un comercio
+cancela hoy, el cumplimiento de los 30/60 días sería manual. Segunda etapa, no bloqueante
+para publicar los términos (que documentan un compromiso, no requieren que el mecanismo ya
+exista), pero sí para poder cumplirlo de verdad si alguien cancela antes de construirlo.
 
 ## 5.1 Rate limiting en endpoints de puntos/canjes/referidos
 

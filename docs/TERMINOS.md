@@ -46,12 +46,12 @@ datos de otros negocios o clientes sin autorización, ni usar el Servicio para f
   capacidad real para honrarlas.
 - Control.Evo puede dar de baja a un negocio que no cumple sus obligaciones de pago, sin que
   eso afecte los puntos ya acumulados por los clientes en otros negocios del marketplace.
-- **[PENDIENTE — DECISIÓN DE TOBIAS, no completar con algo plausible]**: qué pasa con los
-  datos y los puntos DENTRO del negocio que se da de baja o deja de usar el Servicio — ¿se
-  borran los datos del comercio? ¿se exportan? ¿los puntos ya acumulados por sus clientes en
-  ESE negocio quedan congelados (canjeables si el negocio vuelve) o se pierden? Sin esto
-  definido, no hay una respuesta oficial para cuando un comercio real lo pregunte. Ver
-  `docs/SEGURIDAD.md` §5.
+- **Datos al cancelar (decisión vigente desde el 10/8/2026):** ante la cancelación del
+  servicio, el comercio dispone de 30 días para exportar su información (datos del local,
+  lista de clientes, historial de puntos y canjes). Transcurridos 60 días desde la
+  cancelación, Control.Evo procederá a la eliminación definitiva e irreversible de todos los
+  datos asociados al comercio y a sus clientes en ese contexto. Control.Evo notificará al
+  comercio por el canal de contacto registrado antes de ejecutar la eliminación.
 
 ## 7. Disponibilidad del Servicio
 

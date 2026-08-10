@@ -212,6 +212,18 @@ export default function LoginDueno({ onVolver }: Props) {
                 ? '¿Ya tenés cuenta? Ingresá'
                 : '¿Primera vez? Creá tu cuenta'}
           </button>
+
+          <p className="self-center text-center text-[11px] text-texto-muted">
+            Al continuar aceptás los{' '}
+            <a href="?legal=terminos" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
+              Términos y condiciones
+            </a>{' '}
+            y la{' '}
+            <a href="?legal=privacidad" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
+              Política de privacidad
+            </a>
+            .
+          </p>
         </form>
       ) : (
         <div className="flex flex-col gap-3">

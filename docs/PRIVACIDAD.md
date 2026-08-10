@@ -39,6 +39,11 @@ propios clientes en ese negocio — nunca tus datos en otros negocios del market
 Mientras tengas una cuenta activa. Podés pedir la eliminación de tu cuenta y tus datos en
 cualquier momento contactando al negocio o a Control.Evo.
 
+Si el negocio donde sos socio cancela el servicio, tus datos y puntos EN ESE negocio
+puntual (no tu cuenta general, que sigue existiendo en los demás negocios donde participás)
+se eliminan definitivamente a los 60 días de la cancelación — ver
+[Términos y Condiciones](TERMINOS.md) §6 para el detalle completo de esa política.
+
 ## 6. Tus derechos (Ley 25.326 — Protección de Datos Personales, Argentina)
 
 Tenés derecho a acceder, rectificar, actualizar y solicitar la eliminación de tus datos
