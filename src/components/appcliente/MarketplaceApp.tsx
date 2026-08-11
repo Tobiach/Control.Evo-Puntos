@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
+import { useVolverSeguro } from '../../hooks/useVolverSeguro';
 import {
   DATA_RUBROS,
   type Cliente,
@@ -68,7 +70,13 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
   const { sesion } = useSesion();
   const usarReal = supabaseEnabled && !!sesion;
 
-  const [negocioId, setNegocioId] = useState<string | null>(null);
+  // Qué negocio está abierto vive en la URL (`?local=`), no en useState: entrar es un drill-down
+  // real (push, historial de verdad) y volver imita el atrás del navegador (useVolverSeguro) —
+  // así el botón "Volver al marketplace" de la UI y el atrás real del navegador hacen lo mismo,
+  // y la lista de atrás (scroll incluido) queda tal cual se dejó en vez de reiniciarse.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const negocioId = searchParams.get('local');
+  const volverAlMarketplace = useVolverSeguro('/');
   // Con backend real, negocios y relaciones vienen de Supabase; sin backend, del mock.
   const [negocios, setNegocios] = useState<Negocio[]>(NEGOCIOS);
   const [relaciones, setRelaciones] = useState<Record<string, RelacionNegocio>>(() => ({
@@ -231,8 +239,6 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
     setTiradasRuleta((previas) => ({ ...previas, [negocio.id]: Date.now() }));
   };
 
-  const volverAlMarketplace = () => setNegocioId(null);
-
   if (cargando) {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-3 bg-fondo text-texto-muted">
@@ -291,7 +297,15 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
             esNuevo={usarReal && !Object.keys(relaciones).some((id) => !idsEjemplo.has(id))}
             permisoNotif={permisoNotif}
             onPedirPermisoNotif={pedirPermisoNotif}
-            onAbrirNegocio={(elegido) => setNegocioId(elegido.id)}
+            onAbrirNegocio={(elegido) =>
+              setSearchParams((previos) => {
+                const siguientes = new URLSearchParams(previos);
+                siguientes.set('local', elegido.id);
+                // Nunca heredar la pestaña de otro negocio que se haya visto antes.
+                siguientes.delete('vista');
+                return siguientes;
+              })
+            }
             onSalir={onSalir}
             onCrearCuenta={onCrearCuenta}
           />

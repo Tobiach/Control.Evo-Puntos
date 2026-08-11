@@ -1,15 +1,25 @@
-import { useState } from 'react';
+import { lazy, Suspense } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { Gift, Home, Map, User, type LucideIcon } from 'lucide-react';
+import { Gift, Home, Loader2, Map, User, type LucideIcon } from 'lucide-react';
 import type { Cliente } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import type { PermisoNotif } from '../../lib/notificaciones';
+import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import Marketplace from './Marketplace';
-import TabMapa from './TabMapa';
 import TabMisLocales from './TabMisLocales';
 import TabPerfilMarketplace from './TabPerfilMarketplace';
 
+// Leaflet/react-leaflet (mapa "Explorar") es la dependencia más pesada de todo el marketplace
+// y solo la usa esta pestaña — separada así nadie que se quede en Inicio/Mis premios/Perfil
+// la descarga.
+const TabMapa = lazy(() => import('./TabMapa'));
+
 type Tab = 'inicio' | 'mapa' | 'mis-locales' | 'perfil';
+const TABS_VALIDAS: readonly Tab[] = ['inicio', 'mapa', 'mis-locales', 'perfil'];
+function parseTab(valor: string | null): Tab {
+  return TABS_VALIDAS.includes(valor as Tab) ? (valor as Tab) : 'inicio';
+}
 
 interface Props {
   negocios: Negocio[];
@@ -50,7 +60,26 @@ export default function MarketplaceShell({
   onSalir,
   onCrearCuenta,
 }: Props) {
-  const [tab, setTab] = useState<Tab>('inicio');
+  // La pestaña vive en la URL (`?tab=`, reemplazando — no se apila en el historial, moverse
+  // entre pestañas es lateral, no un "adelante" del que tenga sentido volver paso a paso).
+  // Así una entrada/salida de un negocio (que sí es push) no la reinicia, y la posición de
+  // scroll de cada pestaña se recuerda por separado con useScrollRestoration.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = parseTab(searchParams.get('tab'));
+  const setTab = (nuevaTab: Tab) => {
+    setSearchParams(
+      (previos) => {
+        const siguientes = new URLSearchParams(previos);
+        siguientes.set('tab', nuevaTab);
+        return siguientes;
+      },
+      { replace: true },
+    );
+  };
+  // A pesar de `overflow-y-auto`, este layout (min-h-dvh + flex-1 sin altura fija) hace que en
+  // la práctica scrollee la PÁGINA (window), no este contenedor — verificado en el navegador,
+  // no asumido. Por eso el hook va sin ref (mismo criterio que PanelDueno).
+  useScrollRestoration(`marketplace:${tab}`);
 
   return (
     <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col bg-fondo">
@@ -74,7 +103,17 @@ export default function MarketplaceShell({
                 onIrAMapa={() => setTab('mapa')}
               />
             )}
-            {tab === 'mapa' && <TabMapa negocios={negocios} onAbrirNegocio={onAbrirNegocio} />}
+            {tab === 'mapa' && (
+              <Suspense
+                fallback={
+                  <div className="flex flex-1 items-center justify-center py-16">
+                    <Loader2 size={22} className="animate-spin text-texto-muted" />
+                  </div>
+                }
+              >
+                <TabMapa negocios={negocios} onAbrirNegocio={onAbrirNegocio} />
+              </Suspense>
+            )}
             {tab === 'mis-locales' && (
               <TabMisLocales negocios={negocios} relaciones={relaciones} onAbrirNegocio={onAbrirNegocio} />
             )}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
   BarChart3,
@@ -25,6 +26,7 @@ import {
   type ClienteDelNegocio,
   type DatosNegocioForm,
 } from '../../lib/panelDueno';
+import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import SeccionNegocio from './SeccionNegocio';
 import SeccionPerfil from './SeccionPerfil';
 import SeccionRecompensas from './SeccionRecompensas';
@@ -81,10 +83,29 @@ const SECCIONES: { clave: Seccion; etiqueta: string; icono: typeof Store }[] = [
   { clave: 'metricas', etiqueta: 'Métricas', icono: BarChart3 },
   { clave: 'perfil', etiqueta: 'Perfil', icono: UserRound },
 ];
+const SECCIONES_VALIDAS: readonly Seccion[] = SECCIONES.map((s) => s.clave);
+function parseSeccion(valor: string | null): Seccion {
+  return SECCIONES_VALIDAS.includes(valor as Seccion) ? (valor as Seccion) : 'negocio';
+}
 
 export default function PanelDueno(props: Props) {
   const esPreview = props.modo === 'preview';
-  const [seccion, setSeccion] = useState<Seccion>('negocio');
+  // La sección activa vive en la URL (`?seccion=`, reemplazando — moverse entre secciones es
+  // lateral) para que un refresh o volver del navegador no te devuelva siempre a "Negocio", y
+  // para poder recordar la posición de scroll de cada una por separado.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const seccion = parseSeccion(searchParams.get('seccion'));
+  const setSeccion = (nuevaSeccion: Seccion) => {
+    setSearchParams(
+      (previos) => {
+        const siguientes = new URLSearchParams(previos);
+        siguientes.set('seccion', nuevaSeccion);
+        return siguientes;
+      },
+      { replace: true },
+    );
+  };
+  useScrollRestoration(`panel-dueno:${seccion}`);
   const [negocio, setNegocio] = useState<DatosNegocioForm>(NEGOCIO_VACIO);
   const [perfilNombre, setPerfilNombre] = useState('');
   const [recompensas, setRecompensas] = useState<Recompensa[]>([]);

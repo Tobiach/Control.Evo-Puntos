@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, ChevronLeft } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { DATA_RUBROS, parseRubro, type Cliente, type Rubro } from './data/mockClientes';
 import { NEGOCIOS } from './data/negocios';
 import Bienvenida, { type Modo } from './components/Bienvenida';
@@ -10,15 +11,28 @@ import PasoCliente from './components/PasoCliente';
 import PasoCajero from './components/PasoCajero';
 import PasoDueno from './components/PasoDueno';
 import Cierre from './components/Cierre';
-import MarketplaceApp from './components/appcliente/MarketplaceApp';
 import LoginCliente from './components/auth/LoginCliente';
-import LoginDueno from './components/auth/LoginDueno';
-import LoginCajero from './components/cajero/LoginCajero';
 import RestablecerPassword from './components/auth/RestablecerPassword';
 import { esModoRecuperacion, supabaseEnabled } from './lib/auth';
 import { CLIENTE_INVITADO } from './lib/invitado';
 import { marcarOnboardingPreminVisto, yaVioOnboardingPremin } from './lib/onboarding';
 import { capturarReferidoPendiente } from './lib/referidos';
+
+// Los 3 flujos reales y pesados (marketplace completo, panel del dueño, cajero real con
+// Supabase) se descargan recién cuando hacen falta — un cliente real (`?club`) nunca baja el
+// panel del dueño ni el cajero, y viceversa. Antes las 3 ramas se importaban eager, así que
+// TODAS terminaban en el mismo bundle sin importar cuál usaba cada visitante.
+const MarketplaceApp = lazy(() => import('./components/appcliente/MarketplaceApp'));
+const LoginDueno = lazy(() => import('./components/auth/LoginDueno'));
+const LoginCajero = lazy(() => import('./components/cajero/LoginCajero'));
+
+function cargando() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-texto-muted">
+      <Loader2 size={24} className="animate-spin" />
+    </div>
+  );
+}
 
 type Pantalla =
   | 'bienvenida'
@@ -41,10 +55,6 @@ const COLOR_BARRA: Record<Rubro, string> = {
   carniceria: '#F3F8F1',
   cafeteria: '#F3F8F1',
 };
-
-function rubroInicial(): Rubro {
-  return parseRubro(new URLSearchParams(window.location.search).get('rubro'));
-}
 
 /**
  * Link directo para compartir con conocidos (`?club`): entra derecho a la portada del
@@ -72,7 +82,11 @@ const variantes = {
 };
 
 export default function App() {
-  const [rubro, setRubro] = useState<Rubro>(rubroInicial);
+  // El rubro vive en la URL (?rubro=), no en useState: así un link compartido o un refresh
+  // lo preserva sin código extra, y queda en el mismo mecanismo (react-router) que el resto
+  // de la navegación en vez de un history.replaceState manual que el router no vería.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rubro = parseRubro(searchParams.get('rubro'));
   const [modo, setModo] = useState<Modo>(() => (esEntradaDirecta() ? 'app' : 'demo'));
   const [pantalla, setPantalla] = useState<Pantalla>(() => {
     if (esEntradaDirectaDueno()) return 'auth-dueno';
@@ -105,14 +119,30 @@ export default function App() {
   useLayoutEffect(() => {
     document.documentElement.dataset.rubro = rubro;
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', COLOR_BARRA[rubro]);
-    const url = new URL(window.location.href);
-    url.searchParams.set('rubro', rubro);
-    window.history.replaceState(null, '', url);
-  }, [rubro]);
+    // Si se entró sin `?rubro=` en la URL (o con uno inválido), reflejar el default elegido
+    // por parseRubro — mismo comportamiento que antes, ahora a través del router.
+    if (searchParams.get('rubro') !== rubro) {
+      setSearchParams(
+        (previos) => {
+          const siguientes = new URLSearchParams(previos);
+          siguientes.set('rubro', rubro);
+          return siguientes;
+        },
+        { replace: true },
+      );
+    }
+  }, [rubro, searchParams, setSearchParams]);
 
   const elegirRubro = (nuevoRubro: Rubro) => {
     if (nuevoRubro === rubro) return;
-    setRubro(nuevoRubro);
+    setSearchParams(
+      (previos) => {
+        const siguientes = new URLSearchParams(previos);
+        siguientes.set('rubro', nuevoRubro);
+        return siguientes;
+      },
+      { replace: true },
+    );
     setClientes(clonarClientes(nuevoRubro));
     setClienteActivoId(null);
     setPuntosSesion(0);
@@ -193,12 +223,14 @@ export default function App() {
 
   if (pantalla === 'app' && clienteActivo) {
     return (
-      <MarketplaceApp
-        data={data}
-        cliente={clienteActivo}
-        onSalir={salirDelMarketplace}
-        onCrearCuenta={irACrearCuenta}
-      />
+      <Suspense fallback={cargando()}>
+        <MarketplaceApp
+          data={data}
+          cliente={clienteActivo}
+          onSalir={salirDelMarketplace}
+          onCrearCuenta={irACrearCuenta}
+        />
+      </Suspense>
     );
   }
 
@@ -206,7 +238,11 @@ export default function App() {
   // más lo revisa) — escapa del contenedor angosto compartido, igual que MarketplaceApp.
   // LoginDueno se encarga de dar el ancho correcto según esté mostrando el login o el panel.
   if (pantalla === 'auth-dueno') {
-    return <LoginDueno onVolver={volverDeAuthDueno} />;
+    return (
+      <Suspense fallback={cargando()}>
+        <LoginDueno onVolver={volverDeAuthDueno} />
+      </Suspense>
+    );
   }
 
   return (
@@ -306,7 +342,9 @@ export default function App() {
             />
           )}
           {pantalla === 'auth-cajero' && (
-            <LoginCajero data={data} onVolver={() => navegar('bienvenida')} />
+            <Suspense fallback={cargando()}>
+              <LoginCajero data={data} onVolver={() => navegar('bienvenida')} />
+            </Suspense>
           )}
         </motion.main>
       </AnimatePresence>

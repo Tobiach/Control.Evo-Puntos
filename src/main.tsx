@@ -1,17 +1,21 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
-import App from './App';
-import CartaPublica from './components/carta/CartaPublica';
-import PaginaLegal from './components/legal/PaginaLegal';
 import { iniciarSentry, sentryEnabled } from './lib/sentry';
-import terminos from '../docs/TERMINOS.md?raw';
-import privacidad from '../docs/PRIVACIDAD.md?raw';
 import './index.css';
 
 // Antes que nada: si hay DSN configurado, que Sentry esté escuchando desde el primer
 // render — un error en el montaje inicial también nos tiene que llegar.
 iniciarSentry();
+
+// Cada rama es un `lazy()` propio: quien entra por `?carta=` nunca descarga el marketplace,
+// el panel del dueño ni el resto de App — y viceversa. Antes las 4 ramas se importaban
+// eager acá arriba, así que TODAS terminaban en el mismo bundle sin importar cuál se usaba.
+const App = lazy(() => import('./App'));
+const CartaPublica = lazy(() => import('./components/carta/CartaPublica'));
+const PaginaTerminos = lazy(() => import('./components/legal/PaginaTerminos'));
+const PaginaPrivacidad = lazy(() => import('./components/legal/PaginaPrivacidad'));
 
 const parametros = new URLSearchParams(window.location.search);
 
@@ -20,20 +24,31 @@ const parametros = new URLSearchParams(window.location.search);
 // query param (no path segment) porque el proyecto no tiene rewrite de SPA en Vercel.
 const cartaNegocioId = parametros.get('carta');
 
-// Rutas públicas de Términos y Privacidad: mismo criterio que `?carta=` — `?raw` importa el
-// .md tal cual (única fuente real, docs/*.md), así el texto legal nunca queda duplicado y
-// desincronizado entre el repo y lo que ve un usuario real.
+// Rutas públicas de Términos y Privacidad: mismo criterio que `?carta=`.
 const legal = parametros.get('legal');
 
+// `App` es la única rama que necesita Router (navegación real dentro del marketplace y del
+// panel del dueño, con historial de verdad para que el atrás del navegador funcione). Carta
+// pública y las páginas legales son documentos sueltos sin navegación interna — no lo necesitan.
 const pantalla = cartaNegocioId ? (
   <CartaPublica negocioId={cartaNegocioId} />
 ) : legal === 'terminos' ? (
-  <PaginaLegal contenido={terminos} />
+  <PaginaTerminos />
 ) : legal === 'privacidad' ? (
-  <PaginaLegal contenido={privacidad} />
+  <PaginaPrivacidad />
 ) : (
-  <App />
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
 );
+
+function pantallaDeCarga() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-borde border-t-acento" />
+    </div>
+  );
+}
 
 function pantallaDeError() {
   return (
@@ -49,9 +64,11 @@ function pantallaDeError() {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {sentryEnabled ? (
-      <Sentry.ErrorBoundary fallback={pantallaDeError}>{pantalla}</Sentry.ErrorBoundary>
+      <Sentry.ErrorBoundary fallback={pantallaDeError}>
+        <Suspense fallback={pantallaDeCarga()}>{pantalla}</Suspense>
+      </Sentry.ErrorBoundary>
     ) : (
-      pantalla
+      <Suspense fallback={pantallaDeCarga()}>{pantalla}</Suspense>
     )}
   </StrictMode>,
 );

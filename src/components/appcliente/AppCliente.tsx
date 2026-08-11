@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Activity, ArrowLeft, Gift, Home, User, type LucideIcon } from 'lucide-react';
 import type { Cliente, Recompensa, RubroData } from '../../data/mockClientes';
@@ -8,6 +9,7 @@ import {
   type Aviso,
   type PermisoNotif,
 } from '../../lib/notificaciones';
+import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import TabInicio from './TabInicio';
 import TabRecompensas from './TabRecompensas';
 import TabActividad from './TabActividad';
@@ -15,6 +17,10 @@ import TabPerfil from './TabPerfil';
 import AvisoActivarNotificaciones from './AvisoActivarNotificaciones';
 
 type Tab = 'inicio' | 'recompensas' | 'actividad' | 'perfil';
+const TABS_VALIDAS: readonly Tab[] = ['inicio', 'recompensas', 'actividad', 'perfil'];
+function parseTab(valor: string | null): Tab {
+  return TABS_VALIDAS.includes(valor as Tab) ? (valor as Tab) : 'inicio';
+}
 
 interface Props {
   data: RubroData;
@@ -60,7 +66,24 @@ export default function AppCliente({
   onSalir,
   onVolverMarketplace,
 }: Props) {
-  const [tab, setTab] = useState<Tab>('inicio');
+  // Misma lógica que MarketplaceShell: la pestaña vive en la URL (`?vista=`, reemplazando),
+  // así el scroll de cada pestaña se recuerda por separado y sobrevive a que AppCliente se
+  // desmonte al volver al marketplace y se vuelva a montar si se reabre el mismo negocio.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = parseTab(searchParams.get('vista'));
+  const setTab = (nuevaTab: Tab) => {
+    setSearchParams(
+      (previos) => {
+        const siguientes = new URLSearchParams(previos);
+        siguientes.set('vista', nuevaTab);
+        return siguientes;
+      },
+      { replace: true },
+    );
+  };
+  // Mismo criterio que MarketplaceShell: acá también scrollea la página (window), no el
+  // contenedor `overflow-y-auto` — verificado en el navegador, no asumido. Sin ref.
+  useScrollRestoration(`negocio:${negocioId}:${tab}`);
   const [cumpleForzado, setCumpleForzado] = useState(false);
   const [avisoNotifCerrado, setAvisoNotifCerrado] = useState(false);
   const mostrarAvisoNotif = permisoNotif === 'default' && !avisoNotifCerrado;

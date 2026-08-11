@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
 describe('App — cambio de rubro en Bienvenida', () => {
   it('resetea al set de clientes del nuevo rubro y actualiza el tema', async () => {
-    render(<App />);
+    // App ahora usa useSearchParams (el rubro vive en la URL) — necesita un Router alrededor,
+    // igual que en producción (main.tsx envuelve con BrowserRouter). MemoryRouter porque el
+    // test no tiene una URL de navegador real.
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+    );
 
     // Arranca en gastro (rubro por defecto).
     expect(screen.getByText('Elegí tu rubro')).toBeInTheDocument();
