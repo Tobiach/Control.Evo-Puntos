@@ -48,6 +48,8 @@ type Pantalla =
   | 'auth-cajero';
 
 const ORDEN: Pantalla[] = ['bienvenida', 'cliente', 'cajero', 'dueno', 'cierre'];
+// Etiquetas del stepper del header — el índice 0 corresponde al paso 1 (cliente), etc.
+const ETIQUETAS_PASO = ['Cliente', 'Caja', 'Dueño'];
 // Paleta unificada Premia.ar: los 3 rubros comparten el mismo fondo, ya no varía por tema.
 const COLOR_BARRA: Record<Rubro, string> = {
   gastro: '#F3F8F1',
@@ -151,6 +153,10 @@ export default function App() {
   const navegar = (destino: Pantalla) => {
     setDireccion(ORDEN.indexOf(destino) >= indice ? 1 : -1);
     setPantalla(destino);
+    // El flujo del demo no tiene URL propia por pantalla (a diferencia de la app real):
+    // sin este reset, el scroll de una pantalla larga (ej. Bienvenida con 4 rubros) se
+    // arrastra a la siguiente y tapa el header/stepper.
+    window.scrollTo(0, 0);
   };
 
   const comenzar = () => {
@@ -257,15 +263,29 @@ export default function App() {
           >
             <ChevronLeft size={18} />
           </button>
-          <div className="flex flex-1 gap-1.5">
-            {[1, 2, 3].map((paso) => (
-              <div
-                key={paso}
-                className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                  paso <= indice ? 'bg-acento' : 'bg-borde'
-                }`}
-              />
-            ))}
+          <div className="flex flex-1 flex-col gap-1">
+            <div className="flex gap-1.5">
+              {[1, 2, 3].map((paso) => (
+                <div
+                  key={paso}
+                  className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+                    paso <= indice ? 'bg-acento' : 'bg-borde'
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              {ETIQUETAS_PASO.map((etiqueta, i) => (
+                <span
+                  key={etiqueta}
+                  className={`flex-1 text-center text-[10px] font-semibold transition-colors duration-300 ${
+                    i + 1 <= indice ? 'text-acento' : 'text-texto-muted'
+                  }`}
+                >
+                  {etiqueta}
+                </span>
+              ))}
+            </div>
           </div>
           <span className="text-xs font-semibold text-texto-muted">{indice} de 3</span>
         </header>

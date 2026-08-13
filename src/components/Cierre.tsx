@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { BarChart3, MessageCircle, ReceiptText, RotateCcw, Sparkles, User } from 'lucide-react';
+import { BarChart3, MessageCircle, ReceiptText, RotateCcw, User } from 'lucide-react';
 import type { RubroData } from '../data/mockClientes';
 import { WHATSAPP_NUMBER } from '../config';
 
@@ -8,26 +8,38 @@ interface Props {
   onReiniciar: () => void;
 }
 
-const RESUMEN = [
-  { icono: User, texto: 'Tu cliente ve sus puntos y su próximo premio' },
-  { icono: ReceiptText, texto: 'Tu caja suma puntos sola y sugiere el upsell' },
-  { icono: BarChart3, texto: 'Vos ves quién vuelve, quién no, y quién canjea' },
-] as const;
+function construirResumen(data: RubroData) {
+  return [
+    {
+      icono: User,
+      texto: `Tu cliente ve sus puntos y puede canjear cosas como "${data.recompensas[0]?.descripcion ?? 'tu primer premio'}"`,
+    },
+    {
+      icono: ReceiptText,
+      texto: `Tu caja suma puntos sola: cada ${data.monedaPrefijo}${data.montoPorPunto} son 1 punto, nadie calcula nada`,
+    },
+    {
+      icono: BarChart3,
+      texto: `Vos ves quién vuelve a ${data.nombreNegocio}, quién no, y quién está por canjear`,
+    },
+  ] as const;
+}
 
 export default function Cierre({ data, onReiniciar }: Props) {
+  const resumen = construirResumen(data);
   const linkWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(data.mensajeWhatsApp)}`;
 
   return (
     <div className="flex flex-1 flex-col justify-center gap-8 py-10">
       <div className="text-center">
-        <motion.div
+        <motion.img
+          src="/premin.png"
+          alt="Premín, la mascota de Premia.ar"
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-acento text-on-acento"
-        >
-          <Sparkles size={30} strokeWidth={2.2} />
-        </motion.div>
+          className="mx-auto mb-3 h-20 w-20 object-contain drop-shadow-lg"
+        />
         <h2 className="text-2xl font-black tracking-tight">Eso es todo el sistema</h2>
         <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-texto-muted">
           Un club de puntos con tu marca, funcionando en el celular de cada cliente.
@@ -35,7 +47,7 @@ export default function Cierre({ data, onReiniciar }: Props) {
       </div>
 
       <div className="flex flex-col gap-2.5">
-        {RESUMEN.map((item, indice) => {
+        {resumen.map((item, indice) => {
           const Icono = item.icono;
           return (
             <motion.div
