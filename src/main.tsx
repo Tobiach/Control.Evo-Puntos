@@ -16,6 +16,7 @@ const App = lazy(() => import('./App'));
 const CartaPublica = lazy(() => import('./components/carta/CartaPublica'));
 const PaginaTerminos = lazy(() => import('./components/legal/PaginaTerminos'));
 const PaginaPrivacidad = lazy(() => import('./components/legal/PaginaPrivacidad'));
+const LandingPremia = lazy(() => import('./components/landing/LandingPremia'));
 
 const parametros = new URLSearchParams(window.location.search);
 
@@ -27,15 +28,23 @@ const cartaNegocioId = parametros.get('carta');
 // Rutas públicas de Términos y Privacidad: mismo criterio que `?carta=`.
 const legal = parametros.get('legal');
 
+// Landing informativa para prospectos, en /landing — sí es un path (no query param) porque
+// es el link que se manda para afuera y necesita ser memorable. Requiere el rewrite de SPA
+// en vercel.json (agregado junto con esta ruta) para no 404 en producción.
+const esLanding = window.location.pathname === '/landing';
+
 // `App` es la única rama que necesita Router (navegación real dentro del marketplace y del
 // panel del dueño, con historial de verdad para que el atrás del navegador funcione). Carta
-// pública y las páginas legales son documentos sueltos sin navegación interna — no lo necesitan.
+// pública, las páginas legales y la landing son documentos sueltos sin navegación interna —
+// no lo necesitan.
 const pantalla = cartaNegocioId ? (
   <CartaPublica negocioId={cartaNegocioId} />
 ) : legal === 'terminos' ? (
   <PaginaTerminos />
 ) : legal === 'privacidad' ? (
   <PaginaPrivacidad />
+) : esLanding ? (
+  <LandingPremia />
 ) : (
   <BrowserRouter>
     <App />
