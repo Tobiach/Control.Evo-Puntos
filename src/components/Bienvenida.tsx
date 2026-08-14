@@ -67,10 +67,10 @@ export default function Bienvenida({
           className="mx-auto mb-3 h-20 w-20 object-contain drop-shadow-lg"
         />
         <h1 className="text-3xl font-black tracking-tight">Premia.ar</h1>
-        <p className="mt-1 text-lg font-semibold text-acento">Club de fidelización</p>
+        <p className="mt-1 text-lg font-semibold text-acento">Sistema de recurrencia para comercios</p>
         <p className="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-texto-muted">
-          Mirá el sistema de fidelización como lo ven tus clientes, tu caja y vos. Dos minutos, en
-          tu propio celular.
+          El problema no es que no vengan. Es que nadie les da un motivo para volver. Mirá cómo lo
+          resolvemos — como lo ve tu cliente, tu caja y vos. Dos minutos, en tu celular.
         </p>
       </div>
 

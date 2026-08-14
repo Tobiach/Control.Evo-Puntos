@@ -46,6 +46,14 @@ export default function Cierre({ data, onReiniciar }: Props) {
         </p>
       </div>
 
+      <div className="rounded-2xl bg-acento-suave px-4 py-3.5 text-center">
+        <p className="text-sm leading-relaxed font-semibold text-texto">
+          Un cliente fiel gasta hasta <span className="text-acento">90% más seguido</span> que uno
+          ocasional
+        </p>
+        <p className="mt-0.5 text-[11px] text-texto-muted">Paytronix, industria gastronómica</p>
+      </div>
+
       <div className="flex flex-col gap-2.5">
         {resumen.map((item, indice) => {
           const Icono = item.icono;
