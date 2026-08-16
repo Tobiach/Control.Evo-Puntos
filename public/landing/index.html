@@ -50,7 +50,7 @@
   h1, h2, h3, .titulo {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     color: var(--primario);
   }
   a { color: inherit; text-decoration: none; }
@@ -131,8 +131,8 @@
     padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
     margin-bottom: 20px;
   }
-  .hero h1 { color: #fff; font-size: 44px; line-height: 1.08; margin-bottom: 18px; }
-  @media (max-width: 560px) { .hero h1 { font-size: 32px; } }
+  .hero h1 { color: #fff; font-size: 60px; line-height: 1.02; letter-spacing: -0.04em; margin-bottom: 18px; }
+  @media (max-width: 560px) { .hero h1 { font-size: 38px; } }
   .hero p.sub { font-size: 17px; color: #CBD5E1; max-width: 480px; margin-bottom: 28px; }
   .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
   .hero-nota { font-size: 13px; color: #94A3B8; }
@@ -157,7 +157,7 @@
     background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
     border-radius: var(--radio-card); padding: 20px; margin-bottom: 12px;
   }
-  .mock-puntos { font-family: 'Space Grotesk', sans-serif; font-size: 34px; font-weight: 800; color: var(--secundario); }
+  .mock-puntos { font-family: 'Space Grotesk', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; color: var(--secundario); }
   .mock-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); margin: 12px 0; overflow: hidden; }
   .mock-bar-fill { height: 100%; width: 68%; background: var(--acento); border-radius: 999px; }
   .mock-fila { display: flex; justify-content: space-between; font-size: 13px; color: #CBD5E1; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.06); }
@@ -165,13 +165,13 @@
   /* ---- Secciones generales ---- */
   section { padding: 80px 24px; }
   .encabezado-seccion { text-align: center; max-width: 620px; margin: 0 auto 48px; }
-  .encabezado-seccion h2 { font-size: 32px; margin-bottom: 12px; }
+  .encabezado-seccion h2 { font-size: 38px; letter-spacing: -0.035em; margin-bottom: 12px; }
   .encabezado-seccion p { color: var(--texto-muted); font-size: 16px; }
   .kicker { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--acento); margin-bottom: 10px; }
   @media (max-width: 480px) {
     section { padding: 56px 18px; }
     .encabezado-seccion { margin-bottom: 32px; }
-    .encabezado-seccion h2 { font-size: 26px; }
+    .encabezado-seccion h2 { font-size: 28px; }
   }
 
   /* ---- Showcase (imagen completa generada, con sus propios títulos adentro) ---- */
@@ -186,7 +186,7 @@
   .beneficios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; max-width: 1120px; margin: 0 auto; }
   @media (max-width: 800px) { .beneficios-grid { grid-template-columns: 1fr; } }
   .beneficio-card { padding: 32px 28px; border: 1px solid var(--borde); border-radius: var(--radio-card); text-align: center; }
-  .beneficio-num { font-family: 'Space Grotesk', sans-serif; font-size: 42px; font-weight: 800; color: var(--primario); }
+  .beneficio-num { font-family: 'Space Grotesk', sans-serif; font-size: 50px; font-weight: 800; letter-spacing: -0.03em; color: var(--primario); }
   .beneficio-titulo { font-weight: 700; margin: 8px 0 6px; }
   .beneficio-desc { color: var(--texto-muted); font-size: 14px; }
 
@@ -235,7 +235,7 @@
     background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
     border-radius: var(--radio-card); padding: 24px 20px; text-align: center;
   }
-  .roi-num { font-family: 'Space Grotesk', sans-serif; font-size: 38px; font-weight: 800; color: var(--secundario); }
+  .roi-num { font-family: 'Space Grotesk', sans-serif; font-size: 46px; font-weight: 800; letter-spacing: -0.03em; color: var(--secundario); }
   .roi-desc { font-size: 13.5px; color: #CBD5E1; margin-top: 6px; line-height: 1.4; }
   .roi-fuente { font-size: 11px; color: #667085; margin-top: 8px; }
   .roi-lista {
@@ -360,7 +360,7 @@
     font-family: 'Space Grotesk', sans-serif;
   }
   .precio-momento { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #94A3B8; margin-top: 10px; }
-  .precio-monto { font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 800; color: var(--premio); margin-top: 6px; }
+  .precio-monto { font-family: 'Space Grotesk', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; color: var(--premio); margin-top: 6px; }
   .precio-detalle { font-size: 13px; color: #CBD5E1; margin-top: 8px; line-height: 1.4; }
 
   /* ---- FAQ ---- */
@@ -434,6 +434,18 @@
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 10px 24px -6px rgba(0,0,0,0.3);
   }
+
+  /* ---- Notas manuscritas (Caveat) — toque cálido puntual, nunca de cuerpo ---- */
+  .nota-manuscrita {
+    display: inline-block; font-family: 'Caveat', cursive; font-weight: 600; font-size: 22px;
+    color: var(--secundario); transform: rotate(-4deg);
+  }
+  .nota-manuscrita.clara { color: #fff; }
+  .nota-burbuja {
+    display: inline-block; background: #fff; color: var(--primario); border-radius: 16px 16px 16px 4px;
+    padding: 8px 16px; box-shadow: 0 8px 20px -8px rgba(0,0,0,0.3);
+  }
+  .nota-burbuja .nota-manuscrita { color: var(--secundario); transform: none; }
 
   /* ---- Scroll-reveal: cada sección/tarjeta aparece progresivamente al bajar ---- */
   .reveal {
@@ -528,12 +540,15 @@
     <div>
       <span class="badge-suave">● Nuevo — sistema de recurrencia multi-negocio</span>
       <h1>Clientes que vuelven solos,<br/>sin que se lo tengas que pedir</h1>
-      <p class="sub">Convertí cada compra en una razón para volver — mientras dejás de depender de publicidad constante para llenar tu negocio. Sin apps que nadie descarga, sin tarjetitas de cartón que se pierden.</p>
+      <p class="sub">Convertí cada compra en una razón para volver. Sin apps, sin tarjetitas de cartón, sin depender de publicidad constante.</p>
       <div class="hero-ctas">
         <a href="#contacto" class="btn btn-primario">Sumar mi negocio</a>
         <a href="https://premia-ar.vercel.app" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.2);">Ver el producto en vivo</a>
       </div>
       <p class="hero-nota">Onboarding guiado — no necesitás saber de tecnología.</p>
+      <div style="margin-top:14px;">
+        <span class="nota-burbuja"><span class="nota-manuscrita">posta, así de simple 👇</span></span>
+      </div>
     </div>
     <div class="hero-mock">
       <img src="/premin.png" alt="Premín, la mascota de Premia.ar" class="hero-premin" loading="eager" />
@@ -588,7 +603,7 @@
   <div class="encabezado-seccion reveal">
     <div class="kicker">Por qué te conviene</div>
     <h2>Esto es lo que gana tu negocio con un sistema de recurrencia</h2>
-    <p>Datos de estudios de la industria de fidelización (no son una promesa nuestra — son cómo funciona esta mecánica en general, con fuente).</p>
+    <p>Datos reales de la industria — no una promesa nuestra.</p>
   </div>
   <div class="roi-grid">
     <div class="roi-card reveal">
@@ -620,7 +635,7 @@
     <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Medís tu negocio en tiempo real</strong> — clientes, puntos acreditados y quién vuelve, sin planillas</span></li>
     <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Boca a boca real</strong> — invitar a un amigo premia a los dos cuando el vínculo con tu negocio es real</span></li>
   </ul>
-  <p class="roi-nota">Los porcentajes son promedios publicados de la industria de fidelización, no resultados garantizados de Premia.ar.</p>
+  <p class="roi-nota">Promedios publicados de la industria — no resultados garantizados de Premia.ar.</p>
 </section>
 
 <!-- ============ EJEMPLO DE MARKETPLACE (rotulado, sin afirmar clientes reales) ============ -->
@@ -658,7 +673,7 @@
   <div class="encabezado-seccion reveal">
     <div class="kicker">Por qué esto crece solo</div>
     <h2>Tus clientes no solo vuelven. Traen a los suyos.</h2>
-    <p>No es un club de puntos más. Cada mecánica está pensada para que lo cuenten sin que se los pidas.</p>
+    <p>No es un club de puntos más. Está pensado para que lo cuenten solos.</p>
   </div>
   <div class="crece-grid">
     <div class="crece-card reveal">
@@ -701,7 +716,7 @@
   <div class="encabezado-seccion reveal">
     <div class="kicker">Cómo crece la red</div>
     <h2>Cada comercio nuevo suma su propia red</h2>
-    <p>No hacemos publicidad masiva. La red crece por diseño, no por gasto en marketing.</p>
+    <p>No hacemos publicidad masiva. La red crece por diseño.</p>
   </div>
   <div class="red-loop">
     <div class="red-paso reveal">
@@ -780,7 +795,7 @@
   <div class="encabezado-seccion reveal">
     <div class="kicker">Funciones</div>
     <h2>Todo lo que necesitás, nada de lo que no</h2>
-    <p>Marketplace, puntos automáticos, panel con métricas, recompensas editables, identidad propia y gamificación — 6 sistemas en uno. Pensado para cualquier comercio con clientes que vuelven, no una plantilla genérica.</p>
+    <p>6 sistemas en uno. Pensado para cualquier comercio con clientes que vuelven — no una plantilla genérica.</p>
   </div>
   <div class="features-grid">
     <div class="feature-card reveal">
@@ -834,7 +849,7 @@
   <div class="encabezado-seccion reveal">
     <div class="kicker">Cómo se paga</div>
     <h2>No pagás el precio completo hasta que lo veas funcionar</h2>
-    <p>Así está armado a propósito: el riesgo del primer mes lo asumimos nosotros, no vos.</p>
+    <p>El riesgo del primer mes lo asumimos nosotros. No vos.</p>
   </div>
   <div class="precio-grid">
     <div class="precio-card reveal">
@@ -855,6 +870,9 @@
       <div class="precio-monto">USD 35/mes</div>
       <div class="precio-detalle">Mensual recurrente, nada más</div>
     </div>
+  </div>
+  <div style="text-align:center;margin-top:26px;">
+    <span class="nota-manuscrita clara">sin letra chica, lo prometo ✌️</span>
   </div>
 </section>
 
@@ -902,8 +920,9 @@
   <div class="contenedor">
     <img src="/premin.png" alt="Premín, la mascota de Premia.ar" loading="lazy" />
     <h2>Sumá tu negocio al club</h2>
-    <p>Contanos sobre tu negocio y armamos tu club de puntos juntos.</p>
+    <p>Contanos de tu negocio. Armamos tu club juntos.</p>
     <a href="#contacto" class="btn btn-primario">Sumar mi negocio</a>
+    <p style="margin-top:16px;"><span class="nota-manuscrita clara">te leemos nosotros, posta</span></p>
     <div class="cta-badges">
       <span>✓ Sin apps para instalar</span>
       <span>✓ Vos controlás tus recompensas</span>
