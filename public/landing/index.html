@@ -3,29 +3,33 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Premia.ar — El club de fidelización para tu negocio</title>
+<title>Premia.ar — Sistema de recurrencia para comercios argentinos</title>
 <meta name="description" content="Puntos automáticos en cada cobro, recompensas que vos controlás y un panel simple para vos, tu cajero y tus clientes. Sin apps para instalar." />
-<meta property="og:title" content="Premia.ar — El club de fidelización para tu negocio" />
+<meta property="og:title" content="Premia.ar — Sistema de recurrencia para comercios argentinos" />
 <meta property="og:description" content="Convertí cada compra en una razón para volver. Puntos automáticos, sin apps, sin fricción." />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="https://premia-ar.vercel.app/landing/img/feature-captura.png" />
-<meta name="theme-color" content="#0F172A" />
+<meta name="theme-color" content="#1A1A1D" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --primario: #0F172A;
-    --secundario: #D4A64A;
-    --acento: #0EA5A4;
-    --neutro-oscuro: #09090B;
-    --neutro-claro: #F8FAFC;
+    /* Paleta oficial Premia.ar v4 — misma fuente de verdad que src/index.css.
+       --primario cubre dos roles (texto sobre claro Y fondo de secciones oscuras),
+       igual que hacía el navy original: el grafito oficial funciona para ambos. */
+    --primario: #1A1A1D;
+    --secundario: #D89B2B;
+    --acento: #34C759;
+    --neutro-oscuro: #17191D;
+    --neutro-claro: #F3F8F1;
+    --premio: #F28A63;
     --success: #16A34A;
     --warning: #F59E0B;
     --error: #DC2626;
     --info: #2563EB;
-    --borde: rgba(148, 163, 184, 0.18);
-    --texto-muted: #64748B;
+    --borde: rgba(215, 224, 213, 0.4);
+    --texto-muted: #667085;
     --radio: 16px;
     --radio-btn: 14px;
     --radio-card: 18px;
@@ -116,14 +120,14 @@
   }
   .hero::before {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse 900px 500px at 80% -10%, rgba(212,166,74,0.16), transparent 60%);
+    background: radial-gradient(ellipse 900px 500px at 80% -10%, rgba(216,155,43,0.16), transparent 60%);
     pointer-events: none;
   }
   .hero-grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; position: relative; }
   @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } }
   .badge-suave {
     display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(14,165,164,0.14); color: #5EEAD4;
+    background: rgba(52,199,89,0.14); color: #7BE495;
     padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
     margin-bottom: 20px;
   }
@@ -137,9 +141,16 @@
     .hero-ctas .btn { width: 100%; }
   }
   .hero-mock {
-    background: #12213D; border: 1px solid rgba(255,255,255,0.08);
+    background: #101112; border: 1px solid rgba(255,255,255,0.08);
     border-radius: 24px; padding: 22px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+    position: relative;
   }
+  .hero-premin {
+    position: absolute; bottom: -22px; left: -26px; width: 84px; height: 84px;
+    object-fit: contain; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+    transform: rotate(-6deg);
+  }
+  @media (max-width: 480px) { .hero-premin { width: 64px; height: 64px; left: -12px; bottom: -14px; } }
   .mock-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
   .mock-tag { font-size: 12px; color: #94A3B8; font-weight: 600; }
   .mock-card {
@@ -225,7 +236,7 @@
   }
   .roi-num { font-family: 'Space Grotesk', sans-serif; font-size: 38px; font-weight: 800; color: var(--secundario); }
   .roi-desc { font-size: 13.5px; color: #CBD5E1; margin-top: 6px; line-height: 1.4; }
-  .roi-fuente { font-size: 11px; color: #64748B; margin-top: 8px; }
+  .roi-fuente { font-size: 11px; color: #667085; margin-top: 8px; }
   .roi-lista {
     max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr);
     gap: 14px 28px; list-style: none;
@@ -233,7 +244,7 @@
   @media (max-width: 640px) { .roi-lista { grid-template-columns: 1fr; } }
   .roi-lista li { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; color: #E2E8F0; }
   .roi-lista svg { flex-shrink: 0; margin-top: 3px; color: var(--secundario); }
-  .roi-nota { text-align: center; font-size: 12px; color: #64748B; margin-top: 32px; }
+  .roi-nota { text-align: center; font-size: 12px; color: #667085; margin-top: 32px; }
 
   /* ---- Mockups (así se ve el panel del dueño / la app del cliente) ---- */
   .mockups { background: #fff; }
@@ -249,7 +260,7 @@
   .mockup-frame img { width: 100%; height: auto; border-radius: 14px; display: block; }
   .mockup-frame .mock-card { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); }
   .mockup-chip {
-    display: inline-flex; align-items: center; gap: 6px; background: rgba(212,166,74,0.16);
+    display: inline-flex; align-items: center; gap: 6px; background: rgba(216,155,43,0.16);
     color: var(--secundario); font-size: 11px; font-weight: 700; padding: 4px 10px;
     border-radius: 999px; margin-bottom: 10px;
   }
@@ -258,6 +269,51 @@
     padding: 9px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12.5px; color: #CBD5E1;
   }
   .mockup-fila-cliente:first-child { border-top: none; }
+
+  /* ---- Por qué esto crece solo (mecánicas virales reales) ---- */
+  .crece { background: #fff; }
+  .crece-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; max-width: 900px; margin: 0 auto; }
+  @media (max-width: 640px) { .crece-grid { grid-template-columns: 1fr; } }
+  .crece-card {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--neutro-claro); border: 1px solid var(--borde); border-radius: var(--radio-card);
+    padding: 22px;
+  }
+  .crece-icon {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(52,199,89,0.14); color: var(--acento);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .crece-card h3 { font-size: 15.5px; margin-bottom: 4px; }
+  .crece-card p { font-size: 13.5px; color: var(--texto-muted); }
+  .crece-dato {
+    max-width: 640px; margin: 28px auto 0; text-align: center;
+    background: var(--neutro-claro); border: 1px solid var(--borde); border-radius: var(--radio-card);
+    padding: 20px 24px;
+  }
+  .crece-dato p { font-size: 14px; line-height: 1.5; }
+  .crece-dato strong { color: var(--primario); }
+  .crece-dato-fuente { font-size: 11.5px; color: var(--texto-muted); margin-top: 8px; }
+
+  /* ---- Cómo crece la red (mecanismo de expansión, sin roadmap inventado) ---- */
+  .red { background: var(--neutro-claro); }
+  .red-loop {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    max-width: 1000px; margin: 0 auto; text-align: center;
+  }
+  @media (max-width: 760px) { .red-loop { grid-template-columns: repeat(2, 1fr); gap: 28px 16px; } }
+  .red-paso-icon {
+    width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 10px;
+    background: rgba(216,155,43,0.16); color: var(--secundario);
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .red-paso-num {
+    position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--primario); color: #fff; font-size: 10.5px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif;
+  }
+  .red-paso p { font-size: 13px; color: var(--texto-muted); line-height: 1.4; }
+  .red-ciclo { text-align: center; font-size: 13.5px; font-weight: 700; color: var(--secundario); margin-top: 28px; }
 
   /* ---- Cómo funciona ---- */
   .pasos { background: #fff; }
@@ -279,7 +335,7 @@
   @media (max-width: 620px) { .features-grid { grid-template-columns: 1fr; } }
   .feature-card { background: #fff; border: 1px solid var(--borde); border-radius: var(--radio-card); padding: 26px; }
   .feature-icon {
-    width: 42px; height: 42px; border-radius: 12px; background: rgba(212,166,74,0.14); color: var(--secundario);
+    width: 42px; height: 42px; border-radius: 12px; background: rgba(216,155,43,0.14); color: var(--secundario);
     display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
   }
   .feature-card h3 { font-size: 16.5px; margin-bottom: 8px; }
@@ -302,6 +358,7 @@
 
   /* ---- CTA final ---- */
   .cta-final { background: var(--primario); color: #fff; text-align: center; }
+  .cta-final img { margin: 0 auto 14px; width: 76px; height: 76px; object-fit: contain; }
   .cta-final h2 { color: #fff; font-size: 32px; margin-bottom: 12px; }
   .cta-final p { color: #CBD5E1; margin-bottom: 28px; }
   .cta-badges { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; margin-top: 28px; font-size: 13.5px; color: #94A3B8; }
@@ -346,7 +403,7 @@
     padding: 12px 14px; color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; width: 100%;
   }
   .modal-input::placeholder { color: #94A3B8; }
-  .modal-nota { font-size: 11px; color: #64748B; margin-top: 10px; }
+  .modal-nota { font-size: 11px; color: #667085; margin-top: 10px; }
 
   /* ---- WhatsApp flotante ---- */
   .wsp-flotante {
@@ -383,7 +440,7 @@
 <section class="hero" style="padding-top:88px;">
   <div class="hero-grid">
     <div>
-      <span class="badge-suave">● Nuevo — club de fidelización multi-negocio</span>
+      <span class="badge-suave">● Nuevo — sistema de recurrencia multi-negocio</span>
       <h1>Puntos que tus clientes<br/>realmente quieren juntar</h1>
       <p class="sub">Convertí cada compra en una razón para volver — sin apps que nadie descarga, sin tarjetitas de cartón que se pierden.</p>
       <div class="hero-ctas">
@@ -393,6 +450,7 @@
       <p class="hero-nota">Onboarding guiado — no necesitás saber de tecnología.</p>
     </div>
     <div class="hero-mock">
+      <img src="/premin.png" alt="Premín, la mascota de Premia.ar" class="hero-premin" loading="eager" />
       <div class="mock-topbar">
         <span class="mock-tag">CAFÉ NARDO · CLUB DE PUNTOS</span>
         <span style="font-size:18px;">☕</span>
@@ -442,7 +500,7 @@
 <section class="roi">
   <div class="encabezado-seccion">
     <div class="kicker">Por qué te conviene</div>
-    <h2>Esto es lo que gana tu negocio con un club de fidelización</h2>
+    <h2>Esto es lo que gana tu negocio con un sistema de recurrencia</h2>
     <p>Datos de estudios de la industria de fidelización (no son una promesa nuestra — son cómo funciona esta mecánica en general, con fuente).</p>
   </div>
   <div class="roi-grid">
@@ -506,6 +564,77 @@
       </div>
     </div>
   </div>
+</section>
+
+<!-- ============ POR QUÉ ESTO CRECE SOLO (mecánicas virales reales) ============ -->
+<section class="crece">
+  <div class="encabezado-seccion">
+    <div class="kicker">Por qué esto crece solo</div>
+    <h2>Tus clientes no solo vuelven. Traen a los suyos.</h2>
+    <p>No es un club de puntos más. Cada mecánica está pensada para que lo cuenten sin que se los pidas.</p>
+  </div>
+  <div class="crece-grid">
+    <div class="crece-card">
+      <span class="crece-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+      <div>
+        <h3>Referidos con premio real</h3>
+        <p>Un cliente invita, el invitado consume, los dos ganan — verificado por el sistema, no a la palabra.</p>
+      </div>
+    </div>
+    <div class="crece-card">
+      <span class="crece-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m21 3-6.5 6.5"/><path d="m18 13 3 3-3 3"/><path d="m6 21 3-3-3-3"/></svg></span>
+      <div>
+        <h3>Desafíos entre amigos</h3>
+        <p>Dentro del mismo local: una razón más concreta para volver acompañado.</p>
+      </div>
+    </div>
+    <div class="crece-card">
+      <span class="crece-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span>
+      <div>
+        <h3>Ranking del barrio</h3>
+        <p>Cada semana, quién más sumó. Competencia sana entre habitués.</p>
+      </div>
+    </div>
+    <div class="crece-card">
+      <span class="crece-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg></span>
+      <div>
+        <h3>Descubrimiento por proximidad</h3>
+        <p>Un cliente que ya confía en un local de la red, encuentra el de al lado.</p>
+      </div>
+    </div>
+  </div>
+  <div class="crece-dato">
+    <p>Esto ya pasó en Argentina: una app de recompensas sumó <strong>300.000 usuarios y 600 comercios en su primer mes</strong>, sin pauta paga.</p>
+    <p class="crece-dato-fuente">Pasito, 2026 — premia por caminar cerca de un comercio. Premia.ar premia por consumir adentro: el mercado ya demostró que quiere esto.</p>
+  </div>
+</section>
+
+<!-- ============ CÓMO CRECE LA RED (mecanismo de expansión, sin roadmap inventado) ============ -->
+<section class="red">
+  <div class="encabezado-seccion">
+    <div class="kicker">Cómo crece la red</div>
+    <h2>Cada comercio nuevo suma su propia red</h2>
+    <p>No hacemos publicidad masiva. La red crece por diseño, no por gasto en marketing.</p>
+  </div>
+  <div class="red-loop">
+    <div class="red-paso">
+      <span class="red-paso-icon"><span class="red-paso-num">1</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M3 9v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span>
+      <p>Un comercio se suma a la red</p>
+    </div>
+    <div class="red-paso">
+      <span class="red-paso-icon"><span class="red-paso-num">2</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+      <p>Sus clientes habituales empiezan a sumar puntos</p>
+    </div>
+    <div class="red-paso">
+      <span class="red-paso-icon"><span class="red-paso-num">3</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg></span>
+      <p>Esos clientes descubren otros comercios cerca</p>
+    </div>
+    <div class="red-paso">
+      <span class="red-paso-icon"><span class="red-paso-num">4</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+      <p>Esos comercios ganan clientes nuevos — y el ciclo se repite</p>
+    </div>
+  </div>
+  <p class="red-ciclo">↺ y el ciclo se repite con cada comercio nuevo</p>
 </section>
 
 <!-- ============ CÓMO FUNCIONA ============ -->
@@ -645,6 +774,7 @@
 <!-- ============ CTA FINAL ============ -->
 <section class="cta-final">
   <div class="contenedor">
+    <img src="/premin.png" alt="Premín, la mascota de Premia.ar" loading="lazy" />
     <h2>Sumá tu negocio al club</h2>
     <p>Contanos sobre tu negocio y armamos tu club de puntos juntos.</p>
     <a href="#contacto" class="btn btn-primario">Sumar mi negocio</a>
@@ -661,7 +791,7 @@
   <div class="footer-grid">
     <div>
       <div class="logo" style="color:#fff;margin-bottom:14px;"><span class="logo-dot"></span>Premia.ar</div>
-      <p style="max-width:260px;font-size:13.5px;">El club de fidelización para gastronomía, carnicerías y almacenes/supermercados.</p>
+      <p style="max-width:260px;font-size:13.5px;">El sistema de recurrencia para gastronomía, carnicerías y almacenes/supermercados.</p>
     </div>
     <div>
       <h4>Producto</h4>
