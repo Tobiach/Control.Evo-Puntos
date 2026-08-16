@@ -131,7 +131,7 @@
     padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
     margin-bottom: 20px;
   }
-  .hero h1 { font-size: 44px; line-height: 1.08; margin-bottom: 18px; }
+  .hero h1 { color: #fff; font-size: 44px; line-height: 1.08; margin-bottom: 18px; }
   @media (max-width: 560px) { .hero h1 { font-size: 32px; } }
   .hero p.sub { font-size: 17px; color: #CBD5E1; max-width: 480px; margin-bottom: 28px; }
   .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -224,7 +224,8 @@
   }
 
   /* ---- Beneficios reales (destacada, con % citados de estudios de la industria) ---- */
-  .roi { background: var(--primario); color: #fff; }
+  .roi { background: var(--primario); color: #fff; position: relative; overflow: hidden; }
+  .roi .encabezado-seccion h2 { color: #fff; }
   .roi .encabezado-seccion p { color: #CBD5E1; }
   .roi .kicker { color: var(--secundario); }
   .roi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; max-width: 1120px; margin: 0 auto 40px; }
@@ -341,6 +342,27 @@
   .feature-card h3 { font-size: 16.5px; margin-bottom: 8px; }
   .feature-card p { color: var(--texto-muted); font-size: 14px; }
 
+  /* ---- Precio (risk-reversal real, ya existente en el modelo de negocio) ---- */
+  .precio { background: var(--primario); color: #fff; position: relative; overflow: hidden; }
+  .precio .encabezado-seccion h2 { color: #fff; }
+  .precio .encabezado-seccion p { color: #CBD5E1; }
+  .precio .kicker { color: var(--secundario); }
+  .precio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-width: 900px; margin: 0 auto; }
+  @media (max-width: 760px) { .precio-grid { grid-template-columns: 1fr; } }
+  .precio-card {
+    position: relative; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radio-card); padding: 26px 20px; text-align: center;
+  }
+  .precio-paso {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    width: 26px; height: 26px; border-radius: 50%; background: var(--premio); color: #fff;
+    font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .precio-momento { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #94A3B8; margin-top: 10px; }
+  .precio-monto { font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 800; color: var(--premio); margin-top: 6px; }
+  .precio-detalle { font-size: 13px; color: #CBD5E1; margin-top: 8px; line-height: 1.4; }
+
   /* ---- FAQ ---- */
   .faq { background: var(--neutro-claro); }
   .faq-lista { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
@@ -357,7 +379,7 @@
   .faq-item.abierto .faq-respuesta { max-height: 240px; }
 
   /* ---- CTA final ---- */
-  .cta-final { background: var(--primario); color: #fff; text-align: center; }
+  .cta-final { background: var(--primario); color: #fff; text-align: center; position: relative; overflow: hidden; }
   .cta-final img { margin: 0 auto 14px; width: 76px; height: 76px; object-fit: contain; }
   .cta-final h2 { color: #fff; font-size: 32px; margin-bottom: 12px; }
   .cta-final p { color: #CBD5E1; margin-bottom: 28px; }
@@ -395,7 +417,7 @@
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px;
     padding: 16px; margin-bottom: 18px;
   }
-  .modal-card h3 { font-size: 21px; margin-bottom: 6px; }
+  .modal-card h3 { color: #fff; font-size: 21px; margin-bottom: 6px; }
   .modal-card p.modal-sub { color: #CBD5E1; font-size: 13.5px; margin-bottom: 18px; }
   .modal-form { display: flex; flex-direction: column; gap: 10px; }
   .modal-input {
@@ -412,6 +434,68 @@
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 10px 24px -6px rgba(0,0,0,0.3);
   }
+
+  /* ---- Scroll-reveal: cada sección/tarjeta aparece progresivamente al bajar ---- */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 700ms ease, transform 700ms ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ---- Hover-lift en tarjetas (solo dispositivos con mouse real) ---- */
+  @media (hover: hover) {
+    .beneficio-card, .roi-card, .crece-card, .paso-card, .feature-card, .precio-card, .mockup-col {
+      transition: transform 220ms ease, box-shadow 220ms ease;
+    }
+    .beneficio-card:hover, .roi-card:hover, .crece-card:hover, .paso-card:hover,
+    .feature-card:hover, .precio-card:hover, .mockup-col:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -16px rgba(0,0,0,0.18);
+    }
+  }
+
+  /* ---- Premín con vida: bob idle en los 2 que ya existen (hero + cta final) ---- */
+  @keyframes premin-bob {
+    0%, 100% { transform: translateY(0) rotate(-6deg); }
+    50% { transform: translateY(-8px) rotate(-2deg); }
+  }
+  @keyframes premin-bob-recto {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+  .hero-premin { animation: premin-bob 3.4s ease-in-out infinite; }
+  .cta-final img { animation: premin-bob-recto 3.2s ease-in-out infinite; }
+
+  /* ---- Premín acompañante: chico, fijo, cambia de lado mientras se scrollea ---- */
+  .premin-compa {
+    position: fixed; bottom: 92px; left: 20px; right: auto; width: 46px; height: 46px; z-index: 45;
+    object-fit: contain; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.3));
+    opacity: 0; pointer-events: none;
+    transition: left 900ms cubic-bezier(.4,0,.2,1), right 900ms cubic-bezier(.4,0,.2,1), opacity 400ms ease;
+    animation: premin-bob-recto 3.6s ease-in-out infinite;
+  }
+  .premin-compa.visible { opacity: 1; }
+  .premin-compa.derecha { left: auto; right: 20px; }
+  @media (max-width: 480px) { .premin-compa { width: 36px; height: 36px; bottom: 86px; } }
+
+  /* ---- Destellos de fondo en secciones oscuras (generados por JS, ver <script>) ---- */
+  .destellos-capa { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .destello {
+    position: absolute; pointer-events: none; color: var(--secundario);
+    opacity: 0; animation: destello-twinkle 3s ease-in-out infinite;
+  }
+  @keyframes destello-twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.6); }
+    50% { opacity: 0.85; transform: scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .hero-premin, .cta-final img, .premin-compa { animation: none; }
+    .premin-compa { transition: opacity 200ms ease; }
+    .destello { animation: none; opacity: 0.35; }
+    html { scroll-behavior: auto; }
+  }
 </style>
 </head>
 <body>
@@ -427,6 +511,7 @@
     <div class="nav-links">
       <a href="#funciones">Funciones</a>
       <a href="#como-funciona">Cómo funciona</a>
+      <a href="#precio">Precio</a>
       <a href="#preguntas">Preguntas</a>
     </div>
     <div class="nav-cta">
@@ -438,11 +523,12 @@
 
 <!-- ============ HERO ============ -->
 <section class="hero" style="padding-top:88px;">
+  <div class="destellos-capa" data-destellos="7" aria-hidden="true"></div>
   <div class="hero-grid">
     <div>
       <span class="badge-suave">● Nuevo — sistema de recurrencia multi-negocio</span>
-      <h1>Puntos que tus clientes<br/>realmente quieren juntar</h1>
-      <p class="sub">Convertí cada compra en una razón para volver — sin apps que nadie descarga, sin tarjetitas de cartón que se pierden.</p>
+      <h1>Clientes que vuelven solos,<br/>sin que se lo tengas que pedir</h1>
+      <p class="sub">Convertí cada compra en una razón para volver — mientras dejás de depender de publicidad constante para llenar tu negocio. Sin apps que nadie descarga, sin tarjetitas de cartón que se pierden.</p>
       <div class="hero-ctas">
         <a href="#contacto" class="btn btn-primario">Sumar mi negocio</a>
         <a href="https://premia-ar.vercel.app" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.2);">Ver el producto en vivo</a>
@@ -478,17 +564,17 @@
 <!-- ============ BENEFICIOS EN NÚMERO ============ -->
 <section class="beneficios">
   <div class="beneficios-grid">
-    <div class="beneficio-card">
+    <div class="beneficio-card reveal">
       <div class="beneficio-num">$100 = 1pt</div>
       <div class="beneficio-titulo">Automático en cada cobro</div>
       <div class="beneficio-desc">El cajero no hace ninguna cuenta — se acredita solo al cargar el monto.</div>
     </div>
-    <div class="beneficio-card">
+    <div class="beneficio-card reveal">
       <div class="beneficio-num">3 min</div>
       <div class="beneficio-titulo">Para que tu cajero empiece</div>
       <div class="beneficio-desc">Login por PIN de 4 dígitos, sin cuenta ni contraseña que recordar.</div>
     </div>
-    <div class="beneficio-card">
+    <div class="beneficio-card reveal">
       <div class="beneficio-num">0</div>
       <div class="beneficio-titulo">Apps para instalar</div>
       <div class="beneficio-desc">Tu cliente entra desde el navegador, con un link. Nada que descargar.</div>
@@ -498,28 +584,29 @@
 
 <!-- ============ BENEFICIOS REALES (destacada, % citados de estudios de la industria) ============ -->
 <section class="roi">
-  <div class="encabezado-seccion">
+  <div class="destellos-capa" data-destellos="6" aria-hidden="true"></div>
+  <div class="encabezado-seccion reveal">
     <div class="kicker">Por qué te conviene</div>
     <h2>Esto es lo que gana tu negocio con un sistema de recurrencia</h2>
     <p>Datos de estudios de la industria de fidelización (no son una promesa nuestra — son cómo funciona esta mecánica en general, con fuente).</p>
   </div>
   <div class="roi-grid">
-    <div class="roi-card">
+    <div class="roi-card reveal">
       <div class="roi-num">+38%</div>
       <div class="roi-desc">Gasto promedio por visita en restaurantes con club de fidelización</div>
       <div class="roi-fuente">Fuente: Paytronix</div>
     </div>
-    <div class="roi-card">
+    <div class="roi-card reveal">
       <div class="roi-num">+90%</div>
       <div class="roi-desc">Más frecuencia de visita de los socios vs. clientes sin club</div>
       <div class="roi-fuente">Fuente: Paytronix</div>
     </div>
-    <div class="roi-card">
+    <div class="roi-card reveal">
       <div class="roi-num">4.8x</div>
       <div class="roi-desc">Retorno de inversión promedio de un programa de fidelización</div>
       <div class="roi-fuente">Fuente: Netguru</div>
     </div>
-    <div class="roi-card">
+    <div class="roi-card reveal">
       <div class="roi-num">+25%</div>
       <div class="roi-desc">Aumento de ingresos reportado por negocios con fidelización activa</div>
       <div class="roi-fuente">Fuente: Bond / SoGoLytics</div>
@@ -538,7 +625,7 @@
 
 <!-- ============ EJEMPLO DE MARKETPLACE (rotulado, sin afirmar clientes reales) ============ -->
 <section class="ejemplo">
-  <div class="encabezado-seccion">
+  <div class="encabezado-seccion reveal">
     <div class="kicker">Marketplace</div>
     <h2>Así se vería tu negocio en el club</h2>
     <p>Ejemplo ilustrativo — estos son negocios ficticios para mostrar cómo luce el marketplace, no clientes actuales.</p>
@@ -568,34 +655,34 @@
 
 <!-- ============ POR QUÉ ESTO CRECE SOLO (mecánicas virales reales) ============ -->
 <section class="crece">
-  <div class="encabezado-seccion">
+  <div class="encabezado-seccion reveal">
     <div class="kicker">Por qué esto crece solo</div>
     <h2>Tus clientes no solo vuelven. Traen a los suyos.</h2>
     <p>No es un club de puntos más. Cada mecánica está pensada para que lo cuenten sin que se los pidas.</p>
   </div>
   <div class="crece-grid">
-    <div class="crece-card">
+    <div class="crece-card reveal">
       <span class="crece-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
       <div>
         <h3>Referidos con premio real</h3>
         <p>Un cliente invita, el invitado consume, los dos ganan — verificado por el sistema, no a la palabra.</p>
       </div>
     </div>
-    <div class="crece-card">
+    <div class="crece-card reveal">
       <span class="crece-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m21 3-6.5 6.5"/><path d="m18 13 3 3-3 3"/><path d="m6 21 3-3-3-3"/></svg></span>
       <div>
         <h3>Desafíos entre amigos</h3>
         <p>Dentro del mismo local: una razón más concreta para volver acompañado.</p>
       </div>
     </div>
-    <div class="crece-card">
+    <div class="crece-card reveal">
       <span class="crece-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span>
       <div>
         <h3>Ranking del barrio</h3>
         <p>Cada semana, quién más sumó. Competencia sana entre habitués.</p>
       </div>
     </div>
-    <div class="crece-card">
+    <div class="crece-card reveal">
       <span class="crece-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg></span>
       <div>
         <h3>Descubrimiento por proximidad</h3>
@@ -611,25 +698,25 @@
 
 <!-- ============ CÓMO CRECE LA RED (mecanismo de expansión, sin roadmap inventado) ============ -->
 <section class="red">
-  <div class="encabezado-seccion">
+  <div class="encabezado-seccion reveal">
     <div class="kicker">Cómo crece la red</div>
     <h2>Cada comercio nuevo suma su propia red</h2>
     <p>No hacemos publicidad masiva. La red crece por diseño, no por gasto en marketing.</p>
   </div>
   <div class="red-loop">
-    <div class="red-paso">
+    <div class="red-paso reveal">
       <span class="red-paso-icon"><span class="red-paso-num">1</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M3 9v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span>
       <p>Un comercio se suma a la red</p>
     </div>
-    <div class="red-paso">
+    <div class="red-paso reveal">
       <span class="red-paso-icon"><span class="red-paso-num">2</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
       <p>Sus clientes habituales empiezan a sumar puntos</p>
     </div>
-    <div class="red-paso">
+    <div class="red-paso reveal">
       <span class="red-paso-icon"><span class="red-paso-num">3</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg></span>
       <p>Esos clientes descubren otros comercios cerca</p>
     </div>
-    <div class="red-paso">
+    <div class="red-paso reveal">
       <span class="red-paso-icon"><span class="red-paso-num">4</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
       <p>Esos comercios ganan clientes nuevos — y el ciclo se repite</p>
     </div>
@@ -639,23 +726,23 @@
 
 <!-- ============ CÓMO FUNCIONA ============ -->
 <section class="pasos" id="como-funciona">
-  <div class="encabezado-seccion">
+  <div class="encabezado-seccion reveal">
     <div class="kicker">Cómo funciona</div>
     <h2>Tres roles, un solo sistema</h2>
     <p>Vos, tu cajero y tus clientes ven exactamente lo que necesitan — nada más.</p>
   </div>
   <div class="pasos-grid">
-    <div class="paso-card">
+    <div class="paso-card reveal">
       <div class="paso-num">1</div>
       <h3>Cargás tu negocio</h3>
       <p>Nombre, rubro, recompensas y el PIN de tu cajero. Todo desde tu panel, en minutos.</p>
     </div>
-    <div class="paso-card">
+    <div class="paso-card reveal">
       <div class="paso-num">2</div>
       <h3>Tu cajero cobra y suma</h3>
       <p>Entra con su PIN, carga el monto y el teléfono del cliente. Los puntos se acreditan solos.</p>
     </div>
-    <div class="paso-card">
+    <div class="paso-card reveal">
       <div class="paso-num">3</div>
       <h3>Tu cliente vuelve por más</h3>
       <p>Ve sus puntos, sus rachas y canjea recompensas reales — sin instalar nada.</p>
@@ -665,20 +752,20 @@
 
 <!-- ============ MOCKUPS (así se ve el panel del dueño / la app del cliente) ============ -->
 <section class="mockups">
-  <div class="encabezado-seccion">
+  <div class="encabezado-seccion reveal">
     <div class="kicker">Así se ve</div>
     <h2>Lo que ves vos, lo que ve tu cliente</h2>
     <p>Ilustración del producto real — no es una captura literal, pero así está armado hoy.</p>
   </div>
   <div class="mockups-grid">
-    <div class="mockup-col">
+    <div class="mockup-col reveal">
       <h3>Tu panel de dueño</h3>
       <p>Métricas, clientes y recompensas en un solo lugar</p>
       <div class="mockup-frame">
         <img src="/landing/img/panel-dueno.png" alt="Panel del dueño: clientes, puntos acreditados y actividad" loading="lazy" width="1024" height="1536" />
       </div>
     </div>
-    <div class="mockup-col">
+    <div class="mockup-col reveal">
       <h3>La app de tu cliente</h3>
       <p>Puntos, promos y la ruleta semanal, sin instalar nada</p>
       <div class="mockup-frame">
@@ -690,48 +777,48 @@
 
 <!-- ============ FEATURES ============ -->
 <section class="features" id="funciones">
-  <div class="encabezado-seccion">
+  <div class="encabezado-seccion reveal">
     <div class="kicker">Funciones</div>
     <h2>Todo lo que necesitás, nada de lo que no</h2>
-    <p>Pensado para gastronomía, carnicerías y almacenes/supermercados — no es un sistema genérico adaptado a las apuradas.</p>
+    <p>Marketplace, puntos automáticos, panel con métricas, recompensas editables, identidad propia y gamificación — 6 sistemas en uno. Pensado para cualquier comercio con clientes que vuelven, no una plantilla genérica.</p>
   </div>
   <div class="features-grid">
-    <div class="feature-card">
+    <div class="feature-card reveal">
       <div class="feature-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M3 9v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
       </div>
       <h3>Marketplace de negocios</h3>
       <p>Tu negocio aparece en el club junto a otros locales — más visibilidad, más razones para que te elijan.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card reveal">
       <div class="feature-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg>
       </div>
       <h3>Puntos automáticos en caja</h3>
       <p>El cajero solo carga el monto — el sistema calcula y acredita los puntos sin margen de error.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card reveal">
       <div class="feature-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
       </div>
       <h3>Panel con métricas reales</h3>
       <p>Cuántos clientes tenés, cuántos puntos acreditaste — datos de verdad, no una tabla vacía.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card reveal">
       <div class="feature-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
       </div>
       <h3>Recompensas editables al instante</h3>
       <p>Cambiás precios, premios o combos desde tu panel — sin reprogramar nada, sin esperar a nadie.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card reveal">
       <div class="feature-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/></svg>
       </div>
       <h3>Identidad propia</h3>
-      <p>Tu paleta, tu rubro (gastronomía, carnicería o supermercado), tu logo. Nunca un QR genérico más.</p>
+      <p>Tu paleta, tu rubro, tu logo. Nunca un QR genérico más.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card reveal">
       <div class="feature-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
       </div>
@@ -741,38 +828,77 @@
   </div>
 </section>
 
+<!-- ============ PRECIO (risk-reversal real del modelo de negocio) ============ -->
+<section class="precio" id="precio">
+  <div class="destellos-capa" data-destellos="6" aria-hidden="true"></div>
+  <div class="encabezado-seccion reveal">
+    <div class="kicker">Cómo se paga</div>
+    <h2>No pagás el precio completo hasta que lo veas funcionar</h2>
+    <p>Así está armado a propósito: el riesgo del primer mes lo asumimos nosotros, no vos.</p>
+  </div>
+  <div class="precio-grid">
+    <div class="precio-card reveal">
+      <span class="precio-paso">1</span>
+      <div class="precio-momento">Día 0</div>
+      <div class="precio-monto">USD 35</div>
+      <div class="precio-detalle">Al cerrar el acuerdo — cubre el primer mes funcionando en tu negocio</div>
+    </div>
+    <div class="precio-card reveal">
+      <span class="precio-paso">2</span>
+      <div class="precio-momento">Día 30</div>
+      <div class="precio-monto">USD 235</div>
+      <div class="precio-detalle">Solo si viste resultados reales en tu propio panel y seguís adelante</div>
+    </div>
+    <div class="precio-card reveal">
+      <span class="precio-paso">3</span>
+      <div class="precio-momento">Mes 3 en adelante</div>
+      <div class="precio-monto">USD 35/mes</div>
+      <div class="precio-detalle">Mensual recurrente, nada más</div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ FAQ ============ -->
 <section class="faq" id="preguntas">
-  <div class="encabezado-seccion">
+  <div class="encabezado-seccion reveal">
     <div class="kicker">Preguntas frecuentes</div>
     <h2>Antes de que preguntes</h2>
   </div>
   <div class="faq-lista">
-    <div class="faq-item">
+    <div class="faq-item reveal">
       <button class="faq-pregunta" onclick="toggleFaq(this)">¿Mis clientes tienen que instalar una app?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="faq-respuesta"><div class="faq-respuesta-inner">No. Entran desde el navegador de su celular con un link — sin descargar nada ni crear cuentas complicadas.</div></div>
     </div>
-    <div class="faq-item">
+    <div class="faq-item reveal">
       <button class="faq-pregunta" onclick="toggleFaq(this)">¿Necesito saber de tecnología para usarlo?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="faq-respuesta"><div class="faq-respuesta-inner">No. El onboarding te guía paso a paso: nombre, recompensas y el PIN de tu cajero. Nada de código ni configuración técnica.</div></div>
     </div>
-    <div class="faq-item">
+    <div class="faq-item reveal">
       <button class="faq-pregunta" onclick="toggleFaq(this)">¿Puedo cambiar mis recompensas cuando quiera?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="faq-respuesta"><div class="faq-respuesta-inner">Sí, desde tu panel de dueño, en cualquier momento — los cambios se reflejan al instante en la app del cliente.</div></div>
     </div>
-    <div class="faq-item">
+    <div class="faq-item reveal">
       <button class="faq-pregunta" onclick="toggleFaq(this)">¿El sistema funciona sin internet en la caja?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="faq-respuesta"><div class="faq-respuesta-inner">Necesita conexión para acreditar los puntos en el momento del cobro — como cualquier posnet o billetera virtual.</div></div>
     </div>
-    <div class="faq-item">
+    <div class="faq-item reveal">
       <button class="faq-pregunta" onclick="toggleFaq(this)">¿Qué pasa con los datos de mis clientes?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="faq-respuesta"><div class="faq-respuesta-inner">Se guardan de forma segura y solo se usan para el club de puntos. Nunca se venden a terceros.</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <button class="faq-pregunta" onclick="toggleFaq(this)">¿Qué pasa si no funciona para mi negocio?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="faq-respuesta"><div class="faq-respuesta-inner">Tenés 30 días viendo resultados reales en tu propio panel antes de pagar el setup completo. Si en ese tiempo la mecánica no te convence, no seguís — y lo único que pagaste fue el primer mes (USD 35).</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <button class="faq-pregunta" onclick="toggleFaq(this)">¿Cuánto tarda en verse algo?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="faq-respuesta"><div class="faq-respuesta-inner">Los puntos se acreditan desde el primer cobro. Que tus clientes vuelvan más seguido se empieza a notar en las primeras semanas — depende de tu volumen de clientes, no es instantáneo.</div></div>
     </div>
   </div>
 </section>
 
 <!-- ============ CTA FINAL ============ -->
 <section class="cta-final">
+  <div class="destellos-capa" data-destellos="7" aria-hidden="true"></div>
   <div class="contenedor">
     <img src="/premin.png" alt="Premín, la mascota de Premia.ar" loading="lazy" />
     <h2>Sumá tu negocio al club</h2>
@@ -791,12 +917,13 @@
   <div class="footer-grid">
     <div>
       <div class="logo" style="color:#fff;margin-bottom:14px;"><span class="logo-dot"></span>Premia.ar</div>
-      <p style="max-width:260px;font-size:13.5px;">El sistema de recurrencia para gastronomía, carnicerías y almacenes/supermercados.</p>
+      <p style="max-width:260px;font-size:13.5px;">El sistema de recurrencia para comercios argentinos.</p>
     </div>
     <div>
       <h4>Producto</h4>
       <ul>
         <li><a href="#funciones">Funciones</a></li>
+        <li><a href="#precio">Precio</a></li>
         <li><a href="#preguntas">Preguntas</a></li>
         <li><a href="https://premia-ar.vercel.app">Ver demo</a></li>
       </ul>
@@ -846,6 +973,8 @@
   <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67a8.2 8.2 0 0 1 5.83 2.42 8.18 8.18 0 0 1 2.41 5.82c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.17 8.17 0 0 1-1.26-4.38c0-4.55 3.7-8.23 8.25-8.23m-4.2 4.7c-.15 0-.4.06-.61.3-.21.24-.8.78-.8 1.9s.82 2.2.93 2.36c.12.15 1.6 2.5 3.97 3.4 1.97.76 2.37.6 2.8.57.43-.04 1.38-.57 1.58-1.11.2-.55.2-1.02.14-1.11-.06-.1-.21-.15-.44-.27-.23-.12-1.38-.68-1.6-.76-.21-.08-.37-.12-.53.12-.15.24-.6.76-.74.92-.14.15-.27.17-.5.06-.24-.12-1-.37-1.9-1.18-.7-.63-1.18-1.4-1.32-1.64-.14-.24-.02-.37.1-.5.11-.1.24-.27.36-.4.12-.14.16-.24.24-.4.08-.15.04-.3-.02-.42-.06-.12-.53-1.3-.74-1.77-.19-.46-.39-.4-.53-.4Z"/></svg>
 </a>
 
+<img src="/premin.png" alt="" class="premin-compa" id="preminCompa" loading="lazy" aria-hidden="true" />
+
 <script>
   function toggleFaq(btn) {
     const item = btn.closest('.faq-item');
@@ -891,6 +1020,98 @@
     window.open(`https://wa.me/5491134552996?text=${mensaje}`, '_blank');
     cerrarModal();
   }
+
+  const REDUCIR_MOVIMIENTO = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Destellos: se generan por JS en cada .destellos-capa en vez de hardcodear
+  // decenas de <svg> — misma pieza reutilizada, posición/tamaño/delay al azar.
+  (function generarDestellos() {
+    const capas = document.querySelectorAll('.destellos-capa');
+    capas.forEach((capa) => {
+      const cantidad = parseInt(capa.dataset.destellos, 10) || 6;
+      for (let i = 0; i < cantidad; i++) {
+        const tam = 8 + Math.random() * 10;
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('fill', 'currentColor');
+        svg.classList.add('destello');
+        svg.style.top = `${Math.random() * 88}%`;
+        svg.style.left = `${Math.random() * 94}%`;
+        svg.style.width = `${tam}px`;
+        svg.style.height = `${tam}px`;
+        svg.style.animationDelay = `${(Math.random() * 3).toFixed(2)}s`;
+        svg.style.animationDuration = `${(2.4 + Math.random() * 1.8).toFixed(2)}s`;
+        if (REDUCIR_MOVIMIENTO) svg.style.opacity = '0.3';
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M12 0l2.4 9.6L24 12l-9.6 2.4L12 24l-2.4-9.6L0 12l9.6-2.4z');
+        svg.appendChild(path);
+        capa.appendChild(svg);
+      }
+    });
+  })();
+
+  // Scroll-reveal: cada sección y tarjeta marcada con .reveal aparece progresivamente
+  // al entrar en viewport. Con reduced-motion, se muestran todas de una sin animar.
+  (function scrollReveal() {
+    const elementos = document.querySelectorAll('.reveal');
+    if (!elementos.length) return;
+
+    if (REDUCIR_MOVIMIENTO) {
+      elementos.forEach((el) => el.classList.add('visible'));
+      return;
+    }
+
+    // Stagger automático: los elementos que comparten padre (misma grilla) escalonan
+    // su aparición en vez de aparecer todos juntos.
+    const porPadre = new Map();
+    elementos.forEach((el) => {
+      const padre = el.parentElement;
+      const indice = porPadre.get(padre) || 0;
+      el.style.transitionDelay = `${Math.min(indice * 70, 420)}ms`;
+      porPadre.set(padre, indice + 1);
+    });
+
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        entradas.forEach((entrada) => {
+          if (entrada.isIntersecting) {
+            entrada.target.classList.add('visible');
+            observador.unobserve(entrada.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' },
+    );
+    elementos.forEach((el) => observador.observe(el));
+  })();
+
+  // Premín acompañante: aparece después del hero y cambia de lado cada ~10% de scroll,
+  // como si fuera guiando el recorrido. Se desactiva con reduced-motion.
+  (function preminAcompanante() {
+    const compa = document.getElementById('preminCompa');
+    if (!compa || REDUCIR_MOVIMIENTO) return;
+
+    let ticking = false;
+    function actualizar() {
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const progreso = total > 0 ? window.scrollY / total : 0;
+      const tramo = Math.floor(progreso * 10) % 2;
+      compa.classList.toggle('derecha', tramo === 1);
+      compa.classList.toggle('visible', window.scrollY > 500);
+      ticking = false;
+    }
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          requestAnimationFrame(actualizar);
+          ticking = true;
+        }
+      },
+      { passive: true },
+    );
+    actualizar();
+  })();
 </script>
 
 </body>
