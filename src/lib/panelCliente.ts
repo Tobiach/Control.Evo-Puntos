@@ -10,13 +10,15 @@ import type {
 import { parseRubro } from '../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../data/negocios';
 import type { PremioRuleta } from './ruleta';
+import type { ResultadoCanje } from './club';
 
 // Capa de datos de la APP DEL CLIENTE (socio del club logueado por email). Espeja el estilo
 // de panelDueno.ts: null-safe (sin backend → { ok:false, error:'sin-conexion' }, la app corre
 // sobre los datos mock), tipos `Fila*` para las respuestas crudas de Supabase y `ResultadoPanel`.
-// El canje pasa por la RPC SECURITY DEFINER `canjear_recompensa` (migración 0004), que valida y
-// descuenta los puntos del lado del servidor. El resto (puntos por negocio, historial de visitas,
-// marketplace) son SELECT reales acotados por RLS al cliente/negocios activos.
+// El canje pasa por las RPC SECURITY DEFINER `iniciar_canje`/`confirmar_canje` (migración 0021,
+// código de mostrador con vencimiento), que validan y descuentan los puntos del lado del
+// servidor. El resto (puntos por negocio, historial de visitas, marketplace) son SELECT reales
+// acotados por RLS al cliente/negocios activos.
 
 export type ResultadoPanel<T> = { ok: true; valor: T } | { ok: false; error: string };
 
@@ -276,6 +278,12 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
   const cli = filaCliente as FilaCliente;
   const clienteId = cli.id;
 
+  // Best-effort: devuelve los puntos de cualquier canje propio que haya vencido sin que el
+  // cajero llegara a confirmarlo (migración 0021). Si falla, seguimos cargando igual — no es
+  // el camino crítico, y el cajero también recupera esos puntos si intenta confirmar un
+  // código ya vencido.
+  await supabase.rpc('expirar_mis_canjes');
+
   const [negociosRes, recompensasRes, eventosRes, premiosRes, relacionesRes, visitasRes] = await Promise.all([
     supabase
       .from('negocios')
@@ -329,22 +337,43 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
   };
 }
 
+const ERRORES_CANJE: Record<string, string> = {
+  recompensa_inexistente: 'Esa recompensa ya no está disponible.',
+  sin_relacion: 'Todavía no tenés puntos en este negocio.',
+  puntos_insuficientes: 'No tenés puntos suficientes para este premio.',
+  cliente_no_vinculado: 'Tu cuenta no está vinculada a ningún cliente.',
+  no_se_pudo_generar_codigo: 'No pudimos generar el código. Intentá de nuevo.',
+};
+
 /**
- * Canjea una recompensa: descuenta `pts` de la relación del cliente con el negocio, del lado del
- * servidor (RPC `canjear_recompensa`, SECURITY DEFINER). Devuelve el saldo restante real.
+ * Inicia un canje verificable (migración 0021): descuenta `pts` de la relación del cliente
+ * del lado del servidor (RPC `iniciar_canje`, SECURITY DEFINER) y devuelve un código de 6
+ * caracteres con vencimiento a 10 minutos, que el cliente muestra en el mostrador y el
+ * cajero confirma con `confirmarCanje` (panelCajero.ts).
  */
-export async function canjearRecompensa(
-  negocioId: string,
-  pts: number,
-): Promise<ResultadoPanel<{ puntosRestantes: number }>> {
+export async function iniciarCanje(negocioId: string, pts: number): Promise<ResultadoCanje> {
   if (!supabase) return { ok: false, error: 'sin-conexion' };
-  const { data, error } = await supabase.rpc('canjear_recompensa', {
+  const { data, error } = await supabase.rpc('iniciar_canje', {
     p_negocio_id: negocioId,
     p_pts: pts,
   });
-  if (error) return { ok: false, error: error.message };
-  const fila = (data ?? {}) as { puntos_restantes?: number };
-  return { ok: true, valor: { puntosRestantes: fila.puntos_restantes ?? 0 } };
+  if (error) {
+    return { ok: false, error: ERRORES_CANJE[error.message] ?? 'No pudimos iniciar el canje. Intentá de nuevo.' };
+  }
+  const fila = (data?.[0] ?? null) as { codigo: string; expira_at: string } | null;
+  if (!fila) return { ok: false, error: 'No pudimos iniciar el canje. Intentá de nuevo.' };
+  return { ok: true, codigo: fila.codigo, expiraAt: fila.expira_at };
+}
+
+/**
+ * Le pide al servidor que devuelva los puntos de cualquier canje propio vencido sin
+ * confirmar (RPC `expirar_mis_canjes`, scoped a `auth.uid()`). Fire-and-forget: la
+ * suscripción realtime de `relaciones_negocio` ya wireada en MarketplaceApp refleja el
+ * reintegro sin lógica adicional acá.
+ */
+export async function expirarMisCanjes(): Promise<void> {
+  if (!supabase) return;
+  await supabase.rpc('expirar_mis_canjes');
 }
 
 const ERRORES_REGALO: Record<string, string> = {

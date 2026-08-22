@@ -100,6 +100,49 @@ export async function verificarPinCajero(
   return { ok: true, valor: rpcANegocio(data as RpcNegocio) };
 }
 
+/** Resultado de confirmar un código de canje en el mostrador. */
+export interface CanjeConfirmado {
+  descripcion: string;
+  clienteNombre: string;
+}
+
+const ERRORES_CANJE: Record<string, string> = {
+  pin_invalido: 'Tu PIN ya no autoriza este negocio. Volvé a ingresar.',
+  codigo_inexistente: 'Ese código no existe para este negocio.',
+  codigo_ya_usado: 'Ese código ya fue confirmado antes.',
+  codigo_expirado: 'Ese código venció. Pedile uno nuevo al cliente.',
+};
+
+/**
+ * Confirma en el mostrador el código de 6 caracteres que generó `iniciarCanje`
+ * (panelCliente.ts, migración 0021). El cajero no tiene sesión de Auth: autoriza con el
+ * mismo PIN que `registrarCobro` (RPC `confirmar_canje`, SECURITY DEFINER, valida el PIN
+ * del lado del servidor).
+ */
+export async function confirmarCanje(
+  negocioId: string,
+  pin: string,
+  codigo: string,
+): Promise<ResultadoCajero<CanjeConfirmado>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase.rpc('confirmar_canje', {
+    p_negocio_id: negocioId,
+    p_pin: pin,
+    p_codigo: codigo,
+  });
+  if (error) return { ok: false, error: error.message };
+  const fila = (data?.[0] ?? null) as
+    | { ok: boolean; mensaje: string; descripcion: string | null; cliente_nombre: string | null }
+    | null;
+  if (!fila || !fila.ok) {
+    return { ok: false, error: ERRORES_CANJE[fila?.mensaje ?? ''] ?? 'No pudimos confirmar el código.' };
+  }
+  return {
+    ok: true,
+    valor: { descripcion: fila.descripcion ?? '', clienteNombre: fila.cliente_nombre ?? 'Cliente' },
+  };
+}
+
 /**
  * Un cobro completo del lado del servidor: valida el PIN, da de alta cliente/relación si
  * es la primera visita, inserta la visita y acredita los puntos según `monto_por_punto`.

@@ -9,6 +9,7 @@ import {
   type Aviso,
   type PermisoNotif,
 } from '../../lib/notificaciones';
+import type { ResultadoCanje } from '../../lib/club';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import TabInicio from './TabInicio';
 import TabRecompensas from './TabRecompensas';
@@ -32,7 +33,7 @@ interface Props {
   /** Timestamp de la última tirada de ruleta en este negocio (cooldown de 7 días). */
   ultimaRuletaTs?: number;
   onGirarRuleta: () => void;
-  onCanjear: (recompensa: Recompensa) => void;
+  onCanjear: (recompensa: Recompensa) => Promise<ResultadoCanje>;
   onRegalar: (telefonoDestino: string, cantidad: number) => Promise<{ ok: boolean; error?: string }>;
   onSalir: () => void;
   /** Si está presente, muestra el botón "← Volver al marketplace" arriba de todo. */

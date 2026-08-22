@@ -85,6 +85,24 @@ export const formatMonto = (data: RubroData, monto: number) =>
 
 export const formatPuntos = (puntos: number) => puntos.toLocaleString('es-AR');
 
+// ── Canje verificable (código de mostrador, migración 0021) ──────
+
+/** Código de 6 caracteres + vencimiento que el cliente muestra en el mostrador. */
+export interface CanjeIniciado {
+  codigo: string;
+  expiraAt: string;
+}
+
+export type ResultadoCanje = ({ ok: true } & CanjeIniciado) | { ok: false; error: string };
+
+/** MM:SS a partir de milisegundos restantes hasta que vence el código (nunca negativo). */
+export function formatCuentaRegresiva(msRestantes: number): string {
+  const totalSeg = Math.max(0, Math.ceil(msRestantes / 1000));
+  const min = Math.floor(totalSeg / 60);
+  const seg = totalSeg % 60;
+  return `${min}:${String(seg).padStart(2, '0')}`;
+}
+
 // ── App del cliente ─────────────────────────────────────────────
 
 /** Código de referido determinístico a partir del id del cliente: CLIENTE-XXXX. */

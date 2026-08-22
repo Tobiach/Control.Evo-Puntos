@@ -16,13 +16,13 @@ import {
   type Negocio,
   type RelacionNegocio,
 } from '../../data/negocios';
-import { nivelesDeNegocio } from '../../lib/club';
+import { nivelesDeNegocio, type ResultadoCanje } from '../../lib/club';
 import { usePermisoNotificaciones } from '../../lib/notificaciones';
 import { supabase, supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
 import {
   cargarAppCliente,
-  canjearRecompensa,
+  iniciarCanje,
   regalarPuntosReal,
   type ClienteApp,
 } from '../../lib/panelCliente';
@@ -185,28 +185,43 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
     };
   }, [negocio, data.rubro]);
 
-  const canjear = (recompensa: Recompensa) => {
-    if (!negocio) return;
+  /** Código de 6 caracteres al estilo real (`iniciar_canje`), para que la demo se vea igual. */
+  const generarCodigoDemo = () => Math.random().toString(36).slice(2, 8).toUpperCase();
+
+  const canjear = async (recompensa: Recompensa): Promise<ResultadoCanje> => {
+    if (!negocio) return { ok: false, error: 'Elegí un negocio primero.' };
     const actual = relaciones[negocio.id];
-    if (!actual) return;
-    const puntosPrevios = actual.puntos;
-    // Optimista: descontamos ya en pantalla.
-    setRelaciones((previas) => ({
-      ...previas,
-      [negocio.id]: { ...actual, puntos: Math.max(0, puntosPrevios - recompensa.pts) },
-    }));
-    // Local ficticio: el descuento optimista de arriba ya es el resultado final, no hay
-    // servidor real contra el cual confirmar (evita el error "recompensa_inexistente").
-    if (!usarReal || idsEjemplo.has(negocio.id)) return;
-    // Real: confirmamos contra el servidor y ajustamos al saldo verdadero (o revertimos).
-    canjearRecompensa(negocio.id, recompensa.pts).then((res) => {
-      setRelaciones((previas) => {
-        const rel = previas[negocio.id];
-        if (!rel) return previas;
-        const puntos = res.ok ? res.valor.puntosRestantes : puntosPrevios;
-        return { ...previas, [negocio.id]: { ...rel, puntos } };
-      });
+    if (!actual) return { ok: false, error: 'Todavía no tenés puntos en este negocio.' };
+    if (actual.puntos < recompensa.pts) {
+      return { ok: false, error: 'No tenés puntos suficientes para este premio.' };
+    }
+
+    if (!usarReal || idsEjemplo.has(negocio.id)) {
+      // Local ficticio: no hay servidor real contra el que confirmar un código, generamos
+      // uno con la misma pinta (6 caracteres) para que la demo se vea completa. Si el código
+      // vence sin usarse en esta sesión, el saldo demo queda descontado hasta reiniciar la
+      // demo — límite aceptado, no hay persistencia real que "recargar" acá.
+      setRelaciones((previas) => ({
+        ...previas,
+        [negocio.id]: { ...actual, puntos: actual.puntos - recompensa.pts },
+      }));
+      return {
+        ok: true,
+        codigo: generarCodigoDemo(),
+        expiraAt: new Date(Date.now() + 10 * 60_000).toISOString(),
+      };
+    }
+
+    const resultado = await iniciarCanje(negocio.id, recompensa.pts);
+    if (!resultado.ok) return resultado;
+    // El servidor ya descontó los puntos (RPC `iniciar_canje`): reflejamos el mismo saldo
+    // acá; la suscripción realtime de arriba lo corrige sola si llegara a diferir.
+    setRelaciones((previas) => {
+      const rel = previas[negocio.id];
+      if (!rel) return previas;
+      return { ...previas, [negocio.id]: { ...rel, puntos: rel.puntos - recompensa.pts } };
     });
+    return resultado;
   };
 
   // Real: pega contra `regalar_puntos` (server, acotado al mismo negocio). En modo demo

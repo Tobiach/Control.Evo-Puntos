@@ -1,29 +1,27 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Lock, Wallet } from 'lucide-react';
+import { Check, Clock, Loader2, Lock, Wallet } from 'lucide-react';
 import type {
   CategoriaRecompensa,
   Cliente,
   Recompensa,
   RubroData,
 } from '../../data/mockClientes';
-import { formatMonto, formatPuntos } from '../../lib/club';
+import { formatCuentaRegresiva, formatMonto, formatPuntos, type ResultadoCanje } from '../../lib/club';
 
 interface Props {
   data: RubroData;
   cliente: Cliente;
-  onCanjear: (recompensa: Recompensa) => void;
+  onCanjear: (recompensa: Recompensa) => Promise<ResultadoCanje>;
 }
 
 type Filtro = 'Todas' | CategoriaRecompensa;
 
-interface Canje {
-  recompensa: Recompensa;
+interface CanjeActivo {
+  descripcion: string;
   codigo: string;
+  expiraAtMs: number;
 }
-
-const generarCodigo = () =>
-  `CJ-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(10 + Math.random() * 89)}`;
 
 export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
   const filtros = useMemo<Filtro[]>(() => {
@@ -33,15 +31,41 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
   }, [data]);
 
   const [filtro, setFiltro] = useState<Filtro>('Todas');
-  const [canje, setCanje] = useState<Canje | null>(null);
+  const [canjeando, setCanjeando] = useState<string | null>(null);
+  const [errorCanje, setErrorCanje] = useState<string | null>(null);
+  const [canjeActivo, setCanjeActivo] = useState<CanjeActivo | null>(null);
+  const [ahora, setAhora] = useState(() => Date.now());
+
+  // Cuenta regresiva en vivo mientras hay un canje esperando confirmación del cajero.
+  useEffect(() => {
+    if (!canjeActivo) return;
+    const id = setInterval(() => setAhora(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [canjeActivo]);
 
   const visibles = data.recompensas.filter(
     (recompensa) => filtro === 'Todas' || recompensa.categoria === filtro,
   );
 
-  const canjear = (recompensa: Recompensa) => {
-    onCanjear(recompensa);
-    setCanje({ recompensa, codigo: generarCodigo() });
+  const restanteMs = canjeActivo ? Math.max(0, canjeActivo.expiraAtMs - ahora) : 0;
+  const expirado = canjeActivo !== null && restanteMs <= 0;
+
+  const canjear = async (recompensa: Recompensa) => {
+    if (canjeando) return;
+    setErrorCanje(null);
+    setCanjeando(recompensa.descripcion);
+    const resultado = await onCanjear(recompensa);
+    setCanjeando(null);
+    if (!resultado.ok) {
+      setErrorCanje(resultado.error);
+      return;
+    }
+    setAhora(Date.now());
+    setCanjeActivo({
+      descripcion: recompensa.descripcion,
+      codigo: resultado.codigo,
+      expiraAtMs: new Date(resultado.expiraAt).getTime(),
+    });
   };
 
   return (
@@ -68,10 +92,17 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
         ))}
       </div>
 
+      {errorCanje && (
+        <p className="rounded-2xl border border-rojo/30 bg-rojo/10 px-4 py-3 text-sm font-semibold text-rojo">
+          {errorCanje}
+        </p>
+      )}
+
       <div className="flex flex-col gap-3">
         {visibles.map((recompensa, indice) => {
           const puede = cliente.puntos >= recompensa.pts;
           const faltan = recompensa.pts - cliente.puntos;
+          const enCurso = canjeando === recompensa.descripcion;
           return (
             <motion.div
               key={recompensa.descripcion}
@@ -116,15 +147,21 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
               </div>
               <button
                 type="button"
-                disabled={!puede}
+                disabled={!puede || canjeando !== null}
                 onClick={() => canjear(recompensa)}
-                className={`flex shrink-0 items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-bold ${
+                className={`flex h-10 w-[84px] shrink-0 items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-bold ${
                   puede
                     ? 'bg-acento text-on-acento active:bg-acento-hover'
                     : 'bg-borde text-texto-muted'
-                }`}
+                } disabled:opacity-60`}
               >
-                {puede ? 'Canjear' : <Lock size={16} />}
+                {enCurso ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : puede ? (
+                  'Canjear'
+                ) : (
+                  <Lock size={16} />
+                )}
               </button>
             </motion.div>
           );
@@ -132,13 +169,13 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
       </div>
 
       <AnimatePresence>
-        {canje && (
+        {canjeActivo && (
           <motion.div
             className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setCanje(null)}
+            onClick={() => expirado && setCanjeActivo(null)}
           >
             <motion.div
               initial={{ scale: 0.85, y: 20 }}
@@ -148,31 +185,58 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
               onClick={(evento) => evento.stopPropagation()}
               className="w-full max-w-xs rounded-3xl border border-white/10 bg-surface-dark p-6 text-center shadow-2xl"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 0.1 }}
-                className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-verde-ok text-white"
-              >
-                <Check size={32} strokeWidth={3} />
-              </motion.div>
-              <h2 className="text-xl font-bold text-white">¡Canje exitoso!</h2>
-              <p className="mt-1 text-sm text-white/60">
-                Mostrá esta pantalla en {data.nombreNegocio} para reclamar:
-              </p>
-              <p className="mt-3 rounded-2xl bg-premio-suave px-4 py-3 text-sm font-bold text-acento">
-                {canje.recompensa.descripcion}
-              </p>
-              <p className="mt-3 text-xs text-white/60">
-                Código: <span className="font-bold text-white">{canje.codigo}</span>
-              </p>
-              <button
-                type="button"
-                onClick={() => setCanje(null)}
-                className="mt-5 w-full rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover"
-              >
-                Listo
-              </button>
+              {expirado ? (
+                <>
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-white/70"
+                  >
+                    <Clock size={30} />
+                  </motion.div>
+                  <h2 className="text-xl font-bold text-white">Código expirado</h2>
+                  <p className="mt-1 text-sm text-white/60">
+                    Pasaron los 10 minutos. Volvé a intentarlo desde la lista de premios.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setCanjeActivo(null)}
+                    className="mt-5 w-full rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover"
+                  >
+                    Entendido
+                  </button>
+                </>
+              ) : (
+                <>
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 0.1 }}
+                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-verde-ok text-white"
+                  >
+                    <Check size={32} strokeWidth={3} />
+                  </motion.div>
+                  <p className="text-xs text-white/60">Mostrá este código al cajero para reclamar tu premio</p>
+                  <p className="font-titulo mt-3 text-[48px] leading-none font-black tracking-[0.15em] text-white">
+                    {canjeActivo.codigo}
+                  </p>
+                  <p className="mt-3 rounded-2xl bg-premio-suave px-4 py-3 text-sm font-bold text-acento">
+                    {canjeActivo.descripcion}
+                  </p>
+                  <p className="mt-2 text-xs text-white/60">{data.nombreNegocio}</p>
+                  <p className="mt-3 flex items-center justify-center gap-1.5 text-sm font-bold text-white/80">
+                    <Clock size={14} /> {formatCuentaRegresiva(restanteMs)}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setCanjeActivo(null)}
+                    className="mt-5 w-full rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover"
+                  >
+                    Listo
+                  </button>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}

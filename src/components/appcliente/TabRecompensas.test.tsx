@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { DATA_RUBROS, type Cliente } from '../../data/mockClientes';
+import type { ResultadoCanje } from '../../lib/club';
 import TabRecompensas from './TabRecompensas';
 
 const gastro = DATA_RUBROS.gastro;
@@ -13,9 +14,15 @@ const cliente = (puntos: number): Cliente => ({
   ultimaVisitaDias: 2,
 });
 
+const canjeOk = (): ResultadoCanje => ({
+  ok: true,
+  codigo: 'A1B2C3',
+  expiraAt: new Date(Date.now() + 10 * 60_000).toISOString(),
+});
+
 describe('TabRecompensas', () => {
-  it('canjea la recompensa con el costo de puntos correcto y muestra el comprobante', () => {
-    const onCanjear = vi.fn();
+  it('canjea la recompensa con el costo de puntos correcto y muestra el código', async () => {
+    const onCanjear = vi.fn().mockResolvedValue(canjeOk());
     // Con 1300 pts el cliente alcanza todas: la primera de la lista es "Cocktail de bienvenida" (150).
     render(<TabRecompensas data={gastro} cliente={cliente(1300)} onCanjear={onCanjear} />);
 
@@ -26,7 +33,22 @@ describe('TabRecompensas', () => {
     expect(onCanjear).toHaveBeenCalledWith(
       expect.objectContaining({ descripcion: 'Cocktail de bienvenida', pts: 150 }),
     );
-    expect(screen.getByText('¡Canje exitoso!')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('A1B2C3')).toBeInTheDocument());
+    expect(
+      screen.getByText('Mostrá este código al cajero para reclamar tu premio'),
+    ).toBeInTheDocument();
+  });
+
+  it('muestra el error del servidor sin abrir el modal de código', async () => {
+    const onCanjear = vi.fn().mockResolvedValue({ ok: false, error: 'No tenés puntos suficientes para este premio.' });
+    render(<TabRecompensas data={gastro} cliente={cliente(1300)} onCanjear={onCanjear} />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Canjear' })[0]);
+
+    await waitFor(() =>
+      expect(screen.getByText('No tenés puntos suficientes para este premio.')).toBeInTheDocument(),
+    );
+    expect(screen.queryByText('A1B2C3')).toBeNull();
   });
 
   it('no deja canjear recompensas que el cliente no puede pagar', () => {

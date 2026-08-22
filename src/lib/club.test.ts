@@ -5,6 +5,7 @@ import {
   buscarClientes,
   calcularPuntos,
   categoriaFavorita,
+  formatCuentaRegresiva,
   nivelDe,
   nivelesDeNegocio,
   progresoNivel,
@@ -158,5 +159,20 @@ describe('buscarClientes', () => {
 
   it('devuelve todos con consulta vacía', () => {
     expect(buscarClientes(clientes, '   ')).toHaveLength(clientes.length);
+  });
+});
+
+describe('formatCuentaRegresiva', () => {
+  it('formatea minutos y segundos con segundos a 2 dígitos', () => {
+    expect(formatCuentaRegresiva(9 * 60_000 + 5_000)).toBe('9:05');
+    expect(formatCuentaRegresiva(59_000)).toBe('0:59');
+  });
+
+  it('redondea hacia arriba para no mostrar 0:00 con tiempo restante', () => {
+    expect(formatCuentaRegresiva(400)).toBe('0:01');
+  });
+
+  it('nunca es negativo', () => {
+    expect(formatCuentaRegresiva(-5_000)).toBe('0:00');
   });
 });

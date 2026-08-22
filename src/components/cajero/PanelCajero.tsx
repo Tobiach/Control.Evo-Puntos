@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ChevronLeft, LogOut, Phone, ReceiptText, Sparkles } from 'lucide-react';
+import { ChevronLeft, KeyRound, LogOut, Phone, ReceiptText, Sparkles } from 'lucide-react';
 import type { Cliente, Recompensa, RubroData } from '../../data/mockClientes';
 import { calcularPuntos, formatPuntos, soloDigitos } from '../../lib/club';
 import { registrarCobro, type NegocioCajero } from '../../lib/panelCajero';
 import FeedbackCobro from '../cobro/FeedbackCobro';
+import ConfirmarCanje from './ConfirmarCanje';
 
 interface PropsConectado {
   modo: 'conectado';
@@ -60,6 +61,9 @@ export default function PanelCajero(props: Props) {
   const [clientesDemo, setClientesDemo] = useState<Cliente[]>(() =>
     props.modo === 'demo' ? clonarClientes(props.data) : [],
   );
+  // "Confirmar premio" (canjes verificables, migración 0021) necesita el PIN real del negocio
+  // — no tiene sentido en modo demo, donde no hay canjes reales que confirmar.
+  const [vista, setVista] = useState<'cobro' | 'canje'>('cobro');
   const [telefono, setTelefono] = useState('');
   const [montoDigitos, setMontoDigitos] = useState('');
   const [resultado, setResultado] = useState<Resultado | null>(null);
@@ -153,6 +157,34 @@ export default function PanelCajero(props: Props) {
         </div>
       )}
 
+      {props.modo === 'conectado' && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setVista('cobro')}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-2xl py-2.5 text-xs font-bold ${
+              vista === 'cobro' ? 'bg-acento text-on-acento' : 'border border-borde bg-card text-texto-muted'
+            }`}
+          >
+            <ReceiptText size={14} /> Cobrar
+          </button>
+          <button
+            type="button"
+            onClick={() => setVista('canje')}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-2xl py-2.5 text-xs font-bold ${
+              vista === 'canje' ? 'bg-acento text-on-acento' : 'border border-borde bg-card text-texto-muted'
+            }`}
+          >
+            <KeyRound size={14} /> Confirmar premio
+          </button>
+        </div>
+      )}
+
+      {props.modo === 'conectado' && vista === 'canje' && (
+        <ConfirmarCanje negocioId={props.negocio.id} pin={props.pin} />
+      )}
+
+      {vista === 'cobro' && (
       <AnimatePresence mode="wait" initial={false}>
         {!resultado ? (
           <motion.div
@@ -225,6 +257,7 @@ export default function PanelCajero(props: Props) {
           />
         )}
       </AnimatePresence>
+      )}
 
       <button
         type="button"
