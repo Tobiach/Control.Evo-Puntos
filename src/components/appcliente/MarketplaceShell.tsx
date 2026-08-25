@@ -111,7 +111,7 @@ export default function MarketplaceShell({
                   </div>
                 }
               >
-                <TabMapa negocios={negocios} onAbrirNegocio={onAbrirNegocio} />
+                <TabMapa negocios={negocios} relaciones={relaciones} onAbrirNegocio={onAbrirNegocio} />
               </Suspense>
             )}
             {tab === 'mis-locales' && (

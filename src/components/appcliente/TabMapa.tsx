@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { LocateFixed } from 'lucide-react';
 import type { Rubro } from '../../data/mockClientes';
-import type { Negocio } from '../../data/negocios';
+import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import type { Coordenadas } from '../../lib/geo';
 import MapaNegocios from './MapaNegocios';
 
@@ -16,6 +16,7 @@ type EstadoGeo =
 
 interface Props {
   negocios: Negocio[];
+  relaciones: Record<string, RelacionNegocio>;
   onAbrirNegocio: (negocio: Negocio) => void;
 }
 
@@ -28,7 +29,7 @@ const FILTROS: { id: Filtro; label: string }[] = [
 ];
 
 /** Mapa como pestaña propia del marketplace — antes vivía escondido detrás del filtro "Cerca mío". */
-export default function TabMapa({ negocios, onAbrirNegocio }: Props) {
+export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [geo, setGeo] = useState<EstadoGeo>({ estado: 'inactivo' });
 
@@ -130,7 +131,7 @@ export default function TabMapa({ negocios, onAbrirNegocio }: Props) {
       )}
 
       {geo.estado === 'ok' && (
-        <MapaNegocios negocios={visibles} coords={geo.coords} onAbrir={onAbrirNegocio} />
+        <MapaNegocios negocios={visibles} relaciones={relaciones} coords={geo.coords} onAbrir={onAbrirNegocio} />
       )}
     </div>
   );

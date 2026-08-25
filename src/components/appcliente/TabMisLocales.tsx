@@ -1,6 +1,13 @@
 import { motion } from 'motion/react';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
-import { formatPuntos } from '../../lib/club';
+import {
+  calcularXpTotal,
+  colorBarraProgreso,
+  formatPuntos,
+  NIVELES_XP_GLOBAL,
+  progresoNivel,
+  proximaRecompensa,
+} from '../../lib/club';
 
 interface Props {
   negocios: Negocio[];
@@ -8,20 +15,66 @@ interface Props {
   onAbrirNegocio: (negocio: Negocio) => void;
 }
 
-/** Recompensa alcanzable más cercana en ESTE negocio (para la barra de progreso de la card). */
-function proximaRecompensaLocal(negocio: Negocio, puntos: number) {
-  return negocio.recompensas
-    .filter((recompensa) => recompensa.pts > puntos)
-    .sort((a, b) => a.pts - b.pts)[0];
+/** Tiene al menos una recompensa ya alcanzable en este negocio (pts >= meta). */
+const tieneRecompensaDisponible = (negocio: Negocio, puntos: number) =>
+  negocio.recompensas.some((recompensa) => recompensa.pts <= puntos);
+
+/**
+ * Card de nivel global (FEATURE NUEVA, Paso 5): suma el XP de TODOS los negocios donde el
+ * cliente tiene relación — distinto del nivel por negocio (`nivelDe`), que sigue intacto
+ * dentro de cada local. Ancla emocionalmente la pantalla, es lo primero que se ve.
+ */
+function CardNivel({ relaciones }: { relaciones: Record<string, RelacionNegocio> }) {
+  const xpTotal = calcularXpTotal(relaciones);
+  const { actual, siguiente, pct } = progresoNivel(NIVELES_XP_GLOBAL, xpTotal);
+
+  return (
+    <div className="relative overflow-hidden rounded-[20px] bg-surface-dark px-4 py-3.5">
+      <span aria-hidden className="absolute -top-6 -right-6 h-[90px] w-[90px] rounded-full bg-white/[0.04]" />
+      <span aria-hidden className="absolute top-3 right-14 h-[50px] w-[50px] rounded-full bg-white/[0.03]" />
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold tracking-[0.08em] text-white/45 uppercase">Tu nivel</p>
+          <p className="mt-0.5 text-base font-extrabold tracking-tight text-white">{actual.nombre}</p>
+          <p className="mt-0.5 text-xs text-white/55">
+            {siguiente
+              ? `${formatPuntos(xpTotal)} / ${formatPuntos(siguiente.min)} XP para ${siguiente.nombre}`
+              : 'Nivel máximo alcanzado'}
+          </p>
+        </div>
+        <span className="shrink-0 text-2xl">🏆</span>
+      </div>
+      <div className="relative mt-2.5 h-1 overflow-hidden rounded-full bg-white/10">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="h-full rounded-full bg-premio-claro"
+        />
+      </div>
+      {siguiente && (
+        <p className="relative mt-1.5 text-[10px] text-white/40">
+          Faltan {formatPuntos(siguiente.min - xpTotal)} XP para el próximo nivel
+        </p>
+      )}
+    </div>
+  );
 }
 
 /**
  * Reemplazo real de "Favoritos": no hay corazón para marcar arbitrariamente, es la lista de
  * negocios donde el cliente YA tiene una relación (puntos/historial real), sea del marketplace
- * de ejemplo o de Supabase. Reforzado con progreso real a la próxima recompensa de cada local.
+ * de ejemplo o de Supabase. Ordenada primero por disponibilidad (premio ya alcanzable), y
+ * reforzada con progreso real (con color semántico) a la próxima recompensa de cada local.
  */
 export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: Props) {
-  const misLocales = negocios.filter((negocio) => relaciones[negocio.id]);
+  const misLocales = negocios
+    .filter((negocio) => relaciones[negocio.id])
+    .sort(
+      (a, b) =>
+        Number(tieneRecompensaDisponible(b, relaciones[b.id].puntos)) -
+        Number(tieneRecompensaDisponible(a, relaciones[a.id].puntos)),
+    );
 
   return (
     <div className="flex flex-col gap-4 px-5 pt-6 pb-10">
@@ -29,6 +82,8 @@ export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: 
         <h1 className="text-2xl font-bold text-verde-ok">Mis premios</h1>
         <p className="mt-0.5 text-xs text-texto-muted">Tu progreso en cada local donde ya sumás</p>
       </div>
+
+      <CardNivel relaciones={relaciones} />
 
       {misLocales.length === 0 ? (
         <p className="rounded-2xl border border-borde bg-card px-4 py-6 text-center text-sm text-texto-muted">
@@ -38,7 +93,13 @@ export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: 
         <div className="flex flex-col gap-2.5">
           {misLocales.map((negocio) => {
             const puntos = relaciones[negocio.id].puntos;
-            const recompensa = proximaRecompensaLocal(negocio, puntos);
+            const proxima = proximaRecompensa(negocio.recompensas, puntos);
+            const pct =
+              negocio.recompensas.length === 0
+                ? 0
+                : proxima
+                  ? Math.min(100, Math.round((puntos / proxima.pts) * 100))
+                  : 100;
             return (
               <button
                 key={negocio.id}
@@ -64,17 +125,21 @@ export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: 
                   </span>
                 </span>
 
-                {recompensa && (
+                {negocio.recompensas.length > 0 && (
                   <span className="block">
                     <span className="flex items-center justify-between text-[11px] font-semibold text-texto-muted">
-                      <span>Te faltan {formatPuntos(recompensa.pts - puntos)} pts para {recompensa.descripcion}</span>
+                      <span>
+                        {proxima
+                          ? `Te faltan ${formatPuntos(proxima.pts - puntos)} pts para ${proxima.descripcion}`
+                          : 'Premio listo para canjear 🎉'}
+                      </span>
                     </span>
                     <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-borde">
                       <motion.span
                         initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, (puntos / recompensa.pts) * 100)}%` }}
+                        animate={{ width: `${pct}%` }}
                         transition={{ duration: 0.6, ease: 'easeOut' }}
-                        className="block h-full rounded-full bg-acento"
+                        className={`block h-full rounded-full ${colorBarraProgreso(pct)}`}
                       />
                     </span>
                   </span>

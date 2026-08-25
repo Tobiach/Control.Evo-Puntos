@@ -3,9 +3,10 @@ import { motion } from 'motion/react';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { Negocio } from '../../data/negocios';
+import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import { distanciaKm, formatDistancia, type Coordenadas } from '../../lib/geo';
 import { horarioValleActivoAhora } from '../../lib/misiones';
+import { colorBarraProgreso, formatPuntos, proximaRecompensa } from '../../lib/club';
 
 /** Centro aproximado de Palermo, para saber si el usuario está en el barrio. */
 const CENTRO_PALERMO: Coordenadas = { lat: -34.5855, lng: -58.428 };
@@ -101,10 +102,12 @@ function AjustarVista({ puntos }: { puntos: Coordenadas[] }) {
  */
 export default function MapaNegocios({
   negocios,
+  relaciones,
   coords,
   onAbrir,
 }: {
   negocios: Negocio[];
+  relaciones: Record<string, RelacionNegocio>;
   coords: Coordenadas;
   onAbrir: (negocio: Negocio) => void;
 }) {
@@ -145,6 +148,14 @@ export default function MapaNegocios({
 
           {negocios.map((negocio) => {
             const activo = Boolean(negocio.horarioValle && horarioValleActivoAhora(negocio.horarioValle));
+            const puntos = relaciones[negocio.id]?.puntos ?? 0;
+            const proxima = proximaRecompensa(negocio.recompensas, puntos);
+            const pct =
+              negocio.recompensas.length === 0
+                ? 0
+                : proxima
+                  ? Math.min(100, Math.round((puntos / proxima.pts) * 100))
+                  : 100;
             return (
             <Marker
               key={negocio.id}
@@ -153,22 +164,53 @@ export default function MapaNegocios({
               alt={negocio.nombre}
             >
               <Popup>
-                <div className="flex min-w-36 flex-col gap-1">
-                  <p className="text-sm leading-tight font-bold text-texto">
-                    {negocio.emoji} {negocio.nombre}
-                  </p>
-                  <p className="text-[11px] font-semibold text-texto-muted">
-                    {negocio.categoria} · {formatDistancia(distanciaKm(coords, negocio))}
-                  </p>
+                <div className="flex min-w-44 flex-col gap-1.5">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-xl ${
+                        negocio.logoUrl ? 'bg-white' : 'bg-premio-suave'
+                      }`}
+                    >
+                      {negocio.logoUrl ? (
+                        <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-1" />
+                      ) : (
+                        negocio.emoji
+                      )}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm leading-tight font-bold text-texto">{negocio.nombre}</p>
+                      <p className="text-[11px] font-semibold text-texto-muted">
+                        {negocio.categoria} · {formatDistancia(distanciaKm(coords, negocio))}
+                      </p>
+                    </div>
+                  </div>
+
                   {activo && (
                     <p className="text-[11px] font-bold text-verde-ok">
                       🟢 Puntos x2 · termina a las {negocio.horarioValle?.hasta}
                     </p>
                   )}
+
+                  {negocio.recompensas.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-texto-muted">
+                        {proxima
+                          ? `Te faltan ${formatPuntos(proxima.pts - puntos)} pts para ${proxima.descripcion}`
+                          : 'Premio listo para canjear 🎉'}
+                      </p>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-borde">
+                        <div
+                          className={`h-full rounded-full ${colorBarraProgreso(pct)}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => onAbrir(negocio)}
-                    className="mt-1.5 rounded-full bg-acento px-3.5 py-1.5 text-xs font-bold text-on-acento active:bg-acento-hover"
+                    className="mt-1 rounded-full bg-acento px-3.5 py-1.5 text-xs font-bold text-on-acento active:bg-acento-hover"
                   >
                     Entrar al local
                   </button>

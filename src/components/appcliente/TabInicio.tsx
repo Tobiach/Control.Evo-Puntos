@@ -17,6 +17,7 @@ import {
   codigoReferido,
   formatMonto,
   formatPuntos,
+  mejorRecompensaDisponible,
   progresoNivel,
   proximaRecompensa,
   rachaDias,
@@ -165,6 +166,7 @@ export default function TabInicio({
   const rachaDia = rachaDias(historial);
   const venc = vencimientoPuntos(cliente);
   const recompensa = proximaRecompensa(data.recompensas, cliente.puntos);
+  const premioDisponible = mejorRecompensaDisponible(data.recompensas, cliente.puntos);
   const primerNombre = cliente.nombre.split(' ')[0];
 
   const insignias = insigniasDeNegocio(data, historial);
@@ -264,6 +266,26 @@ export default function TabInicio({
           </div>
         </div>
       </div>
+
+      {premioDisponible && (
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.97 }}
+          onClick={onVerRecompensas}
+          className="flex items-center justify-between gap-3 rounded-3xl bg-premio-suave px-5 py-4 text-left"
+        >
+          <span className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-premio text-white">
+              <Gift size={19} strokeWidth={2.4} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-bold text-texto">Premio disponible</span>
+              <span className="block truncate text-xs text-texto-muted">{premioDisponible.descripcion}</span>
+            </span>
+          </span>
+          <span className="shrink-0 text-xs font-bold text-premio">Canjear →</span>
+        </motion.button>
+      )}
 
       {esNuevo && (
         <InvitarDesdeInicio negocioId={negocioId} nombreNegocio={data.nombreNegocio} cliente={cliente} />

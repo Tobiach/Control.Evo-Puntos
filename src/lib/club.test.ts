@@ -4,8 +4,12 @@ import { RELACIONES_INICIALES } from '../data/negocios';
 import {
   buscarClientes,
   calcularPuntos,
+  calcularXpTotal,
   categoriaFavorita,
+  colorBarraProgreso,
   formatCuentaRegresiva,
+  mejorRecompensaDisponible,
+  NIVELES_XP_GLOBAL,
   nivelDe,
   nivelesDeNegocio,
   progresoNivel,
@@ -62,6 +66,66 @@ describe('progresoNivel', () => {
 
   it('nunca supera 100%', () => {
     expect(progresoNivel(NIVELES, 249).pct).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('mejorRecompensaDisponible', () => {
+  const recompensas = gastro.recompensas; // 150, 200, 300, 450, 500, 800, 1200
+
+  it('devuelve la más cara entre las alcanzables', () => {
+    expect(mejorRecompensaDisponible(recompensas, 350)?.descripcion).toBe('Postre de la casa');
+  });
+
+  it('null si no alcanza ninguna', () => {
+    expect(mejorRecompensaDisponible(recompensas, 100)).toBeNull();
+  });
+
+  it('la más cara de todas si superó el tope', () => {
+    expect(mejorRecompensaDisponible(recompensas, 5000)?.descripcion).toBe('Cena para dos (30% off)');
+  });
+});
+
+describe('colorBarraProgreso', () => {
+  it('coral (premio) al 100%', () => {
+    expect(colorBarraProgreso(100)).toBe('bg-premio');
+  });
+
+  it('dorado (acento) desde 80% y hasta antes de 100%', () => {
+    expect(colorBarraProgreso(80)).toBe('bg-acento');
+    expect(colorBarraProgreso(99)).toBe('bg-acento');
+  });
+
+  it('verde por debajo de 80%', () => {
+    expect(colorBarraProgreso(0)).toBe('bg-verde-ok');
+    expect(colorBarraProgreso(79)).toBe('bg-verde-ok');
+  });
+});
+
+describe('calcularXpTotal', () => {
+  it('suma los puntos de todas las relaciones del cliente', () => {
+    const relaciones = {
+      'cafe-nardo': { puntos: 300, ultimaVisitaDias: 1, historial: [] },
+      'bar-aguirre': { puntos: 150, ultimaVisitaDias: 5, historial: [] },
+    };
+    expect(calcularXpTotal(relaciones)).toBe(450);
+  });
+
+  it('0 sin relaciones', () => {
+    expect(calcularXpTotal({})).toBe(0);
+  });
+});
+
+describe('NIVELES_XP_GLOBAL (nivel global cross-negocio, feature nueva)', () => {
+  it('progresoNivel ubica el nivel correcto por umbral con nombres propios', () => {
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 0).actual.nombre).toBe('Nuevo');
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 625).actual.nombre).toBe('Explorador ⭐');
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 8000).actual.nombre).toBe('VIP del Barrio 👑');
+  });
+
+  it('nivel máximo no tiene siguiente y marca 100%', () => {
+    const r = progresoNivel(NIVELES_XP_GLOBAL, 9000);
+    expect(r.siguiente).toBeNull();
+    expect(r.pct).toBe(100);
   });
 });
 
