@@ -35,7 +35,10 @@ export default function TabActividad({ data, cliente, historial, canjes }: Props
 
   return (
     <div className="flex flex-col gap-6 px-5 pt-6">
-      <h1 className="text-2xl font-bold">Tu actividad</h1>
+      <div>
+        <h1 className="text-2xl font-bold">Tu actividad</h1>
+        <p className="mt-0.5 text-sm text-texto-muted">Tu historial en {data.nombreNegocio}</p>
+      </div>
 
       <div className="flex flex-col items-center rounded-3xl border border-borde bg-card p-6">
         <div className="relative h-36 w-36">

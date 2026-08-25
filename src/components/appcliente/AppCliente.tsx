@@ -35,6 +35,8 @@ interface Props {
   clientes: Cliente[];
   /** Canjes confirmados de TODOS los negocios — se filtran por este negocio adentro. */
   canjesConfirmados: CanjeConfirmado[];
+  /** XP global (cross-negocio), mismo cálculo que Perfil marketplace — se muestra en Perfil. */
+  xpTotal: number;
   permisoNotif: PermisoNotif;
   onPedirPermisoNotif: () => Promise<void>;
   /** Timestamp de la última tirada de ruleta en este negocio (cooldown de 7 días). */
@@ -65,6 +67,7 @@ export default function AppCliente({
   cliente,
   clientes,
   canjesConfirmados,
+  xpTotal,
   permisoNotif,
   onPedirPermisoNotif,
   ultimaRuletaTs,
@@ -173,8 +176,12 @@ export default function AppCliente({
                 cliente={cliente}
                 clientes={clientes}
                 historial={historial}
+                canjes={canjesNegocio}
+                xpTotal={xpTotal}
                 cumpleForzado={cumpleForzado}
                 onToggleCumple={() => setCumpleForzado((valor) => !valor)}
+                onVerCarta={() => setTab('carta')}
+                onVerRecompensas={() => setTab('recompensas')}
               />
             )}
           </motion.div>

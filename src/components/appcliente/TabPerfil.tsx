@@ -1,9 +1,26 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Cake, Check, Crown, Phone, Swords, Trophy, User, Users } from 'lucide-react';
+import {
+  Cake,
+  Check,
+  ChevronRight,
+  Clock,
+  Crown,
+  FileText,
+  Gift,
+  Phone,
+  Swords,
+  Target,
+  Trophy,
+  User,
+  Users,
+} from 'lucide-react';
 import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
-import { formatPuntos, nivelDe } from '../../lib/club';
+import { formatPuntos, nivelDe, type CanjeParaTimeline } from '../../lib/club';
+import { estadoAperturaAhora } from '../../lib/horarios';
 import { desafioSemanal, rankingGrupo } from '../../lib/social';
+import CardNivelXp from './CardNivelXp';
+import FilaMetricas from './FilaMetricas';
 import SeccionReferidos from './SeccionReferidos';
 import SeccionDesafios from './SeccionDesafios';
 
@@ -13,8 +30,16 @@ interface Props {
   cliente: Cliente;
   clientes: Cliente[];
   historial: Visita[];
+  /** Canjes confirmados de ESTE negocio — ya filtrados por negocioId antes de llegar acá. */
+  canjes: CanjeParaTimeline[];
+  /** XP global (cross-negocio) — mismo cálculo/card que Perfil marketplace. */
+  xpTotal: number;
   cumpleForzado: boolean;
   onToggleCumple: () => void;
+  /** "Cómo sumar puntos" → catálogo de la carta real con cuánto da cada producto. */
+  onVerCarta: () => void;
+  /** "Cómo usar tus premios" → pestaña Recompensas. */
+  onVerRecompensas: () => void;
 }
 
 interface Puesto {
@@ -34,8 +59,12 @@ export default function TabPerfil({
   cliente,
   clientes,
   historial,
+  canjes,
+  xpTotal,
   cumpleForzado,
   onToggleCumple,
+  onVerCarta,
+  onVerRecompensas,
 }: Props) {
   const [enRanking, setEnRanking] = useState(false);
 
@@ -44,6 +73,7 @@ export default function TabPerfil({
   const nivelActual = nivelDe(data.niveles, cliente.puntos);
   const nivelMax = data.niveles[data.niveles.length - 1];
   const esVip = nivelActual.nombre === nivelMax.nombre;
+  const apertura = estadoAperturaAhora(data.horarioApertura);
 
   const ranking = [...clientes].sort((a, b) => b.puntos - a.puntos);
   const miPosicion = ranking.findIndex((c) => c.id === cliente.id) + 1;
@@ -57,6 +87,75 @@ export default function TabPerfil({
   return (
     <div className="flex flex-col gap-5 px-5 pt-6">
       <h1 className="text-2xl font-bold">Perfil</h1>
+
+      <CardNivelXp xpTotal={xpTotal} />
+
+      <div>
+        <p className="mb-2 text-sm font-bold text-texto">Tu recorrido acá</p>
+        <FilaMetricas
+          metricas={[
+            { valor: historial.length, label: 'Visitas', color: 'text-acento' },
+            { valor: cliente.puntos, label: 'Puntos', color: 'text-premio' },
+            { valor: canjes.length, label: 'Premios', color: 'text-verde-ok' },
+          ]}
+        />
+      </div>
+
+      <section>
+        <p className="mb-2 text-xs font-bold tracking-widest text-texto-muted uppercase">
+          Sobre este local
+        </p>
+        <div className="flex flex-col gap-2">
+          {apertura && (
+            <div className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5">
+              <Clock size={16} className="shrink-0 text-texto-muted" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold text-texto-muted">Horario</p>
+                <p
+                  className={`text-sm font-bold ${apertura.abierto ? 'text-verde-ok' : 'text-texto'}`}
+                >
+                  {apertura.texto}
+                </p>
+              </div>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={onVerCarta}
+            className="flex items-center justify-between rounded-2xl border border-borde bg-card px-4 py-3.5 text-left"
+          >
+            <span className="flex items-center gap-2.5 text-sm font-bold text-texto">
+              <Target size={16} className="text-texto-muted" /> Cómo sumar puntos
+            </span>
+            <ChevronRight size={16} className="text-texto-muted" />
+          </button>
+          <button
+            type="button"
+            onClick={onVerRecompensas}
+            className="flex items-start gap-3 rounded-2xl border border-borde bg-card px-4 py-3.5 text-left"
+          >
+            <Gift size={16} className="mt-0.5 shrink-0 text-texto-muted" />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold text-texto">Cómo usar tus premios</span>
+              <span className="block text-xs leading-snug text-texto-muted">
+                Elegí un premio en Recompensas y mostrale el código de 6 caracteres a quien te
+                atienda — tenés 10 minutos para que lo confirme.
+              </span>
+            </span>
+          </button>
+          <a
+            href="?legal=terminos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between rounded-2xl border border-borde bg-card px-4 py-3.5"
+          >
+            <span className="flex items-center gap-2.5 text-sm font-bold text-texto">
+              <FileText size={16} className="text-texto-muted" /> Términos y condiciones
+            </span>
+            <ChevronRight size={16} className="text-texto-muted" />
+          </a>
+        </div>
+      </section>
 
       <section>
         <p className="mb-2 text-xs font-bold tracking-widest text-texto-muted uppercase">Cuenta</p>

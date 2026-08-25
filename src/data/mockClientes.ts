@@ -101,6 +101,8 @@ export interface RubroData {
   categoria?: string;
   /** Foto de portada real (ver Negocio.portadaUrl). Sin esto, se usa el degradé por rubro. */
   portadaUrl?: string;
+  /** Horario real de apertura (ver Negocio.horarioApertura). Sin esto no se muestra horario. */
+  horarioApertura?: HorarioValle[];
   monedaPrefijo: string;
   locale: string;
   montoPorPunto: number;

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
@@ -16,7 +16,7 @@ import {
   type Negocio,
   type RelacionNegocio,
 } from '../../data/negocios';
-import { nivelesDeNegocio, type ResultadoCanje } from '../../lib/club';
+import { calcularXpTotal, nivelesDeNegocio, type ResultadoCanje } from '../../lib/club';
 import { usePermisoNotificaciones } from '../../lib/notificaciones';
 import { supabase, supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
@@ -54,6 +54,7 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   emoji: negocio.emoji,
   categoria: negocio.categoria,
   portadaUrl: negocio.portadaUrl,
+  horarioApertura: negocio.horarioApertura,
   monedaPrefijo: '$',
   locale: 'es-AR',
   montoPorPunto: 100,
@@ -173,6 +174,9 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
 
   const negocio = negocios.find((n) => n.id === negocioId) ?? null;
   const relacion = negocio ? relaciones[negocio.id] : undefined;
+  // Nivel XP global (cross-negocio): mismo cálculo que Perfil marketplace, se muestra también
+  // dentro de cada local (CardNivelXp), no es un sistema separado por negocio.
+  const xpTotal = useMemo(() => calcularXpTotal(relaciones), [relaciones]);
 
   // Dentro de un negocio manda el tema de ESE negocio; en el marketplace, el del rubro base.
   useLayoutEffect(() => {
@@ -262,6 +266,7 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         cliente={clienteNegocio}
         clientes={clientesNegocio}
         canjesConfirmados={canjesConfirmados}
+        xpTotal={xpTotal}
         permisoNotif={permisoNotif}
         onPedirPermisoNotif={pedirPermisoNotif}
         ultimaRuletaTs={tiradasRuleta[negocio.id]}
