@@ -24,6 +24,7 @@ import {
   cargarAppCliente,
   iniciarCanje,
   regalarPuntosReal,
+  type CanjeConfirmado,
   type ClienteApp,
 } from '../../lib/panelCliente';
 import { procesarReferidoPendiente } from '../../lib/referidos';
@@ -83,6 +84,7 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
     ...RELACIONES_INICIALES,
   }));
   const [clienteReal, setClienteReal] = useState<ClienteApp | null>(null);
+  const [canjesConfirmados, setCanjesConfirmados] = useState<CanjeConfirmado[]>([]);
   // Última tirada de la ruleta semanal por negocio (mismo patrón in-memory que `relaciones`).
   const [tiradasRuleta, setTiradasRuleta] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(usarReal);
@@ -108,6 +110,7 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         setNegocios([...reales, ...NEGOCIOS]);
         setRelaciones({ ...RELACIONES_INICIALES, ...res.valor.relaciones });
         setClienteReal(res.valor.cliente);
+        setCanjesConfirmados(res.valor.canjesConfirmados);
         // Ya hay sesión + cliente vinculado: registramos el referido pendiente (si vino de un
         // link de invitación). Idempotente y server-side; no bloquea la carga de la app.
         void procesarReferidoPendiente();
@@ -307,6 +310,7 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
           <MarketplaceShell
             negocios={negocios}
             relaciones={relaciones}
+            canjesConfirmados={canjesConfirmados}
             nombreCliente={clienteEfectivo.nombre}
             cliente={clienteEfectivo}
             esNuevo={usarReal && !Object.keys(relaciones).some((id) => !idsEjemplo.has(id))}

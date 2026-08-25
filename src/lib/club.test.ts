@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { DATA_RUBROS, type Visita } from '../data/mockClientes';
-import { RELACIONES_INICIALES } from '../data/negocios';
+import { NEGOCIOS, RELACIONES_INICIALES } from '../data/negocios';
 import {
   buscarClientes,
   calcularPuntos,
   calcularXpTotal,
   categoriaFavorita,
   colorBarraProgreso,
+  contarNegociosPorRubro,
+  contarVisitasTotales,
   formatCuentaRegresiva,
   mejorRecompensaDisponible,
+  negocioAncla,
   NIVELES_XP_GLOBAL,
   nivelDe,
   nivelesDeNegocio,
@@ -126,6 +129,40 @@ describe('NIVELES_XP_GLOBAL (nivel global cross-negocio, feature nueva)', () => 
     const r = progresoNivel(NIVELES_XP_GLOBAL, 9000);
     expect(r.siguiente).toBeNull();
     expect(r.pct).toBe(100);
+  });
+});
+
+describe('contarVisitasTotales', () => {
+  it('suma el historial de todas las relaciones', () => {
+    // RELACIONES_INICIALES: cafe-nardo(7) + cerveceria-soler(7) + almacen-guatemala(4) + rooftop-malabia(2)
+    expect(contarVisitasTotales(RELACIONES_INICIALES)).toBe(20);
+  });
+
+  it('0 sin relaciones', () => {
+    expect(contarVisitasTotales({})).toBe(0);
+  });
+});
+
+describe('contarNegociosPorRubro', () => {
+  it('cuenta negocios con relación de un rubro (primario o secundario)', () => {
+    expect(contarNegociosPorRubro(NEGOCIOS, RELACIONES_INICIALES, 'gastro')).toBe(3);
+    expect(contarNegociosPorRubro(NEGOCIOS, RELACIONES_INICIALES, 'super')).toBe(1);
+    // cafe-nardo tiene rubrosSecundarios: ['cafeteria'] y sí tiene relación.
+    expect(contarNegociosPorRubro(NEGOCIOS, RELACIONES_INICIALES, 'cafeteria')).toBe(1);
+  });
+
+  it('0 sin relaciones', () => {
+    expect(contarNegociosPorRubro(NEGOCIOS, {}, 'gastro')).toBe(0);
+  });
+});
+
+describe('negocioAncla', () => {
+  it('devuelve el negocio con más puntos entre los que tiene relación', () => {
+    expect(negocioAncla(NEGOCIOS, RELACIONES_INICIALES)?.id).toBe('cerveceria-soler');
+  });
+
+  it('null sin relaciones', () => {
+    expect(negocioAncla(NEGOCIOS, {})).toBeNull();
   });
 });
 

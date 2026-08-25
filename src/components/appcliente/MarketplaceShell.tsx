@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Gift, Home, Loader2, Map, User, type LucideIcon } from 'lucide-react';
 import type { Cliente } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
+import type { CanjeConfirmado } from '../../lib/panelCliente';
 import type { PermisoNotif } from '../../lib/notificaciones';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import Marketplace from './Marketplace';
@@ -24,6 +25,7 @@ function parseTab(valor: string | null): Tab {
 interface Props {
   negocios: Negocio[];
   relaciones: Record<string, RelacionNegocio>;
+  canjesConfirmados: CanjeConfirmado[];
   nombreCliente: string;
   cliente: Cliente;
   esNuevo: boolean;
@@ -51,6 +53,7 @@ const TABS: { id: Tab; label: string; icono: LucideIcon }[] = [
 export default function MarketplaceShell({
   negocios,
   relaciones,
+  canjesConfirmados,
   nombreCliente,
   cliente,
   esNuevo,
@@ -122,10 +125,12 @@ export default function MarketplaceShell({
                 cliente={cliente}
                 negocios={negocios}
                 relaciones={relaciones}
+                canjesConfirmados={canjesConfirmados}
                 permisoNotif={permisoNotif}
                 onPedirPermisoNotif={onPedirPermisoNotif}
                 onSalir={onSalir}
                 onCrearCuenta={onCrearCuenta}
+                onIrAMisPremios={() => setTab('mis-locales')}
               />
             )}
           </motion.div>

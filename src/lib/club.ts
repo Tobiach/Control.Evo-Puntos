@@ -129,6 +129,35 @@ export function calcularXpTotal(relaciones: Record<string, RelacionNegocio>): nu
   return Object.values(relaciones).reduce((suma, relacion) => suma + relacion.puntos, 0);
 }
 
+// ── Perfil: "Tu recorrido" y badges (todo derivado de datos reales, sin thresholds
+// inventados) ─────────────────────────────────────────────────────
+
+/** Suma de visitas (compras) reales en todos los negocios donde el cliente tiene relación. */
+export function contarVisitasTotales(relaciones: Record<string, RelacionNegocio>): number {
+  return Object.values(relaciones).reduce((suma, relacion) => suma + relacion.historial.length, 0);
+}
+
+/** Negocios donde el cliente ya tiene relación y son de `rubro` (primario o secundario). */
+export function contarNegociosPorRubro(
+  negocios: Negocio[],
+  relaciones: Record<string, RelacionNegocio>,
+  rubro: Negocio['rubro'],
+): number {
+  return negocios.filter(
+    (negocio) =>
+      relaciones[negocio.id] && (negocio.rubro === rubro || negocio.rubrosSecundarios?.includes(rubro)),
+  ).length;
+}
+
+/** El negocio "ancla" del cliente: donde más puntos tiene. Null si no tiene relación en ninguno. */
+export function negocioAncla(negocios: Negocio[], relaciones: Record<string, RelacionNegocio>): Negocio | null {
+  const conRelacion = negocios.filter((negocio) => relaciones[negocio.id]);
+  if (conRelacion.length === 0) return null;
+  return conRelacion.reduce((mejor, actual) =>
+    relaciones[actual.id].puntos > relaciones[mejor.id].puntos ? actual : mejor,
+  );
+}
+
 // ── Canje verificable (código de mostrador, migración 0021) ──────
 
 /** Código de 6 caracteres + vencimiento que el cliente muestra en el mostrador. */

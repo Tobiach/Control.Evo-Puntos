@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { LocateFixed, Maximize2 } from 'lucide-react';
 import type { Rubro } from '../../data/mockClientes';
@@ -64,6 +64,17 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
       { enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 },
     );
   };
+
+  // Pedir la ubicación apenas se entra a Explorar, sin esperar un click: la API de
+  // geolocalización no exige gesto del usuario (no es como autoplay/fullscreen), y una vez
+  // que el navegador ya tiene una decisión guardada (permitido o bloqueado), esto resuelve
+  // solo, sin volver a mostrar ningún permiso. El botón de abajo queda como respaldo visual
+  // para el instante entre montar y que responda el navegador.
+  useEffect(() => {
+    pedirUbicacion();
+    // Solo al montar (array vacío a propósito): entrar de nuevo a la pestaña no debe
+    // relanzar el pedido en cada render.
+  }, []);
 
   const visibles = useMemo(
     () =>

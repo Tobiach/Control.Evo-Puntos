@@ -35,10 +35,20 @@ export interface ClienteApp {
   telefono: string;
 }
 
+/** Un premio ya canjeado y confirmado por el cajero (migración 0021) — para "Premios que ya
+ *  conseguiste" en Perfil. Distinto de "Mis premios": eso es progreso/disponible, esto es
+ *  historial real de lo que ya se entregó. */
+export interface CanjeConfirmado {
+  negocioId: string;
+  descripcion: string;
+  confirmadoAt: string;
+}
+
 export interface DatosAppCliente {
   cliente: ClienteApp;
   negocios: Negocio[];
   relaciones: Record<string, RelacionNegocio>;
+  canjesConfirmados: CanjeConfirmado[];
 }
 
 // ── Formas crudas de las filas de Supabase (el cliente no está tipado con el schema) ──
@@ -105,6 +115,12 @@ interface FilaVisita {
   categoria: string | null;
   es_nuevo: boolean | null;
   created_at: string | null;
+}
+
+interface FilaCanjeConfirmado {
+  negocio_id: string;
+  descripcion: string;
+  confirmado_at: string | null;
 }
 
 const CATEGORIAS_VALIDAS: readonly CategoriaRecompensa[] = ['Bebidas', 'Comida', 'Descuentos', 'Regalos'];
@@ -284,26 +300,35 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
   // código ya vencido.
   await supabase.rpc('expirar_mis_canjes');
 
-  const [negociosRes, recompensasRes, eventosRes, premiosRes, relacionesRes, visitasRes] = await Promise.all([
-    supabase
-      .from('negocios')
-      .select(
-        'id, nombre, categoria, rubro, emoji, lat, lng, clientes_activos, horario_valle, beneficios_vip, vip_desde_puntos, logo_url, portada_url, created_at',
-      )
-      // `es_muestra`: negocios de preview de venta para un prospecto puntual (ver 0014).
-      // No aparecen en el marketplace de un cliente real, aunque sigan activos para
-      // quien entra por el link directo `?carta=<id>`.
-      .eq('activo', true)
-      .eq('es_muestra', false),
-    supabase.from('recompensas').select('negocio_id, pts, descripcion, categoria, costo_dinero').eq('activa', true),
-    supabase.from('eventos_negocio').select('negocio_id, nombre, fecha_inicio, fecha_fin, recompensa_extra'),
-    supabase.from('premios_ruleta').select('id, negocio_id, label, emoji, peso, bueno, orden').eq('activo', true),
-    supabase.from('relaciones_negocio').select('negocio_id, puntos, ultima_visita_at').eq('cliente_id', clienteId),
-    supabase
-      .from('visitas')
-      .select('negocio_id, monto, puntos, categoria, es_nuevo, created_at')
-      .eq('cliente_id', clienteId),
-  ]);
+  const [negociosRes, recompensasRes, eventosRes, premiosRes, relacionesRes, visitasRes, canjesRes] =
+    await Promise.all([
+      supabase
+        .from('negocios')
+        .select(
+          'id, nombre, categoria, rubro, emoji, lat, lng, clientes_activos, horario_valle, beneficios_vip, vip_desde_puntos, logo_url, portada_url, created_at',
+        )
+        // `es_muestra`: negocios de preview de venta para un prospecto puntual (ver 0014).
+        // No aparecen en el marketplace de un cliente real, aunque sigan activos para
+        // quien entra por el link directo `?carta=<id>`.
+        .eq('activo', true)
+        .eq('es_muestra', false),
+      supabase.from('recompensas').select('negocio_id, pts, descripcion, categoria, costo_dinero').eq('activa', true),
+      supabase.from('eventos_negocio').select('negocio_id, nombre, fecha_inicio, fecha_fin, recompensa_extra'),
+      supabase.from('premios_ruleta').select('id, negocio_id, label, emoji, peso, bueno, orden').eq('activo', true),
+      supabase.from('relaciones_negocio').select('negocio_id, puntos, ultima_visita_at').eq('cliente_id', clienteId),
+      supabase
+        .from('visitas')
+        .select('negocio_id, monto, puntos, categoria, es_nuevo, created_at')
+        .eq('cliente_id', clienteId),
+      // "Premios que ya conseguiste" en Perfil: solo canjes YA confirmados por el cajero
+      // (migración 0021) — un código pendiente/expirado no cuenta como premio conseguido.
+      supabase
+        .from('canjes')
+        .select('negocio_id, descripcion, confirmado_at')
+        .eq('cliente_id', clienteId)
+        .eq('estado', 'confirmado')
+        .order('confirmado_at', { ascending: false }),
+    ]);
 
   const primerError =
     negociosRes.error ??
@@ -311,7 +336,8 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
     eventosRes.error ??
     premiosRes.error ??
     relacionesRes.error ??
-    visitasRes.error;
+    visitasRes.error ??
+    canjesRes.error;
   if (primerError) return { ok: false, error: primerError.message };
 
   const ahora = Date.now();
@@ -326,6 +352,11 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
     (visitasRes.data ?? []) as FilaVisita[],
     ahora,
   );
+  const canjesConfirmados = ((canjesRes.data ?? []) as FilaCanjeConfirmado[]).map((fila) => ({
+    negocioId: fila.negocio_id,
+    descripcion: fila.descripcion,
+    confirmadoAt: fila.confirmado_at ?? '',
+  }));
 
   return {
     ok: true,
@@ -333,6 +364,7 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
       cliente: { id: clienteId, nombre: cli.nombre ?? '', telefono: cli.telefono ?? '' },
       negocios,
       relaciones,
+      canjesConfirmados,
     },
   };
 }
