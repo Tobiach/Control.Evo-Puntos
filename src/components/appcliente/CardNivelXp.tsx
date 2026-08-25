@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { formatPuntos, NIVELES_XP_GLOBAL, progresoNivel } from '../../lib/club';
 
@@ -7,8 +8,12 @@ import { formatPuntos, NIVELES_XP_GLOBAL, progresoNivel } from '../../lib/club';
  * cada local. Compartida entre Mis Premios y Perfil, mismo componente en las dos pantallas
  * (mismo criterio visual, no dos versiones separadas). Premín (no un trofeo genérico) es
  * quien celebra el nivel — mismo mascot que usa el resto de la app.
+ *
+ * `abajo` es un slot opcional (ej. stats de Perfil por negocio) que se agrega DENTRO del
+ * mismo cuadro negro, separado por una línea sutil — nunca cambia el contenido por defecto,
+ * así Mis Premios y Perfil marketplace (que no lo pasan) quedan intactos.
  */
-export default function CardNivelXp({ xpTotal }: { xpTotal: number }) {
+export default function CardNivelXp({ xpTotal, abajo }: { xpTotal: number; abajo?: ReactNode }) {
   const { actual, siguiente, pct } = progresoNivel(NIVELES_XP_GLOBAL, xpTotal);
 
   return (
@@ -44,6 +49,7 @@ export default function CardNivelXp({ xpTotal }: { xpTotal: number }) {
           Faltan {formatPuntos(siguiente.min - xpTotal)} XP para el próximo nivel
         </p>
       )}
+      {abajo && <div className="relative mt-3 border-t border-white/10 pt-3">{abajo}</div>}
     </div>
   );
 }

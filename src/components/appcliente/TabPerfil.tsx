@@ -5,6 +5,8 @@ import {
   Check,
   ChevronRight,
   Clock,
+  Coins,
+  Compass,
   Crown,
   FileText,
   Gift,
@@ -20,7 +22,6 @@ import { formatPuntos, nivelDe, type CanjeParaTimeline } from '../../lib/club';
 import { estadoAperturaAhora } from '../../lib/horarios';
 import { desafioSemanal, rankingGrupo } from '../../lib/social';
 import CardNivelXp from './CardNivelXp';
-import FilaMetricas from './FilaMetricas';
 import SeccionReferidos from './SeccionReferidos';
 import SeccionDesafios from './SeccionDesafios';
 
@@ -88,18 +89,33 @@ export default function TabPerfil({
     <div className="flex flex-col gap-5 px-5 pt-6">
       <h1 className="text-2xl font-bold">Perfil</h1>
 
-      <CardNivelXp xpTotal={xpTotal} />
-
-      <div>
-        <p className="mb-2 text-sm font-bold text-texto">Tu recorrido acá</p>
-        <FilaMetricas
-          metricas={[
-            { valor: historial.length, label: 'Visitas', color: 'text-acento' },
-            { valor: cliente.puntos, label: 'Puntos', color: 'text-premio' },
-            { valor: canjes.length, label: 'Premios', color: 'text-verde-ok' },
-          ]}
-        />
-      </div>
+      <CardNivelXp
+        xpTotal={xpTotal}
+        abajo={
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { icono: Compass, valor: historial.length, label: 'Visitas', color: '#5FB88A' },
+              { icono: Gift, valor: canjes.length, label: 'Premios', color: '#F28A63' },
+              { icono: Coins, valor: cliente.puntos, label: 'Puntos', color: '#D89B2B' },
+            ].map(({ icono: IconoStat, valor, label, color }) => (
+              <div key={label} className="flex flex-col items-center gap-1 text-center">
+                <span
+                  className="flex h-7 w-7 items-center justify-center rounded-full"
+                  style={{ backgroundColor: `${color}26`, color }}
+                >
+                  <IconoStat size={14} strokeWidth={2.4} />
+                </span>
+                <span className="font-titulo text-base font-extrabold text-white">
+                  {formatPuntos(valor)}
+                </span>
+                <span className="text-[9px] font-bold tracking-[0.05em] text-white/50 uppercase">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+        }
+      />
 
       <section>
         <p className="mb-2 text-xs font-bold tracking-widest text-texto-muted uppercase">

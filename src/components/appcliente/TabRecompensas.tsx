@@ -1,6 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Clock, Loader2, Lock, Wallet } from 'lucide-react';
+import {
+  Check,
+  Clock,
+  Coffee,
+  Gift,
+  Info,
+  Loader2,
+  Lock,
+  Percent,
+  UtensilsCrossed,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
 import type {
   CategoriaRecompensa,
   Cliente,
@@ -28,6 +40,14 @@ interface CanjeActivo {
   codigo: string;
   expiraAtMs: number;
 }
+
+/** Ícono + color por categoría, para distinguir el tipo de premio de un vistazo. */
+const META_CATEGORIA: Record<CategoriaRecompensa, { icono: LucideIcon; color: string }> = {
+  Bebidas: { icono: Coffee, color: 'var(--color-premio)' },
+  Comida: { icono: UtensilsCrossed, color: 'var(--color-acento)' },
+  Descuentos: { icono: Percent, color: 'var(--color-acento)' },
+  Regalos: { icono: Gift, color: 'var(--color-premio)' },
+};
 
 export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
   const filtros = useMemo<Filtro[]>(() => {
@@ -77,8 +97,10 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
   return (
     <div className="flex flex-col gap-4 px-5 pt-6">
       <div>
-        <h1 className="text-2xl font-bold">Recompensas 🎁</h1>
-        <p className="mt-0.5 text-sm text-texto-muted">Canjeá tus puntos en {data.nombreNegocio}</p>
+        <h1 className="text-2xl font-bold">Recompensas disponibles</h1>
+        <p className="mt-0.5 text-sm text-texto-muted">
+          Canjeá tus puntos por beneficios de {data.nombreNegocio}
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -110,6 +132,7 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
           const faltan = recompensa.pts - cliente.puntos;
           const enCurso = canjeando === recompensa.descripcion;
           const pct = Math.min(100, Math.round((cliente.puntos / recompensa.pts) * 100));
+          const { icono: Icono, color } = META_CATEGORIA[recompensa.categoria];
           return (
             <motion.div
               key={recompensa.descripcion}
@@ -121,83 +144,87 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
                 puede ? 'border-premio/40 bg-premio-suave/30' : 'border-borde bg-card'
               }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <span className="inline-flex flex-wrap items-center gap-1.5">
-                    <span className="inline-block rounded-full bg-premio-suave px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
-                      {recompensa.categoria}
-                    </span>
-                    {recompensa.costoDinero !== undefined && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-acento/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
-                        <Wallet size={10} /> Combo
-                      </span>
-                    )}
-                    {puede && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-premio px-2 py-0.5 text-[10px] font-bold tracking-wide text-on-acento uppercase">
-                        <Check size={10} strokeWidth={3} /> ¡Disponible!
-                      </span>
-                    )}
-                  </span>
-                  <p className="mt-1.5 text-sm leading-snug font-bold">{recompensa.descripcion}</p>
-                  <p className="mt-0.5 font-titulo text-lg font-bold text-premio">
-                    {formatPuntos(recompensa.pts)} pts
-                    {recompensa.costoDinero !== undefined && (
-                      <span className="ml-1 text-sm font-bold text-acento">
-                        + {formatMonto(data, recompensa.costoDinero)}
-                      </span>
-                    )}
-                  </p>
+              <div className="flex items-start gap-3">
+                <span
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+                  style={{ backgroundColor: `${color}22`, color }}
+                >
+                  <Icono size={22} strokeWidth={2.2} />
+                </span>
+                <div className="min-w-0 flex-1">
                   {recompensa.costoDinero !== undefined && (
-                    <p className="text-[11px] font-semibold text-texto-muted">
-                      Canje con puntos + un poco de plata
-                    </p>
+                    <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-acento/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
+                      <Wallet size={10} /> Combo
+                    </span>
                   )}
+                  <p className="text-sm leading-snug font-bold text-texto">
+                    {recompensa.descripcion}
+                  </p>
+                  <p className="mt-0.5 text-xs text-texto-muted">
+                    {puede
+                      ? `Canjeá con tus ${formatPuntos(recompensa.pts)} pts`
+                      : `Desbloqueás cuando llegues a ${formatPuntos(recompensa.pts)} pts`}
+                    {recompensa.costoDinero !== undefined &&
+                      ` + ${formatMonto(data, recompensa.costoDinero)}`}
+                  </p>
                 </div>
-                {!puede && (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-borde text-texto-muted">
-                    <Lock size={15} />
-                  </div>
-                )}
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  {puede && (
+                    <span className="rounded-full bg-premio px-2 py-0.5 text-[9px] font-bold tracking-wide text-white uppercase">
+                      ¡Disponible!
+                    </span>
+                  )}
+                  <span className="font-titulo text-base font-bold text-premio">
+                    {formatPuntos(recompensa.pts)} pts
+                  </span>
+                  {!puede && <Lock size={13} className="text-texto-muted" />}
+                </div>
               </div>
 
               {!puede && (
                 <div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-borde">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-texto-muted">
+                    <span>
+                      {formatPuntos(cliente.puntos)} / {formatPuntos(recompensa.pts)} pts
+                    </span>
+                    {pct >= 80 && <span className="font-bold text-acento">¡Ya casi!</span>}
+                  </div>
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-borde">
                     <div
                       className={`h-full rounded-full ${colorBarraProgreso(pct)}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <p className="mt-1.5 text-[11px] font-semibold text-texto-muted">
-                    Te faltan {formatPuntos(faltan)} pts{pct >= 80 ? ' · ¡Ya casi!' : ''}
+                  <p className="mt-1 text-[11px] font-semibold text-texto-muted">
+                    Te faltan {formatPuntos(faltan)} pts
                   </p>
                 </div>
               )}
 
-              <button
-                type="button"
-                disabled={!puede || canjeando !== null}
-                onClick={() => canjear(recompensa)}
-                className={`flex h-12 w-full items-center justify-center gap-2 rounded-2xl text-sm font-bold tracking-wide ${
-                  puede
-                    ? 'bg-acento text-on-acento active:bg-acento-hover'
-                    : 'bg-borde text-texto-muted'
-                } disabled:opacity-60`}
-              >
-                {enCurso ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : puede ? (
-                  'CANJEAR AHORA'
-                ) : (
-                  <>
-                    <Lock size={14} /> Bloqueado
-                  </>
-                )}
-              </button>
+              {puede && (
+                <>
+                  <button
+                    type="button"
+                    disabled={canjeando !== null}
+                    onClick={() => canjear(recompensa)}
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-acento text-sm font-bold tracking-wide text-on-acento active:bg-acento-hover disabled:opacity-60"
+                  >
+                    {enCurso ? <Loader2 size={18} className="animate-spin" /> : 'CANJEAR AHORA'}
+                  </button>
+                  <p className="text-center text-[11px] text-texto-muted">
+                    Mostrá el código al cajero · Expira en 10 min
+                  </p>
+                </>
+              )}
             </motion.div>
           );
         })}
       </div>
+
+      <p className="flex items-start gap-2 rounded-2xl bg-fondo-medio px-4 py-3 text-[11px] leading-snug text-texto-muted">
+        <Info size={13} className="mt-0.5 shrink-0" />
+        Las recompensas e información visible son definidas por el comercio.
+      </p>
 
       <AnimatePresence>
         {canjeActivo && (

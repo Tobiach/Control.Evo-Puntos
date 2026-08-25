@@ -157,6 +157,7 @@ export default function AppCliente({
                 onGirarRuleta={onGirarRuleta}
                 onVerRecompensas={() => setTab('recompensas')}
                 onVerCarta={() => setTab('carta')}
+                onVerInfo={() => setTab('perfil')}
                 onSalir={onSalir}
               />
             )}

@@ -2,14 +2,17 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import {
   BellRing,
-  CalendarCheck,
   CalendarHeart,
+  Check,
   ChevronLeft,
+  ChevronRight,
   Flame,
   Gift,
   Heart,
   PartyPopper,
+  Share2,
   Sparkles,
+  Star,
   Target,
   Zap,
 } from 'lucide-react';
@@ -18,7 +21,6 @@ import {
   codigoReferido,
   formatMonto,
   formatPuntos,
-  mejorRecompensaDisponible,
   progresoNivel,
   proximaRecompensa,
   rachaDias,
@@ -65,6 +67,8 @@ interface Props {
   onVerRecompensas: () => void;
   /** "Sumá puntos": catálogo de la carta real con cuánto da cada producto. */
   onVerCarta: () => void;
+  /** "Ver información del comercio" → pestaña Perfil (sección "Sobre este local"). */
+  onVerInfo: () => void;
   onSalir: () => void;
 }
 
@@ -163,6 +167,7 @@ export default function TabInicio({
   onGirarRuleta,
   onVerRecompensas,
   onVerCarta,
+  onVerInfo,
   onSalir,
 }: Props) {
   const { actual, siguiente, pct } = progresoNivel(data.niveles, cliente.puntos);
@@ -171,8 +176,19 @@ export default function TabInicio({
   const rachaDia = rachaDias(historial);
   const venc = vencimientoPuntos(cliente);
   const recompensa = proximaRecompensa(data.recompensas, cliente.puntos);
-  const premioDisponible = mejorRecompensaDisponible(data.recompensas, cliente.puntos);
+  const premiosListos = data.recompensas.filter((r) => cliente.puntos >= r.pts).length;
   const primerNombre = cliente.nombre.split(' ')[0];
+
+  const [compartido, setCompartido] = useState(false);
+  const compartirNegocio = async () => {
+    const link = armarLinkInvitacion(window.location.origin, codigoReferido(cliente), negocioId);
+    const texto = `¡Mirá ${data.nombreNegocio} en Premia.ar! ${link}`;
+    const copio = await compartir(texto, link);
+    if (copio) {
+      setCompartido(true);
+      setTimeout(() => setCompartido(false), 2000);
+    }
+  };
 
   const insignias = insigniasDeNegocio(data, historial);
   const temporada = temporadaMensual(insignias);
@@ -220,23 +236,27 @@ export default function TabInicio({
         >
           <ChevronLeft size={18} />
         </button>
-        <p className="absolute top-4 right-5 text-xs font-semibold text-white/90">
-          Hola, {primerNombre} 👋
-        </p>
+        <button
+          type="button"
+          onClick={compartirNegocio}
+          aria-label="Compartir este comercio"
+          className="absolute top-4 right-5 rounded-full bg-surface-dark/50 p-2 text-white"
+        >
+          {compartido ? <Check size={18} /> : <Share2 size={18} />}
+        </button>
       </div>
 
-      <div className="relative z-10 mx-5 -mt-8 flex items-center gap-3 rounded-3xl border border-borde bg-card px-4 py-3.5 shadow-lg">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-premio-suave text-2xl">
+      <div className="relative z-10 mx-5 -mt-10 flex flex-col items-center rounded-3xl border border-borde bg-card px-4 pt-9 pb-4 text-center shadow-lg">
+        <span className="absolute -top-8 flex h-16 w-16 items-center justify-center rounded-full border-4 border-card bg-premio-suave text-3xl shadow">
           <span aria-hidden>{data.emoji ?? '🏪'}</span>
         </span>
-        <div className="min-w-0">
-          <h1 className="truncate text-lg leading-tight font-extrabold text-texto">
-            {data.nombreNegocio}
-          </h1>
-          {data.categoria && (
-            <p className="truncate text-xs text-texto-muted">{data.categoria}</p>
-          )}
-        </div>
+        <p className="text-[11px] font-semibold text-texto-muted">Hola, {primerNombre} 👋</p>
+        <h1 className="mt-1 truncate text-lg leading-tight font-extrabold text-texto">
+          {data.nombreNegocio}
+        </h1>
+        <p className="mt-0.5 truncate text-xs text-texto-muted">
+          {data.categoria ? `${data.categoria} · Palermo` : 'Palermo, Buenos Aires'}
+        </p>
       </div>
 
       <div className="flex flex-col gap-5 px-5 pt-5">
@@ -251,25 +271,16 @@ export default function TabInicio({
       )}
 
       <div className="rounded-3xl border border-borde bg-card p-5 shadow-lg">
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold text-texto-muted">Tus puntos</p>
+            <p className="text-xs font-semibold text-texto-muted">Tus puntos en este comercio</p>
             <p className="font-titulo text-5xl leading-none font-extrabold tracking-tighter text-premio">
               {formatPuntos(puntosMostrados)}
             </p>
           </div>
-          <div className="flex flex-col items-end gap-1.5">
-            {racha > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-premio-suave px-3 py-1.5 text-sm font-bold text-acento">
-                <Flame size={15} strokeWidth={2.5} /> {racha} {racha === 1 ? 'sem' : 'sems'}
-              </span>
-            )}
-            {rachaDia >= 2 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-borde bg-card px-3 py-1 text-xs font-bold text-premio">
-                <CalendarCheck size={14} strokeWidth={2.5} /> {rachaDia} días seguidos
-              </span>
-            )}
-          </div>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-premio-suave text-acento">
+            <Star size={20} strokeWidth={2.2} fill="currentColor" />
+          </span>
         </div>
 
         <div className="mt-5">
@@ -294,6 +305,16 @@ export default function TabInicio({
         </div>
       </div>
 
+      {racha > 0 && (
+        <div className="flex items-center justify-center gap-2 rounded-2xl bg-premio-suave px-4 py-3">
+          <Flame size={16} className="shrink-0 text-premio" strokeWidth={2.5} />
+          <p className="text-sm font-bold text-acento">
+            {racha} {racha === 1 ? 'semana seguida' : 'semanas seguidas'} · ¡Racha activa!
+            {rachaDia >= 2 && ` · ${rachaDia} días seguidos`}
+          </p>
+        </div>
+      )}
+
       <motion.button
         type="button"
         whileTap={{ scale: 0.97 }}
@@ -303,25 +324,25 @@ export default function TabInicio({
         <Target size={19} strokeWidth={2.4} /> Sumá puntos
       </motion.button>
 
-      {premioDisponible && (
+      {premiosListos > 0 && (
         <motion.button
           type="button"
           whileTap={{ scale: 0.97 }}
           onClick={onVerRecompensas}
-          className="flex items-center justify-between gap-3 rounded-3xl bg-premio-suave px-5 py-4 text-left"
+          className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-premio py-3 text-sm font-bold text-premio"
         >
-          <span className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-premio text-white">
-              <Gift size={19} strokeWidth={2.4} />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-bold text-texto">Premio disponible</span>
-              <span className="block truncate text-xs text-texto-muted">{premioDisponible.descripcion}</span>
-            </span>
-          </span>
-          <span className="shrink-0 text-xs font-bold text-premio">Canjear →</span>
+          <Gift size={16} strokeWidth={2.4} /> Tenés {premiosListos}{' '}
+          {premiosListos === 1 ? 'premio listo' : 'premios listos'} para canjear →
         </motion.button>
       )}
+
+      <button
+        type="button"
+        onClick={onVerInfo}
+        className="flex items-center justify-center gap-1 py-1 text-xs font-bold text-texto-muted"
+      >
+        Ver información del comercio <ChevronRight size={13} strokeWidth={2.5} />
+      </button>
 
       {esNuevo && (
         <InvitarDesdeInicio negocioId={negocioId} nombreNegocio={data.nombreNegocio} cliente={cliente} />
