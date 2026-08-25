@@ -103,71 +103,76 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4 pt-6 pb-6">
-      <div className="flex flex-col gap-4 px-5">
-        <h1 className="text-2xl font-bold text-texto">Explorar</h1>
+    <div className="flex flex-1 flex-col">
+      {/* Mapa + filtros fijos arriba: bajar a ver más locales nunca los tapa. */}
+      <div
+        className={`sticky top-0 z-10 flex flex-col gap-4 bg-fondo pt-6 pb-3 ${
+          geo.estado === 'ok' ? 'border-b border-borde' : ''
+        }`}
+      >
+        <div className="flex flex-col gap-4 px-5">
+          <h1 className="text-2xl font-bold text-texto">Explorar</h1>
 
-        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {FILTROS.map(({ id, label }) => {
-            const activo = filtro === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setFiltro(id)}
-                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
-                  activo ? 'bg-surface-dark text-white' : 'border border-borde bg-card text-texto-muted'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
+          <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {FILTROS.map(({ id, label }) => {
+              const activo = filtro === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setFiltro(id)}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                    activo ? 'bg-surface-dark text-white' : 'border border-borde bg-card text-texto-muted'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {geo.estado === 'inactivo' && (
-        <div className="px-5">
-          <button
-            type="button"
-            onClick={pedirUbicacion}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-borde bg-card py-3.5 text-sm font-bold text-texto"
+        {geo.estado === 'inactivo' && (
+          <div className="px-5">
+            <button
+              type="button"
+              onClick={pedirUbicacion}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-borde bg-card py-3.5 text-sm font-bold text-texto"
+            >
+              <LocateFixed size={16} className="text-ubicacion" /> Usar mi ubicación
+            </button>
+          </div>
+        )}
+
+        {geo.estado === 'pidiendo' && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-5 flex items-center gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3 text-sm text-texto-muted"
           >
-            <LocateFixed size={16} className="text-ubicacion" /> Usar mi ubicación
-          </button>
-        </div>
-      )}
+            <LocateFixed size={16} className="animate-pulse text-ubicacion" />
+            Buscando tu ubicación…
+          </motion.div>
+        )}
 
-      {geo.estado === 'pidiendo' && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-5 flex items-center gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3 text-sm text-texto-muted"
-        >
-          <LocateFixed size={16} className="animate-pulse text-ubicacion" />
-          Buscando tu ubicación…
-        </motion.div>
-      )}
-
-      {geo.estado === 'error' && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-5 rounded-2xl border border-borde bg-card px-4 py-3.5"
-        >
-          <p className="text-sm leading-snug text-texto-muted">{geo.mensaje}</p>
-          <button
-            type="button"
-            onClick={pedirUbicacion}
-            className="mt-2.5 rounded-full bg-acento px-4 py-2 text-xs font-bold text-on-acento active:bg-acento-hover"
+        {geo.estado === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-5 rounded-2xl border border-borde bg-card px-4 py-3.5"
           >
-            Reintentar
-          </button>
-        </motion.div>
-      )}
+            <p className="text-sm leading-snug text-texto-muted">{geo.mensaje}</p>
+            <button
+              type="button"
+              onClick={pedirUbicacion}
+              className="mt-2.5 rounded-full bg-acento px-4 py-2 text-xs font-bold text-on-acento active:bg-acento-hover"
+            >
+              Reintentar
+            </button>
+          </motion.div>
+        )}
 
-      {geo.estado === 'ok' && (
-        <>
+        {geo.estado === 'ok' && (
           <MapaNegocios
             negocios={visibles}
             relaciones={relaciones}
@@ -175,8 +180,12 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
             negocioActivoId={negocioActivoId}
             onSeleccionar={seleccionar}
           />
+        )}
+      </div>
 
-          <div className="flex flex-col gap-3 px-5">
+      {geo.estado === 'ok' && (
+        <>
+          <div className="flex flex-col gap-3 px-5 pt-4 pb-6">
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-texto">Cerca tuyo</p>
               <button

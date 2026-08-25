@@ -1,6 +1,12 @@
 import { motion } from 'motion/react';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
-import { calcularXpTotal, colorBarraProgreso, formatPuntos, proximaRecompensa } from '../../lib/club';
+import {
+  calcularXpTotal,
+  colorBarraProgreso,
+  formatPuntos,
+  mejorRecompensaDisponible,
+  proximaRecompensa,
+} from '../../lib/club';
 import CardNivelXp from './CardNivelXp';
 import FilaMetricas from './FilaMetricas';
 
@@ -82,6 +88,15 @@ export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: 
               const proxima = sinRecompensas ? null : proximaRecompensa(negocio.recompensas, puntos);
               const pct = sinRecompensas ? 0 : proxima ? Math.min(100, Math.round((puntos / proxima.pts) * 100)) : 100;
               const estado = estadoDe(negocio, relacion);
+              // La recompensa que se destaca en el header de la card: la mejor ya alcanzable
+              // (canjeable), la más barata como aspiracional (nuevo) o la próxima (el resto).
+              const recompensaDestacada = sinRecompensas
+                ? null
+                : estado === 'canjeable'
+                  ? mejorRecompensaDisponible(negocio.recompensas, puntos)
+                  : estado === 'nuevo'
+                    ? negocio.recompensas[0]
+                    : proxima;
 
               const estiloCard =
                 estado === 'canjeable'
@@ -118,22 +133,30 @@ export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: 
                       )}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-texto">{negocio.nombre}</span>
-                      <span className={`block text-xs font-bold ${estado === 'nuevo' ? 'text-texto-muted' : 'text-premio'}`}>
-                        {estado === 'nuevo' ? 'Sin puntos todavía' : `${formatPuntos(puntos)} pts`}
+                      <span className="block text-[10px] font-bold tracking-wide text-texto-muted uppercase">
+                        {negocio.nombre}
+                      </span>
+                      <span className="line-clamp-2 block text-[13px] leading-snug font-bold text-texto">
+                        {recompensaDestacada?.descripcion ?? negocio.categoria}
                       </span>
                     </span>
+                    {recompensaDestacada && (
+                      <span className="shrink-0 text-right">
+                        <span className={`font-titulo block text-xl leading-none font-extrabold ${colorTexto}`}>
+                          {formatPuntos(puntos)}
+                        </span>
+                        <span className="block text-[9px] font-semibold text-texto-muted">
+                          {estado === 'canjeable' ? 'pts' : `/ ${formatPuntos(recompensaDestacada.pts)} pts`}
+                        </span>
+                      </span>
+                    )}
                   </span>
 
                   {!sinRecompensas && estado !== 'nuevo' && (
                     <>
-                      <span className={`text-[11px] font-semibold ${colorTexto}`}>
-                        {estado === 'canjeable'
-                          ? '✓ Meta alcanzada'
-                          : proxima
-                            ? `Te faltan ${formatPuntos(proxima.pts - puntos)} pts para ${proxima.descripcion}`
-                            : ''}
-                      </span>
+                      {estado === 'canjeable' && (
+                        <span className={`text-[11px] font-semibold ${colorTexto}`}>✓ Meta alcanzada</span>
+                      )}
                       <span className="block h-1.5 overflow-hidden rounded-full bg-borde">
                         <motion.span
                           initial={{ width: 0 }}
