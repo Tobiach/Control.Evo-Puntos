@@ -7,7 +7,13 @@ import type {
   Recompensa,
   RubroData,
 } from '../../data/mockClientes';
-import { formatCuentaRegresiva, formatMonto, formatPuntos, type ResultadoCanje } from '../../lib/club';
+import {
+  colorBarraProgreso,
+  formatCuentaRegresiva,
+  formatMonto,
+  formatPuntos,
+  type ResultadoCanje,
+} from '../../lib/club';
 
 interface Props {
   data: RubroData;
@@ -103,6 +109,7 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
           const puede = cliente.puntos >= recompensa.pts;
           const faltan = recompensa.pts - cliente.puntos;
           const enCurso = canjeando === recompensa.descripcion;
+          const pct = Math.min(100, Math.round((cliente.puntos / recompensa.pts) * 100));
           return (
             <motion.div
               key={recompensa.descripcion}
@@ -110,57 +117,81 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: indice * 0.04 }}
-              className="flex items-center justify-between gap-3 rounded-3xl border border-borde bg-card p-4"
+              className={`flex flex-col gap-3 rounded-3xl border p-4 ${
+                puede ? 'border-premio/40 bg-premio-suave/30' : 'border-borde bg-card'
+              }`}
             >
-              <div className="min-w-0">
-                <span className="inline-flex flex-wrap items-center gap-1.5">
-                  <span className="inline-block rounded-full bg-premio-suave px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
-                    {recompensa.categoria}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="inline-flex flex-wrap items-center gap-1.5">
+                    <span className="inline-block rounded-full bg-premio-suave px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
+                      {recompensa.categoria}
+                    </span>
+                    {recompensa.costoDinero !== undefined && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-acento/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
+                        <Wallet size={10} /> Combo
+                      </span>
+                    )}
+                    {puede && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-premio px-2 py-0.5 text-[10px] font-bold tracking-wide text-on-acento uppercase">
+                        <Check size={10} strokeWidth={3} /> ¡Disponible!
+                      </span>
+                    )}
                   </span>
-                  {recompensa.costoDinero !== undefined && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-acento/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-acento uppercase">
-                      <Wallet size={10} /> Combo
-                    </span>
-                  )}
-                </span>
-                <p className="mt-1.5 text-sm leading-snug font-bold">{recompensa.descripcion}</p>
-                <p className="mt-0.5 font-titulo text-lg font-bold text-premio">
-                  {formatPuntos(recompensa.pts)} pts
-                  {recompensa.costoDinero !== undefined && (
-                    <span className="ml-1 text-sm font-bold text-acento">
-                      + {formatMonto(data, recompensa.costoDinero)}
-                    </span>
-                  )}
-                </p>
-                {recompensa.costoDinero !== undefined && (
-                  <p className="text-[11px] font-semibold text-texto-muted">
-                    Canje con puntos + un poco de plata
+                  <p className="mt-1.5 text-sm leading-snug font-bold">{recompensa.descripcion}</p>
+                  <p className="mt-0.5 font-titulo text-lg font-bold text-premio">
+                    {formatPuntos(recompensa.pts)} pts
+                    {recompensa.costoDinero !== undefined && (
+                      <span className="ml-1 text-sm font-bold text-acento">
+                        + {formatMonto(data, recompensa.costoDinero)}
+                      </span>
+                    )}
                   </p>
-                )}
-                {puede ? (
-                  <p className="text-[11px] font-bold text-verde-ok">Ya podés canjear</p>
-                ) : (
-                  <p className="text-[11px] font-semibold text-texto-muted">
-                    Te faltan {formatPuntos(faltan)} pts
-                  </p>
+                  {recompensa.costoDinero !== undefined && (
+                    <p className="text-[11px] font-semibold text-texto-muted">
+                      Canje con puntos + un poco de plata
+                    </p>
+                  )}
+                </div>
+                {!puede && (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-borde text-texto-muted">
+                    <Lock size={15} />
+                  </div>
                 )}
               </div>
+
+              {!puede && (
+                <div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-borde">
+                    <div
+                      className={`h-full rounded-full ${colorBarraProgreso(pct)}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="mt-1.5 text-[11px] font-semibold text-texto-muted">
+                    Te faltan {formatPuntos(faltan)} pts{pct >= 80 ? ' · ¡Ya casi!' : ''}
+                  </p>
+                </div>
+              )}
+
               <button
                 type="button"
                 disabled={!puede || canjeando !== null}
                 onClick={() => canjear(recompensa)}
-                className={`flex h-10 w-[84px] shrink-0 items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-bold ${
+                className={`flex h-12 w-full items-center justify-center gap-2 rounded-2xl text-sm font-bold tracking-wide ${
                   puede
                     ? 'bg-acento text-on-acento active:bg-acento-hover'
                     : 'bg-borde text-texto-muted'
                 } disabled:opacity-60`}
               >
                 {enCurso ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={18} className="animate-spin" />
                 ) : puede ? (
-                  'Canjear'
+                  'CANJEAR AHORA'
                 ) : (
-                  <Lock size={16} />
+                  <>
+                    <Lock size={14} /> Bloqueado
+                  </>
                 )}
               </button>
             </motion.div>

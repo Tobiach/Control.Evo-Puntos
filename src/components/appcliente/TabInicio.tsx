@@ -46,6 +46,7 @@ import {
 import type { Aviso, PermisoNotif } from '../../lib/notificaciones';
 import { lanzarConfetti } from '../../lib/confetti';
 import { supabaseEnabled } from '../../lib/supabase';
+import { gradienteCss } from '../../lib/temaNegocio';
 import RecompensaSorpresa from './RecompensaSorpresa';
 import RuletaSemanal from './RuletaSemanal';
 
@@ -198,9 +199,18 @@ export default function TabInicio({
   }, [temporada.completa]);
 
   return (
-    <div className="flex flex-col gap-5 pt-6">
-      <div className="relative -mt-6 flex h-32 items-center justify-center bg-linear-to-br from-premio to-acento text-5xl">
-        <span aria-hidden>{data.emoji ?? '🏪'}</span>
+    <div className="flex flex-col pt-6">
+      <div className="relative -mt-6 h-44 w-full">
+        {data.portadaUrl ? (
+          <img src={data.portadaUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <div
+            className="flex h-full w-full items-center justify-center text-5xl"
+            style={{ background: gradienteCss(data.rubro) }}
+          >
+            <span aria-hidden>{data.emoji ?? '🏪'}</span>
+          </div>
+        )}
         <span className="absolute inset-0 bg-linear-to-t from-surface-dark/70 from-0% to-surface-dark/0 to-60%" />
         <button
           type="button"
@@ -210,13 +220,26 @@ export default function TabInicio({
         >
           <ChevronLeft size={18} />
         </button>
-        <div className="absolute right-5 bottom-3.5 left-5 text-white">
-          <p className="text-xs font-semibold opacity-80">Hola, {primerNombre} 👋</p>
-          <h1 className="text-xl leading-tight font-extrabold">{data.nombreNegocio}</h1>
+        <p className="absolute top-4 right-5 text-xs font-semibold text-white/90">
+          Hola, {primerNombre} 👋
+        </p>
+      </div>
+
+      <div className="relative z-10 mx-5 -mt-8 flex items-center gap-3 rounded-3xl border border-borde bg-card px-4 py-3.5 shadow-lg">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-premio-suave text-2xl">
+          <span aria-hidden>{data.emoji ?? '🏪'}</span>
+        </span>
+        <div className="min-w-0">
+          <h1 className="truncate text-lg leading-tight font-extrabold text-texto">
+            {data.nombreNegocio}
+          </h1>
+          {data.categoria && (
+            <p className="truncate text-xs text-texto-muted">{data.categoria}</p>
+          )}
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 px-5">
+      <div className="flex flex-col gap-5 px-5 pt-5">
       {esNuevo && (
         <div className="flex items-start gap-3 rounded-2xl bg-premio-suave px-4 py-3.5">
           <Sparkles size={18} className="mt-0.5 shrink-0 text-acento" strokeWidth={2.4} />

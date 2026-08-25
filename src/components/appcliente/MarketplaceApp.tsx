@@ -52,6 +52,8 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   ...DATA_RUBROS[negocio.rubro],
   nombreNegocio: negocio.nombre,
   emoji: negocio.emoji,
+  categoria: negocio.categoria,
+  portadaUrl: negocio.portadaUrl,
   monedaPrefijo: '$',
   locale: 'es-AR',
   montoPorPunto: 100,

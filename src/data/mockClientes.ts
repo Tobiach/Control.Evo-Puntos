@@ -97,6 +97,10 @@ export interface RubroData {
   nombreNegocio: string;
   /** Emoji del negocio real (ver Negocio.emoji). Sólo en la vista de un local. */
   emoji?: string;
+  /** Categoría del negocio real (ver Negocio.categoria). Sólo en la vista de un local. */
+  categoria?: string;
+  /** Foto de portada real (ver Negocio.portadaUrl). Sin esto, se usa el degradé por rubro. */
+  portadaUrl?: string;
   monedaPrefijo: string;
   locale: string;
   montoPorPunto: number;
