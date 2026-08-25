@@ -343,6 +343,7 @@ const ERRORES_CANJE: Record<string, string> = {
   puntos_insuficientes: 'No tenés puntos suficientes para este premio.',
   cliente_no_vinculado: 'Tu cuenta no está vinculada a ningún cliente.',
   no_se_pudo_generar_codigo: 'No pudimos generar el código. Intentá de nuevo.',
+  rate_limit_excedido: 'Muchos intentos seguidos. Esperá un momento y volvé a intentar.',
 };
 
 /**

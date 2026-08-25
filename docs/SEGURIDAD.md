@@ -102,13 +102,21 @@ exista), pero sí para poder cumplirlo de verdad si alguien cancela antes de con
 
 ## 5.1 Rate limiting en endpoints de puntos/canjes/referidos
 
-**No existe — verificado.** Ninguna RPC (`cobrar_con_pin`, `canjear_recompensa`,
-`registrar_referido`, `revisar_premio_referido`, `crear_desafio`, `revisar_desafios`) tiene
-ningún control de frecuencia, cooldown ni límite por IP/usuario/negocio. Hoy nada impide que
-alguien con el PIN de un cajero automatice llamadas a `cobrar_con_pin` en loop, o que un
-cliente automatice `registrar_referido` con distintas cuentas. Con pocos usuarios el riesgo es
-bajo (a nadie le conviene todavía), pero es una prioridad real antes de escalar — no es
-"CONFIRMAR", es un "NO, falta construirlo".
+**Resuelto (2026-08-25, migración `0023_rate_limiting_rpcs.sql`).** Las 8 RPC sensibles
+(`verificar_pin_cajero`, `cobrar_con_pin`, `confirmar_canje`, `iniciar_canje`,
+`registrar_referido`, `revisar_premio_referido`, `crear_desafio`, `revisar_desafios`) ahora
+cortan si se pasa un máximo de intentos en una ventana de tiempo, vía una tabla de eventos +
+función helper (`verificar_rate_limit`) — límites generosos (pensados para tolerar el uso real
+a mano, no para un script en loop). La clave del límite es `negocio_id` para las funciones sin
+sesión (PIN de mostrador, anon) y `auth.uid()` para las autenticadas. `canjear_recompensa`
+(0004/0017, ya sin ningún uso real desde que existe `iniciar_canje`/`confirmar_canje`, 0021)
+se cerró en vez de agregarle rate limiting a código muerto. **Pendiente de aplicar en
+producción vía SQL Editor de Supabase** — escrito, no corrido todavía (ver `docs/DEPLOY.md`).
+
+De paso se encontró y corrigió (migración `0022_fix_confirmar_canje_pin.sql`) un bug real:
+`confirmar_canje` (0021) validaba el PIN contra `negocios.pin_cajero`, columna que ya no
+existe desde el fix de 0005 (se movió a `negocio_pin`). Toda llamada tiraba error — el cajero
+no podía confirmar ningún canje verificable hasta este fix. También pendiente de aplicar.
 
 ## 5.2 Otras preguntas de infraestructura que NO se pueden verificar desde el código
 

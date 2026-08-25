@@ -111,6 +111,7 @@ const ERRORES_CANJE: Record<string, string> = {
   codigo_inexistente: 'Ese código no existe para este negocio.',
   codigo_ya_usado: 'Ese código ya fue confirmado antes.',
   codigo_expirado: 'Ese código venció. Pedile uno nuevo al cliente.',
+  rate_limit_excedido: 'Muchos intentos seguidos. Esperá un momento y volvé a intentar.',
 };
 
 /**
