@@ -41,6 +41,7 @@ export interface ClienteApp {
 export interface CanjeConfirmado {
   negocioId: string;
   descripcion: string;
+  pts: number;
   confirmadoAt: string;
 }
 
@@ -120,6 +121,7 @@ interface FilaVisita {
 interface FilaCanjeConfirmado {
   negocio_id: string;
   descripcion: string;
+  pts: number | null;
   confirmado_at: string | null;
 }
 
@@ -324,7 +326,7 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
       // (migración 0021) — un código pendiente/expirado no cuenta como premio conseguido.
       supabase
         .from('canjes')
-        .select('negocio_id, descripcion, confirmado_at')
+        .select('negocio_id, descripcion, pts, confirmado_at')
         .eq('cliente_id', clienteId)
         .eq('estado', 'confirmado')
         .order('confirmado_at', { ascending: false }),
@@ -355,6 +357,7 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
   const canjesConfirmados = ((canjesRes.data ?? []) as FilaCanjeConfirmado[]).map((fila) => ({
     negocioId: fila.negocio_id,
     descripcion: fila.descripcion,
+    pts: fila.pts ?? 0,
     confirmadoAt: fila.confirmado_at ?? '',
   }));
 

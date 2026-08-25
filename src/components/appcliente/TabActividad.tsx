@@ -1,12 +1,15 @@
 import { motion } from 'motion/react';
-import { Coins } from 'lucide-react';
+import { Check, Coins } from 'lucide-react';
 import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
 import {
   fechaDeVisita,
+  formatFechaCorta,
   formatMonto,
   formatPuntos,
+  fusionarTimeline,
   progresoNivel,
   ultimos7Dias,
+  type CanjeParaTimeline,
 } from '../../lib/club';
 import { insigniasDeNegocio } from '../../lib/misiones';
 import Insignias from './Insignias';
@@ -15,17 +18,20 @@ interface Props {
   data: RubroData;
   cliente: Cliente;
   historial: Visita[];
+  /** Canjes confirmados de ESTE negocio — ya filtrados por negocioId antes de llegar acá. */
+  canjes: CanjeParaTimeline[];
 }
 
 const RADIO = 52;
 const CIRCUNFERENCIA = 2 * Math.PI * RADIO;
 
-export default function TabActividad({ data, cliente, historial }: Props) {
+export default function TabActividad({ data, cliente, historial, canjes }: Props) {
   const { actual, siguiente, pct } = progresoNivel(data.niveles, cliente.puntos);
   const dias = ultimos7Dias(historial);
   const maxPuntos = Math.max(1, ...dias.map((dia) => dia.puntos));
   const offset = CIRCUNFERENCIA - (pct / 100) * CIRCUNFERENCIA;
   const insignias = insigniasDeNegocio(data, historial);
+  const timeline = fusionarTimeline(historial, canjes, Date.now());
 
   return (
     <div className="flex flex-col gap-6 px-5 pt-6">
@@ -101,9 +107,14 @@ export default function TabActividad({ data, cliente, historial }: Props) {
       <Insignias insignias={insignias} nombreNegocio={data.nombreNegocio} />
 
       <div>
-        <p className="mb-2 text-sm font-bold">Historial de visitas</p>
+        <p className="mb-2 text-sm font-bold">Tu actividad reciente</p>
         <div className="flex flex-col gap-2">
-          {historial.map((visita, indice) => (
+          {timeline.length === 0 && (
+            <p className="rounded-2xl border border-borde bg-card px-4 py-6 text-center text-sm text-texto-muted">
+              Todavía no hay actividad en {data.nombreNegocio}.
+            </p>
+          )}
+          {timeline.map((evento, indice) => (
             <motion.div
               key={indice}
               initial={{ opacity: 0, x: -10 }}
@@ -111,20 +122,41 @@ export default function TabActividad({ data, cliente, historial }: Props) {
               transition={{ delay: indice * 0.04 }}
               className="flex items-center justify-between rounded-2xl border border-borde bg-card px-4 py-3"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-premio-suave text-acento">
-                  <Coins size={16} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold capitalize">
-                    {fechaDeVisita(visita.diasAtras, data.locale)}
-                  </p>
-                  <p className="text-xs text-texto-muted">{formatMonto(data, visita.monto)}</p>
-                </div>
-              </div>
-              <span className="font-titulo text-sm font-bold text-premio">
-                +{formatPuntos(visita.puntos)} pts
-              </span>
+              {evento.tipo === 'visita' ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-premio-suave text-acento">
+                      <Coins size={16} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold capitalize">
+                        {fechaDeVisita(evento.visita.diasAtras, data.locale)}
+                      </p>
+                      <p className="text-xs text-texto-muted">{formatMonto(data, evento.visita.monto)}</p>
+                    </div>
+                  </div>
+                  <span className="font-titulo text-sm font-bold text-premio">
+                    +{formatPuntos(evento.visita.puntos)} pts
+                  </span>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-verde-ok/15 text-verde-ok">
+                      <Check size={16} strokeWidth={2.6} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">{evento.descripcion}</p>
+                      <p className="text-xs text-texto-muted">
+                        Canjeado el {formatFechaCorta(new Date(evento.fechaOrden).toISOString())}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="font-titulo text-sm font-bold text-texto-muted">
+                    -{formatPuntos(evento.pts)} pts
+                  </span>
+                </>
+              )}
             </motion.div>
           ))}
         </div>

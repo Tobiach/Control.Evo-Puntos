@@ -48,7 +48,7 @@ describe('TabPerfilMarketplace', () => {
 
   it('"Premios que ya conseguiste" muestra los canjes confirmados reales', () => {
     renderPerfil(clienteReal, [
-      { negocioId: 'cafe-nardo', descripcion: 'Café de especialidad', confirmadoAt: '2026-08-01T12:00:00Z' },
+      { negocioId: 'cafe-nardo', descripcion: 'Café de especialidad', pts: 120, confirmadoAt: '2026-08-01T12:00:00Z' },
     ]);
     expect(screen.getByText('Café de especialidad')).toBeInTheDocument();
     expect(screen.getByText(/Canjeado el/)).toBeInTheDocument();

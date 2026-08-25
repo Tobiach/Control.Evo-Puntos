@@ -10,6 +10,7 @@ import {
   Heart,
   PartyPopper,
   Sparkles,
+  Target,
   Zap,
 } from 'lucide-react';
 import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
@@ -61,6 +62,8 @@ interface Props {
   ultimaRuletaTs?: number;
   onGirarRuleta: () => void;
   onVerRecompensas: () => void;
+  /** "Sumá puntos": catálogo de la carta real con cuánto da cada producto. */
+  onVerCarta: () => void;
   onSalir: () => void;
 }
 
@@ -158,6 +161,7 @@ export default function TabInicio({
   ultimaRuletaTs,
   onGirarRuleta,
   onVerRecompensas,
+  onVerCarta,
   onSalir,
 }: Props) {
   const { actual, siguiente, pct } = progresoNivel(data.niveles, cliente.puntos);
@@ -266,6 +270,15 @@ export default function TabInicio({
           </div>
         </div>
       </div>
+
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.97 }}
+        onClick={onVerCarta}
+        className="flex w-full items-center justify-center gap-2 rounded-3xl bg-acento py-4 text-base font-bold text-on-acento active:bg-acento-hover"
+      >
+        <Target size={19} strokeWidth={2.4} /> Sumá puntos
+      </motion.button>
 
       {premioDisponible && (
         <motion.button

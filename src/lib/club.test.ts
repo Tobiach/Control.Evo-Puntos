@@ -10,6 +10,8 @@ import {
   contarNegociosPorRubro,
   contarVisitasTotales,
   formatCuentaRegresiva,
+  formatFechaCorta,
+  fusionarTimeline,
   mejorRecompensaDisponible,
   negocioAncla,
   NIVELES_XP_GLOBAL,
@@ -163,6 +165,42 @@ describe('negocioAncla', () => {
 
   it('null sin relaciones', () => {
     expect(negocioAncla(NEGOCIOS, {})).toBeNull();
+  });
+});
+
+describe('formatFechaCorta', () => {
+  it('formatea DD/MM/AAAA', () => {
+    expect(formatFechaCorta('2026-08-01T12:00:00Z')).toBe('01/08/2026');
+  });
+
+  it('vacío con una fecha inválida', () => {
+    expect(formatFechaCorta('no-es-fecha')).toBe('');
+  });
+});
+
+describe('fusionarTimeline', () => {
+  const AHORA = new Date('2026-08-25T12:00:00Z').getTime();
+  const visita = (diasAtras: number, puntos: number): Visita => ({ diasAtras, monto: puntos * 100, puntos });
+
+  it('mezcla visitas y canjes ordenados por más reciente primero', () => {
+    const historial = [visita(5, 30), visita(1, 20)];
+    const canjes = [{ descripcion: 'Café gratis', pts: 120, confirmadoAt: '2026-08-24T12:00:00Z' }]; // hace 1 día
+    const timeline = fusionarTimeline(historial, canjes, AHORA);
+
+    expect(timeline.map((e) => e.tipo)).toEqual(['visita', 'canje', 'visita']);
+    // La visita de "hace 1 día" y el canje de "hace 1 día" empatan, pero la más vieja
+    // (5 días) siempre queda última.
+    expect(timeline[2].tipo).toBe('visita');
+    if (timeline[2].tipo === 'visita') expect(timeline[2].visita.puntos).toBe(30);
+  });
+
+  it('ignora canjes sin confirmadoAt (nunca debería pasar, pero no rompe)', () => {
+    const timeline = fusionarTimeline([], [{ descripcion: 'X', pts: 10, confirmadoAt: '' }], AHORA);
+    expect(timeline).toHaveLength(0);
+  });
+
+  it('vacío sin historial ni canjes', () => {
+    expect(fusionarTimeline([], [], AHORA)).toHaveLength(0);
   });
 });
 

@@ -158,6 +158,46 @@ export function negocioAncla(negocios: Negocio[], relaciones: Record<string, Rel
   );
 }
 
+// ── Actividad de UN negocio: timeline fusionada (visitas reales + canjes confirmados
+// reales) ──────────────────────────────────────────────────────────
+// Sin bonus por racha ni ningún otro evento inventado: la racha hoy es solo un contador
+// visual, no acredita puntos de verdad (ver Ola 3).
+
+export type EventoTimeline =
+  | { tipo: 'visita'; fechaOrden: number; visita: Visita }
+  | { tipo: 'canje'; fechaOrden: number; descripcion: string; pts: number };
+
+/** Cualquier fuente de canjes confirmados que tenga esta forma (evita depender del tipo
+ *  nominal `CanjeConfirmado` de panelCliente.ts, que a su vez importa de este módulo). */
+export interface CanjeParaTimeline {
+  descripcion: string;
+  pts: number;
+  confirmadoAt: string;
+}
+
+/** Fusiona visitas + canjes confirmados de UN negocio en una sola timeline, más reciente
+ *  primero. `ahora` inyectado para que sea testeable sin depender del reloj real. */
+export function fusionarTimeline(
+  historial: Visita[],
+  canjes: CanjeParaTimeline[],
+  ahora: number,
+): EventoTimeline[] {
+  const deVisitas: EventoTimeline[] = historial.map((visita) => ({
+    tipo: 'visita',
+    fechaOrden: ahora - visita.diasAtras * MS_DIA,
+    visita,
+  }));
+  const deCanjes: EventoTimeline[] = canjes
+    .filter((canje) => canje.confirmadoAt)
+    .map((canje) => ({
+      tipo: 'canje',
+      fechaOrden: new Date(canje.confirmadoAt).getTime(),
+      descripcion: canje.descripcion,
+      pts: canje.pts,
+    }));
+  return [...deVisitas, ...deCanjes].sort((a, b) => b.fechaOrden - a.fechaOrden);
+}
+
 // ── Canje verificable (código de mostrador, migración 0021) ──────
 
 /** Código de 6 caracteres + vencimiento que el cliente muestra en el mostrador. */
@@ -246,6 +286,13 @@ export function fechaDeVisita(diasAtras: number, locale: string): string {
     day: '2-digit',
     month: 'short',
   });
+}
+
+/** Fecha corta 'DD/MM/AAAA' a partir de un ISO — string vacío si no es una fecha válida. */
+export function formatFechaCorta(iso: string): string {
+  const fecha = new Date(iso);
+  if (Number.isNaN(fecha.getTime())) return '';
+  return fecha.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 export interface VisitaCruzada {

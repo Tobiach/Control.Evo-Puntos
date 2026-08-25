@@ -23,7 +23,6 @@ import { useSesion } from '../../hooks/useSesion';
 import {
   cargarAppCliente,
   iniciarCanje,
-  regalarPuntosReal,
   type CanjeConfirmado,
   type ClienteApp,
 } from '../../lib/panelCliente';
@@ -227,31 +226,6 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
     return resultado;
   };
 
-  // Real: pega contra `regalar_puntos` (server, acotado al mismo negocio). En modo demo
-  // (sin backend) sigue siendo local, para no romper el recorrido de venta.
-  const regalarPuntos = async (telefonoDestino: string, cantidad: number) => {
-    if (!negocio) return { ok: false, error: 'Elegí un negocio primero.' };
-    if (!usarReal) {
-      setRelaciones((previas) => {
-        const actual = previas[negocio.id];
-        if (!actual) return previas;
-        return {
-          ...previas,
-          [negocio.id]: { ...actual, puntos: Math.max(0, actual.puntos - cantidad) },
-        };
-      });
-      return { ok: true };
-    }
-    const resultado = await regalarPuntosReal(negocio.id, telefonoDestino, cantidad);
-    if (!resultado.ok) return { ok: false, error: resultado.error };
-    setRelaciones((previas) => {
-      const actual = previas[negocio.id];
-      if (!actual) return previas;
-      return { ...previas, [negocio.id]: { ...actual, puntos: resultado.valor.puntosRestantes } };
-    });
-    return { ok: true };
-  };
-
   const girarRuleta = () => {
     if (!negocio) return;
     setTiradasRuleta((previas) => ({ ...previas, [negocio.id]: Date.now() }));
@@ -285,12 +259,12 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         negocioId={negocio.id}
         cliente={clienteNegocio}
         clientes={clientesNegocio}
+        canjesConfirmados={canjesConfirmados}
         permisoNotif={permisoNotif}
         onPedirPermisoNotif={pedirPermisoNotif}
         ultimaRuletaTs={tiradasRuleta[negocio.id]}
         onGirarRuleta={girarRuleta}
         onCanjear={canjear}
-        onRegalar={regalarPuntos}
         onSalir={volverAlMarketplace}
         onVolverMarketplace={volverAlMarketplace}
       />

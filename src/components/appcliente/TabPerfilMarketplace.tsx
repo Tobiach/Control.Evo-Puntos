@@ -29,6 +29,7 @@ import {
   codigoReferido,
   contarNegociosPorRubro,
   contarVisitasTotales,
+  formatFechaCorta,
   formatPuntos,
   negocioAncla,
   NIVELES_XP_GLOBAL,
@@ -59,12 +60,6 @@ const MESES = [
 function formatNacimiento(nacimiento: string): string {
   const [mes, dia] = nacimiento.split('-').map(Number);
   return `${dia} de ${MESES[mes - 1]}`;
-}
-
-function formatFechaCorta(iso: string): string {
-  const fecha = new Date(iso);
-  if (Number.isNaN(fecha.getTime())) return '';
-  return fecha.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 interface Props {

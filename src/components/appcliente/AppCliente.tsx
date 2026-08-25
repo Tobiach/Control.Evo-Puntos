@@ -10,15 +10,20 @@ import {
   type PermisoNotif,
 } from '../../lib/notificaciones';
 import type { ResultadoCanje } from '../../lib/club';
+import type { CanjeConfirmado } from '../../lib/panelCliente';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import TabInicio from './TabInicio';
 import TabRecompensas from './TabRecompensas';
 import TabActividad from './TabActividad';
 import TabPerfil from './TabPerfil';
+import TabCartaPuntos from './TabCartaPuntos';
 import AvisoActivarNotificaciones from './AvisoActivarNotificaciones';
 
-type Tab = 'inicio' | 'recompensas' | 'actividad' | 'perfil';
-const TABS_VALIDAS: readonly Tab[] = ['inicio', 'recompensas', 'actividad', 'perfil'];
+// 'carta' es un destino válido pero NO aparece en la tab bar (TABS más abajo) — se llega
+// solo desde el botón "Sumá puntos" de Inicio, mismo criterio que "Mis datos" en Perfil
+// marketplace: drill-in con su propio botón Volver, no una 5ta pestaña.
+type Tab = 'inicio' | 'recompensas' | 'actividad' | 'perfil' | 'carta';
+const TABS_VALIDAS: readonly Tab[] = ['inicio', 'recompensas', 'actividad', 'perfil', 'carta'];
 function parseTab(valor: string | null): Tab {
   return TABS_VALIDAS.includes(valor as Tab) ? (valor as Tab) : 'inicio';
 }
@@ -28,13 +33,14 @@ interface Props {
   negocioId: string;
   cliente: Cliente;
   clientes: Cliente[];
+  /** Canjes confirmados de TODOS los negocios — se filtran por este negocio adentro. */
+  canjesConfirmados: CanjeConfirmado[];
   permisoNotif: PermisoNotif;
   onPedirPermisoNotif: () => Promise<void>;
   /** Timestamp de la última tirada de ruleta en este negocio (cooldown de 7 días). */
   ultimaRuletaTs?: number;
   onGirarRuleta: () => void;
   onCanjear: (recompensa: Recompensa) => Promise<ResultadoCanje>;
-  onRegalar: (telefonoDestino: string, cantidad: number) => Promise<{ ok: boolean; error?: string }>;
   onSalir: () => void;
   /** Si está presente, muestra el botón "← Volver al marketplace" arriba de todo. */
   onVolverMarketplace?: () => void;
@@ -58,12 +64,12 @@ export default function AppCliente({
   negocioId,
   cliente,
   clientes,
+  canjesConfirmados,
   permisoNotif,
   onPedirPermisoNotif,
   ultimaRuletaTs,
   onGirarRuleta,
   onCanjear,
-  onRegalar,
   onSalir,
   onVolverMarketplace,
 }: Props) {
@@ -89,6 +95,10 @@ export default function AppCliente({
   const [avisoNotifCerrado, setAvisoNotifCerrado] = useState(false);
   const mostrarAvisoNotif = permisoNotif === 'default' && !avisoNotifCerrado;
   const historial = data.historialApp;
+  const canjesNegocio = useMemo(
+    () => canjesConfirmados.filter((canje) => canje.negocioId === negocioId),
+    [canjesConfirmados, negocioId],
+  );
 
   const avisos = useMemo<Aviso[]>(
     () => avisosCliente(data, cliente, historial, { cumpleForzado }),
@@ -143,14 +153,18 @@ export default function AppCliente({
                 ultimaRuletaTs={ultimaRuletaTs}
                 onGirarRuleta={onGirarRuleta}
                 onVerRecompensas={() => setTab('recompensas')}
+                onVerCarta={() => setTab('carta')}
                 onSalir={onSalir}
               />
+            )}
+            {tab === 'carta' && (
+              <TabCartaPuntos negocioId={negocioId} data={data} onVolver={() => setTab('inicio')} />
             )}
             {tab === 'recompensas' && (
               <TabRecompensas data={data} cliente={cliente} onCanjear={onCanjear} />
             )}
             {tab === 'actividad' && (
-              <TabActividad data={data} cliente={cliente} historial={historial} />
+              <TabActividad data={data} cliente={cliente} historial={historial} canjes={canjesNegocio} />
             )}
             {tab === 'perfil' && (
               <TabPerfil
@@ -161,14 +175,17 @@ export default function AppCliente({
                 historial={historial}
                 cumpleForzado={cumpleForzado}
                 onToggleCumple={() => setCumpleForzado((valor) => !valor)}
-                onRegalar={onRegalar}
               />
             )}
           </motion.div>
         </AnimatePresence>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-md items-stretch border-t border-white/10 bg-surface-dark px-2 pb-[env(safe-area-inset-bottom)]">
+      <nav
+        className={`fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-md items-stretch border-t border-white/10 bg-surface-dark px-2 pb-[env(safe-area-inset-bottom)] ${
+          tab === 'carta' ? 'hidden' : ''
+        }`}
+      >
         {TABS.map(({ id, label, icono: Icono }) => {
           const activo = tab === id;
           return (
