@@ -1,15 +1,16 @@
 import { useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
+import { LocateFixed, Minus, Plus, Users } from 'lucide-react';
 import L from 'leaflet';
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import { Circle, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
-import { distanciaKm, formatDistancia, type Coordenadas } from '../../lib/geo';
+import { distanciaKm, type Coordenadas } from '../../lib/geo';
 import { horarioValleActivoAhora } from '../../lib/misiones';
-import { colorBarraProgreso, formatPuntos, proximaRecompensa } from '../../lib/club';
 
 /** Centro aproximado de Palermo, para saber si el usuario está en el barrio. */
 const CENTRO_PALERMO: Coordenadas = { lat: -34.5855, lng: -58.428 };
+const RADIO_BUSQUEDA_M = 900;
 
 /** Tiles gratuitos de CARTO (sin API key), uno por tema de la app. */
 const TILES = {
@@ -20,12 +21,13 @@ const TILES = {
 const ATRIBUCION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-/** Pin de negocio: burbuja con el emoji del local. Borde verde real cuando el negocio tiene
- *  una oferta vigente AHORA (horario valle configurado por el dueño), no un adorno fijo. */
-const iconoNegocio = (emoji: string, activo: boolean) =>
+/** Pin de negocio: burbuja con el emoji del local.
+ *  - `seleccionado` (el último tocado): burbuja sólida coral, sin importar promo.
+ *  - si no, `conPromoActiva` (horario valle vigente ahora) marca el borde en verde real. */
+const iconoNegocio = (emoji: string, seleccionado: boolean, conPromoActiva: boolean) =>
   L.divIcon({
     className: 'pin-club',
-    html: `<span class="pin-club-burbuja${activo ? ' pin-club-burbuja--activo' : ''}">${emoji}</span><span class="pin-club-punta${activo ? ' pin-club-punta--activo' : ''}"></span>`,
+    html: `<span class="pin-club-burbuja${seleccionado ? ' pin-club-burbuja--activo' : conPromoActiva ? ' pin-club-burbuja--promo' : ''}">${emoji}</span><span class="pin-club-punta${seleccionado ? ' pin-club-punta--activo' : conPromoActiva ? ' pin-club-punta--promo' : ''}"></span>`,
     iconSize: [38, 46],
     iconAnchor: [19, 44],
     popupAnchor: [0, -42],
@@ -40,9 +42,6 @@ const ICONO_USUARIO = L.divIcon({
   popupAnchor: [0, -12],
 });
 
-/** Estilos del mapa que no pueden vivir en Tailwind: pines (HTML de Leaflet,
- *  fuera del árbol de React) y el popup default de Leaflet, re-tematizado con
- *  las CSS vars de la app para que siga al tema activo (gastro/super). */
 const ESTILOS_MAPA = `
 .pin-club { background: transparent; border: none; }
 .pin-club-burbuja {
@@ -51,14 +50,20 @@ const ESTILOS_MAPA = `
   background: var(--color-fondo-medio);
   border: 2px solid var(--color-ubicacion);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 .pin-club-punta {
   display: block; margin: -1px auto 0; width: 0; height: 0;
   border-left: 6px solid transparent; border-right: 6px solid transparent;
   border-top: 8px solid var(--color-ubicacion);
 }
-.pin-club-burbuja--activo { border-color: var(--color-verde-ok); }
-.pin-club-punta--activo { border-top-color: var(--color-verde-ok); }
+.pin-club-burbuja--promo { border-color: var(--color-verde-ok); }
+.pin-club-punta--promo { border-top-color: var(--color-verde-ok); }
+.pin-club-burbuja--activo {
+  background: var(--color-premio); border-color: var(--color-premio);
+  box-shadow: 0 6px 14px rgba(242, 138, 99, 0.5);
+}
+.pin-club-punta--activo { border-top-color: var(--color-premio); }
 .pin-club-usuario {
   position: relative; display: block; width: 22px; height: 22px;
   border-radius: 9999px; background: #0EA5A4; border: 3px solid #FFFFFF;
@@ -73,43 +78,77 @@ const ESTILOS_MAPA = `
   0%, 100% { transform: scale(0.7); opacity: 0.9; }
   50% { transform: scale(1.15); opacity: 0.3; }
 }
-.leaflet-popup-content-wrapper {
-  background: var(--color-card); color: var(--color-texto);
-  border: 1px solid var(--color-borde); border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-.leaflet-popup-tip { background: var(--color-card); border: 1px solid var(--color-borde); }
-.leaflet-popup-content { margin: 12px 14px; font-family: var(--font-display); }
-.leaflet-popup-close-button { color: var(--color-texto-muted); }
 .leaflet-container { font-family: var(--font-display); }
 `;
 
-/** Encuadra el mapa para que entren todos los pines (negocios + usuario). */
+/** Encuadra el mapa para que entren todos los pines (negocios + usuario), una sola vez. */
 function AjustarVista({ puntos }: { puntos: Coordenadas[] }) {
   const map = useMap();
   useEffect(() => {
     if (puntos.length === 0) return;
     const bounds = L.latLngBounds(puntos.map((p) => [p.lat, p.lng] as [number, number]));
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
-  }, [map, puntos]);
+    // Solo al montar: si el usuario mueve el mapa después, no lo queremos re-encuadrar solo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
   return null;
 }
 
+/** Controles propios de zoom + centrar en mi ubicación (reemplazan los nativos de Leaflet). */
+function Controles({ coords }: { coords: Coordenadas }) {
+  const map = useMap();
+  return (
+    <div className="absolute top-2.5 right-2.5 left-2.5 z-[1000] flex items-start justify-between">
+      <button
+        type="button"
+        onClick={() => map.flyTo([coords.lat, coords.lng], 16, { duration: 0.6 })}
+        aria-label="Centrar en mi ubicación"
+        className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-ubicacion shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
+      >
+        <LocateFixed size={14} strokeWidth={2.5} />
+      </button>
+      <div className="flex flex-col gap-0.5 overflow-hidden rounded-md bg-white shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+        <button
+          type="button"
+          onClick={() => map.zoomIn()}
+          aria-label="Acercar"
+          className="flex h-7 w-7 items-center justify-center text-texto"
+        >
+          <Plus size={14} strokeWidth={2.5} />
+        </button>
+        <div className="h-px bg-borde" />
+        <button
+          type="button"
+          onClick={() => map.zoomOut()}
+          aria-label="Alejar"
+          className="flex h-7 w-7 items-center justify-center text-texto"
+        >
+          <Minus size={14} strokeWidth={2.5} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /**
- * Mapa real (Leaflet + tiles CARTO gratuitos) de los locales cercanos.
- * Reemplaza al viejo MiniMapa 100% CSS: mismos props, mismo contenedor,
- * pero con calles reales, popups y encuadre automático.
+ * Mapa real (Leaflet + tiles CARTO gratuitos) de los locales cercanos. Tocar un pin selecciona
+ * ese negocio (`onSeleccionar`) — no abre popup, la ficha vive en la lista de cards debajo,
+ * que hace scroll hasta la card correspondiente (ver TabMapa.tsx).
  */
 export default function MapaNegocios({
   negocios,
   relaciones,
   coords,
-  onAbrir,
+  negocioActivoId,
+  onSeleccionar,
+  alturaClase = 'h-[42vh] min-h-[260px] max-h-[340px]',
 }: {
   negocios: Negocio[];
   relaciones: Record<string, RelacionNegocio>;
   coords: Coordenadas;
-  onAbrir: (negocio: Negocio) => void;
+  negocioActivoId: string | null;
+  onSeleccionar: (negocio: Negocio) => void;
+  alturaClase?: string;
 }) {
   const distanciaAlBarrio = distanciaKm(coords, CENTRO_PALERMO);
   const usuarioEnZona = distanciaAlBarrio <= 8;
@@ -122,119 +161,80 @@ export default function MapaNegocios({
 
   if (puntos.length === 0) return null;
 
-  // Tiles según el tema activo de la app: oscuro (gastro) o claro (super).
   const temaClaro = document.documentElement.dataset.rubro === 'super';
   const urlTiles = temaClaro ? TILES.claro : TILES.oscuro;
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="overflow-hidden rounded-3xl border border-borde bg-card"
+      className={`relative z-0 w-full ${alturaClase}`}
     >
       <style>{ESTILOS_MAPA}</style>
-      <div className="relative z-0 h-64 w-full">
-        <MapContainer
-          center={[CENTRO_PALERMO.lat, CENTRO_PALERMO.lng]}
-          zoom={15}
-          scrollWheelZoom={false}
-          zoomControl={false}
-          attributionControl
-          className="h-full w-full"
-        >
-          <TileLayer key={urlTiles} url={urlTiles} attribution={ATRIBUCION} />
-          <AjustarVista puntos={puntos} />
+      <MapContainer
+        center={[CENTRO_PALERMO.lat, CENTRO_PALERMO.lng]}
+        zoom={15}
+        scrollWheelZoom={false}
+        zoomControl={false}
+        attributionControl
+        className="h-full w-full"
+      >
+        <TileLayer key={urlTiles} url={urlTiles} attribution={ATRIBUCION} />
+        <AjustarVista puntos={puntos} />
+        <Controles coords={coords} />
 
-          {negocios.map((negocio) => {
-            const activo = Boolean(negocio.horarioValle && horarioValleActivoAhora(negocio.horarioValle));
-            const puntos = relaciones[negocio.id]?.puntos ?? 0;
-            const proxima = proximaRecompensa(negocio.recompensas, puntos);
-            const pct =
-              negocio.recompensas.length === 0
-                ? 0
-                : proxima
-                  ? Math.min(100, Math.round((puntos / proxima.pts) * 100))
-                  : 100;
-            return (
+        {usuarioEnZona && (
+          <Circle
+            center={[coords.lat, coords.lng]}
+            radius={RADIO_BUSQUEDA_M}
+            pathOptions={{
+              // Leaflet dibuja esto como atributo SVG crudo: no resuelve custom properties de
+              // CSS (a diferencia de los pines de arriba, que sí son HTML). Mismo hex real que
+              // --color-premio en index.css.
+              color: '#F28A63',
+              opacity: 0.35,
+              weight: 1.5,
+              dashArray: '4 5',
+              fillOpacity: 0.04,
+            }}
+          />
+        )}
+
+        {negocios.map((negocio) => {
+          const conPromoActiva = Boolean(negocio.horarioValle && horarioValleActivoAhora(negocio.horarioValle));
+          const seleccionado = negocio.id === negocioActivoId;
+          return (
             <Marker
               key={negocio.id}
               position={[negocio.lat, negocio.lng]}
-              icon={iconoNegocio(negocio.emoji, activo)}
+              icon={iconoNegocio(negocio.emoji, seleccionado, conPromoActiva)}
               alt={negocio.nombre}
-            >
-              <Popup>
-                <div className="flex min-w-44 flex-col gap-1.5">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-xl ${
-                        negocio.logoUrl ? 'bg-white' : 'bg-premio-suave'
-                      }`}
-                    >
-                      {negocio.logoUrl ? (
-                        <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-1" />
-                      ) : (
-                        negocio.emoji
-                      )}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm leading-tight font-bold text-texto">{negocio.nombre}</p>
-                      <p className="text-[11px] font-semibold text-texto-muted">
-                        {negocio.categoria} · {formatDistancia(distanciaKm(coords, negocio))}
-                      </p>
-                    </div>
-                  </div>
+              eventHandlers={{ click: () => onSeleccionar(negocio) }}
+            />
+          );
+        })}
 
-                  {activo && (
-                    <p className="text-[11px] font-bold text-verde-ok">
-                      🟢 Puntos x2 · termina a las {negocio.horarioValle?.hasta}
-                    </p>
-                  )}
+        {usuarioEnZona && <Marker position={[coords.lat, coords.lng]} icon={ICONO_USUARIO} alt="Tu ubicación" />}
+      </MapContainer>
 
-                  {negocio.recompensas.length > 0 && (
-                    <div>
-                      <p className="text-[10px] font-semibold text-texto-muted">
-                        {proxima
-                          ? `Te faltan ${formatPuntos(proxima.pts - puntos)} pts para ${proxima.descripcion}`
-                          : 'Premio listo para canjear 🎉'}
-                      </p>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-borde">
-                        <div
-                          className={`h-full rounded-full ${colorBarraProgreso(pct)}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => onAbrir(negocio)}
-                    className="mt-1 rounded-full bg-acento px-3.5 py-1.5 text-xs font-bold text-on-acento active:bg-acento-hover"
-                  >
-                    Entrar al local
-                  </button>
-                </div>
-              </Popup>
-            </Marker>
-            );
-          })}
-
-          {usuarioEnZona && (
-            <Marker position={[coords.lat, coords.lng]} icon={ICONO_USUARIO} alt="Tu ubicación">
-              <Popup>
-                <p className="text-xs font-bold text-texto">Estás acá</p>
-              </Popup>
-            </Marker>
+      <div className="pointer-events-none absolute inset-x-0 bottom-2.5 z-[1000] flex justify-center">
+        <span className="flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-1.5 text-xs font-bold text-texto shadow-[0_4px_12px_rgba(0,0,0,0.2)]">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-verde-ok opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-verde-ok" />
+          </span>
+          {usuarioEnZona ? (
+            <>
+              {negocios.length} {negocios.length === 1 ? 'negocio' : 'negocios'} cerca tuyo
+            </>
+          ) : (
+            <>
+              <Users size={12} /> Locales de Palermo
+            </>
           )}
-        </MapContainer>
+        </span>
       </div>
-
-      <p className="border-t border-borde px-4 py-2.5 text-[11px] font-semibold text-texto-muted">
-        {usuarioEnZona
-          ? 'Mapa de Palermo — tocá un pin para entrar al local'
-          : `Estás ${formatDistancia(distanciaAlBarrio)} de Palermo — locales ordenados por cercanía`}
-      </p>
     </motion.div>
   );
 }

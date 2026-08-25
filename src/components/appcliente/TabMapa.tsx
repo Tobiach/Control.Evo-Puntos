@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
-import { motion } from 'motion/react';
-import { LocateFixed } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { LocateFixed, Maximize2 } from 'lucide-react';
 import type { Rubro } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
-import type { Coordenadas } from '../../lib/geo';
+import { distanciaKm, type Coordenadas } from '../../lib/geo';
 import MapaNegocios from './MapaNegocios';
+import MapaCompleto from './MapaCompleto';
+import TarjetaExplorar from './TarjetaExplorar';
 
 type Filtro = 'todos' | Rubro;
 
@@ -20,18 +22,21 @@ interface Props {
   onAbrirNegocio: (negocio: Negocio) => void;
 }
 
+/** Nombres en plural (criterio de esta pantalla, no el resto de la app). */
 const FILTROS: { id: Filtro; label: string }[] = [
   { id: 'todos', label: 'Todos' },
+  { id: 'cafeteria', label: 'Cafeterías' },
   { id: 'gastro', label: 'Gastronomía' },
-  { id: 'super', label: 'Supermercado' },
-  { id: 'carniceria', label: 'Carnicería' },
-  { id: 'cafeteria', label: 'Cafetería' },
+  { id: 'super', label: 'Almacenes' },
+  { id: 'carniceria', label: 'Carnicerías' },
 ];
 
 /** Mapa como pestaña propia del marketplace — antes vivía escondido detrás del filtro "Cerca mío". */
 export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [geo, setGeo] = useState<EstadoGeo>({ estado: 'inactivo' });
+  const [negocioActivoId, setNegocioActivoId] = useState<string | null>(null);
+  const [mapaCompleto, setMapaCompleto] = useState(false);
 
   const pedirUbicacion = () => {
     if (!('geolocation' in navigator)) {
@@ -70,43 +75,63 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
     [negocios, filtro],
   );
 
-  return (
-    <div className="flex flex-1 flex-col gap-4 px-5 pt-6 pb-6">
-      <h1 className="text-2xl font-bold text-texto">Mapa</h1>
+  const coords = geo.estado === 'ok' ? geo.coords : null;
+  const cercanos = useMemo(
+    () =>
+      coords
+        ? [...visibles].sort((a, b) => distanciaKm(coords, a) - distanciaKm(coords, b))
+        : visibles,
+    [visibles, coords],
+  );
 
-      <div className="flex flex-wrap gap-2">
-        {FILTROS.map(({ id, label }) => {
-          const activo = filtro === id;
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setFiltro(id)}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
-                activo ? 'bg-acento text-on-acento' : 'border border-borde bg-card text-texto-muted'
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
+  const seleccionar = (negocio: Negocio) => {
+    setNegocioActivoId(negocio.id);
+    document
+      .getElementById(`negocio-${negocio.id}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+  return (
+    <div className="flex flex-1 flex-col gap-4 pt-6 pb-6">
+      <div className="flex flex-col gap-4 px-5">
+        <h1 className="text-2xl font-bold text-texto">Explorar</h1>
+
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {FILTROS.map(({ id, label }) => {
+            const activo = filtro === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setFiltro(id)}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                  activo ? 'bg-surface-dark text-white' : 'border border-borde bg-card text-texto-muted'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {geo.estado === 'inactivo' && (
-        <button
-          type="button"
-          onClick={pedirUbicacion}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-borde bg-card py-3.5 text-sm font-bold text-texto"
-        >
-          <LocateFixed size={16} className="text-ubicacion" /> Usar mi ubicación
-        </button>
+        <div className="px-5">
+          <button
+            type="button"
+            onClick={pedirUbicacion}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-borde bg-card py-3.5 text-sm font-bold text-texto"
+          >
+            <LocateFixed size={16} className="text-ubicacion" /> Usar mi ubicación
+          </button>
+        </div>
       )}
 
       {geo.estado === 'pidiendo' && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3 text-sm text-texto-muted"
+          className="mx-5 flex items-center gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3 text-sm text-texto-muted"
         >
           <LocateFixed size={16} className="animate-pulse text-ubicacion" />
           Buscando tu ubicación…
@@ -117,7 +142,7 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-borde bg-card px-4 py-3.5"
+          className="mx-5 rounded-2xl border border-borde bg-card px-4 py-3.5"
         >
           <p className="text-sm leading-snug text-texto-muted">{geo.mensaje}</p>
           <button
@@ -131,7 +156,60 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
       )}
 
       {geo.estado === 'ok' && (
-        <MapaNegocios negocios={visibles} relaciones={relaciones} coords={geo.coords} onAbrir={onAbrirNegocio} />
+        <>
+          <MapaNegocios
+            negocios={visibles}
+            relaciones={relaciones}
+            coords={geo.coords}
+            negocioActivoId={negocioActivoId}
+            onSeleccionar={seleccionar}
+          />
+
+          <div className="flex flex-col gap-3 px-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-texto">Cerca tuyo</p>
+              <button
+                type="button"
+                onClick={() => setMapaCompleto(true)}
+                className="flex items-center gap-1 text-xs font-bold text-premio"
+              >
+                <Maximize2 size={12} strokeWidth={2.5} /> Ver mapa completo
+              </button>
+            </div>
+
+            {cercanos.length === 0 ? (
+              <p className="rounded-2xl border border-borde bg-card px-4 py-6 text-center text-sm text-texto-muted">
+                No encontramos locales con ese filtro.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {cercanos.map((negocio) => (
+                  <TarjetaExplorar
+                    key={negocio.id}
+                    negocio={negocio}
+                    relacion={relaciones[negocio.id]}
+                    distanciaKm={distanciaKm(geo.coords, negocio)}
+                    activo={negocio.id === negocioActivoId}
+                    onAbrir={() => onAbrirNegocio(negocio)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <AnimatePresence>
+            {mapaCompleto && (
+              <MapaCompleto
+                negocios={visibles}
+                relaciones={relaciones}
+                coords={geo.coords}
+                negocioActivoId={negocioActivoId}
+                onSeleccionar={seleccionar}
+                onCerrar={() => setMapaCompleto(false)}
+              />
+            )}
+          </AnimatePresence>
+        </>
       )}
     </div>
   );
