@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { RotateCw } from 'lucide-react';
 import { lanzarConfetti } from '../../lib/confetti';
+import { sonidoRuletaGirando } from '../../lib/sonidos';
 import { elegirPremio, estadoCooldown, PREMIOS_RULETA, type PremioRuleta } from '../../lib/ruleta';
 
 interface Props {
@@ -46,6 +47,7 @@ export default function RuletaSemanal({ ultimaTiradaTs, onGirar, premios }: Prop
     const { premio: elegido, indice } = elegirPremio(pool);
     setGirando(true);
     onGirar();
+    sonidoRuletaGirando(DURACION_MS);
 
     // Alinea el centro de la porción ganadora bajo el puntero de arriba, + 5 vueltas enteras.
     const destino = 360 - (indice * gradosPorPorcion + gradosPorPorcion / 2);
