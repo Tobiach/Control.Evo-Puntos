@@ -41,6 +41,7 @@ import type { PermisoNotif } from '../../lib/notificaciones';
 import type { CanjeConfirmado } from '../../lib/panelCliente';
 import {
   armarLinkInvitacion,
+  formatVisitas,
   obtenerCodigoReferido,
   PUNTOS_BONUS_REFERIDO,
   VISITAS_PARA_PREMIO,
@@ -182,7 +183,7 @@ export default function TabPerfilMarketplace({
     const codigo = codigoRef ?? codigoReferido(cliente);
     const link = armarLinkInvitacion(window.location.origin, codigo, anclaInvitar.id);
     const texto =
-      `¡Sumate a Premia.ar! Con mi invitación, cuando vayas ${VISITAS_PARA_PREMIO} veces a ` +
+      `¡Sumate a Premia.ar! Con mi invitación, cuando vayas ${formatVisitas(VISITAS_PARA_PREMIO)} a ` +
       `${anclaInvitar.nombre}, ganamos ${PUNTOS_BONUS_REFERIDO} pts cada uno. ${link}`;
     const copio = await compartir(texto, link);
     if (copio) {
@@ -434,7 +435,7 @@ export default function TabPerfilMarketplace({
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-texto">Invitá a un amigo</p>
                 <p className="mt-0.5 text-xs leading-snug text-texto-muted">
-                  Cuando vaya {VISITAS_PARA_PREMIO} veces a {anclaInvitar.nombre}, ganan{' '}
+                  Cuando vaya {formatVisitas(VISITAS_PARA_PREMIO)} a {anclaInvitar.nombre}, ganan{' '}
                   {PUNTOS_BONUS_REFERIDO} pts los dos.
                 </p>
               </div>

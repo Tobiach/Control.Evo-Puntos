@@ -3,6 +3,7 @@ import {
   PUNTOS_BONUS_REFERIDO,
   VISITAS_PARA_PREMIO,
   armarLinkInvitacion,
+  formatVisitas,
   leerReferidoDeQuery,
 } from './referidos';
 
@@ -52,8 +53,16 @@ describe('armarLinkInvitacion', () => {
 });
 
 describe('constantes del premio', () => {
-  it('coinciden con la migración 0008 (4 visitas, 100 pts a cada uno)', () => {
-    expect(VISITAS_PARA_PREMIO).toBe(4);
+  it('coinciden con la migración 0022 (1 visita, 100 pts a cada uno)', () => {
+    expect(VISITAS_PARA_PREMIO).toBe(1);
     expect(PUNTOS_BONUS_REFERIDO).toBe(100);
+  });
+});
+
+describe('formatVisitas', () => {
+  it('usa singular para 1 y plural para el resto', () => {
+    expect(formatVisitas(1)).toBe('1 vez');
+    expect(formatVisitas(2)).toBe('2 veces');
+    expect(formatVisitas(4)).toBe('4 veces');
   });
 });

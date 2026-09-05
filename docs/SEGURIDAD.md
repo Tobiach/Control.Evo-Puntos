@@ -75,7 +75,7 @@ Ver `controlevo-os/playbooks/technical/uptime-monitoring.md` — actualizado con
     acreditar; el monto y los puntos se calculan server-side (`floor(monto / monto_por_punto)`).
   - `canjear_recompensa` — chequea `puntos_actuales >= pts_requeridos` antes de descontar.
   - `registrar_referido` / `revisar_premio_referido` — el premio se acredita solo si
-    `COUNT(*)` de visitas REALES del referido en `visitas` llega a 4, contado en el momento
+    `COUNT(*)` de visitas REALES del referido en `visitas` llega a 1 (0022, antes 4), contado en el momento
     de la llamada, nunca confiado del cliente.
   - `crear_desafio` / `revisar_desafios` — mismo patrón: cuenta visitas reales dentro de la
     ventana del desafío antes de premiar.

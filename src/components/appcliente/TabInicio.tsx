@@ -32,6 +32,7 @@ import { compartir } from '../../lib/compartir';
 import { META_PROMO } from '../../lib/promos';
 import {
   armarLinkInvitacion,
+  formatVisitas,
   obtenerCodigoReferido,
   PUNTOS_BONUS_REFERIDO,
   VISITAS_PARA_PREMIO,
@@ -105,7 +106,7 @@ function InvitarDesdeInicio({
     const link = armarLinkInvitacion(window.location.origin, codigoEfectivo, negocioId);
     const texto =
       `¡Sumate al Club de Puntos de ${nombreNegocio}! Entrá con mi invitación y, cuando ` +
-      `vayas ${VISITAS_PARA_PREMIO} veces, ganamos ${PUNTOS_BONUS_REFERIDO} pts cada uno. ${link}`;
+      `vayas ${formatVisitas(VISITAS_PARA_PREMIO)}, ganamos ${PUNTOS_BONUS_REFERIDO} pts cada uno. ${link}`;
     const copio = await compartir(texto, link);
     if (copio) {
       setCopiado(true);
@@ -127,7 +128,7 @@ function InvitarDesdeInicio({
         <span className="block text-xs text-texto-muted">
           {copiado
             ? 'Copiado — mandaselo por WhatsApp'
-            : `Cuando vaya ${VISITAS_PARA_PREMIO} veces, ganan ${PUNTOS_BONUS_REFERIDO} pts los dos`}
+            : `Cuando vaya ${formatVisitas(VISITAS_PARA_PREMIO)}, ganan ${PUNTOS_BONUS_REFERIDO} pts los dos`}
         </span>
       </span>
     </button>

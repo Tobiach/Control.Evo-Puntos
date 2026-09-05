@@ -9,6 +9,7 @@ import {
   PUNTOS_BONUS_REFERIDO,
   VISITAS_PARA_PREMIO,
   armarLinkInvitacion,
+  formatVisitas,
   obtenerCodigoReferido,
   revisarPremioReferido,
   type EstadoReferidos,
@@ -54,7 +55,7 @@ export default function SeccionReferidos({ negocioId, data, cliente }: Props) {
     const link = armarLinkInvitacion(window.location.origin, codigoEfectivo, negocioId);
     const texto =
       `¡Sumate al Club de Puntos de ${data.nombreNegocio}! Entrá con mi invitación y, cuando ` +
-      `vayas ${VISITAS_PARA_PREMIO} veces, ganamos ${PUNTOS_BONUS_REFERIDO} pts cada uno. ${link}`;
+      `vayas ${formatVisitas(VISITAS_PARA_PREMIO)}, ganamos ${PUNTOS_BONUS_REFERIDO} pts cada uno. ${link}`;
     const copio = await compartir(texto, link);
     if (copio) {
       setCopiado(true);
@@ -74,7 +75,7 @@ export default function SeccionReferidos({ negocioId, data, cliente }: Props) {
       <div className="rounded-3xl border border-borde bg-card p-5">
         <p className="text-sm text-texto-muted">
           Compartí tu invitación. Cuando tu amigo visite {data.nombreNegocio}{' '}
-          <span className="font-bold text-texto">{necesarias} veces</span>,{' '}
+          <span className="font-bold text-texto">{formatVisitas(necesarias)}</span>,{' '}
           <span className="font-bold text-texto">ganan {bonus} pts cada uno</span>.
         </p>
         <div className="mt-3 flex items-center justify-between rounded-2xl bg-premio-suave px-4 py-3">
@@ -104,7 +105,7 @@ export default function SeccionReferidos({ negocioId, data, cliente }: Props) {
         {estado?.comoReferido && !estado.comoReferido.premiado && (
           <div className="mt-4 rounded-2xl bg-fondo p-3.5">
             <p className="text-xs font-semibold text-texto">
-              Te invitaron a este club. Visitá {necesarias} veces y ganan {bonus} pts los dos.
+              Te invitaron a este club. Visitá {formatVisitas(necesarias)} y ganan {bonus} pts los dos.
             </p>
             <div className="mt-2 flex items-center justify-between text-xs">
               <span className="font-bold text-texto">

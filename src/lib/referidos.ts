@@ -13,8 +13,13 @@ export const PARAM_NEGOCIO = 'negocio';
 
 /** Puntos bonus que gana CADA parte cuando el invitado completa las visitas (ver 0008). */
 export const PUNTOS_BONUS_REFERIDO = 100;
-/** Visitas reales del invitado en el negocio necesarias para premiar (ver 0008). */
-export const VISITAS_PARA_PREMIO = 4;
+/** Visitas reales del invitado en el negocio necesarias para premiar (ver 0022, antes 4). */
+export const VISITAS_PARA_PREMIO = 1;
+
+/** "1 vez" / "3 veces" — evita el "1 veces" gramaticalmente incorrecto en el copy de invitación. */
+export function formatVisitas(n: number): string {
+  return n === 1 ? '1 vez' : `${n} veces`;
+}
 
 const CLAVE_REFERIDO_PENDIENTE = 'celp_referido_pendiente';
 
