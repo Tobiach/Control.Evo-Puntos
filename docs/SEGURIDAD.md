@@ -106,13 +106,26 @@ exista), pero sí para poder cumplirlo de verdad si alguien cancela antes de con
 
 ## 5.1 Rate limiting en endpoints de puntos/canjes/referidos
 
-**No existe — verificado.** Ninguna RPC (`cobrar_con_pin`, `canjear_recompensa`,
-`registrar_referido`, `revisar_premio_referido`, `crear_desafio`, `revisar_desafios`) tiene
-ningún control de frecuencia, cooldown ni límite por IP/usuario/negocio. Hoy nada impide que
-alguien con el PIN de un cajero automatice llamadas a `cobrar_con_pin` en loop, o que un
-cliente automatice `registrar_referido` con distintas cuentas. Con pocos usuarios el riesgo es
-bajo (a nadie le conviene todavía), pero es una prioridad real antes de escalar — no es
-"CONFIRMAR", es un "NO, falta construirlo".
+**Resuelto (14/9/2026), verificado con una consulta real a `pg_proc` en producción — no
+supuesto.** Las 8 RPC sensibles (`verificar_pin_cajero`, `cobrar_con_pin`, `confirmar_canje`,
+`iniciar_canje`, `registrar_referido`, `revisar_premio_referido`, `crear_desafio`,
+`revisar_desafios`) cortan si se pasa un máximo de intentos en una ventana de tiempo, vía una
+tabla de eventos (`rate_limit_eventos`) + función helper (`verificar_rate_limit`) — límites
+generosos (pensados para tolerar el uso real a mano, no un script en loop). La clave del límite
+es `negocio_id` para las funciones sin sesión (PIN de mostrador, anon) y `auth.uid()` para las
+autenticadas. `canjear_recompensa` (0004/0017, sin uso real desde que existe
+`iniciar_canje`/`confirmar_canje`) quedó con el `EXECUTE` revocado a `authenticated` en vez de
+agregarle rate limiting a código muerto.
+
+De paso se corrigió `confirmar_canje`, que estaba rota desde que se creó: validaba el PIN
+contra `negocios.pin_cajero`, columna que ya no existe desde el fix de 0005 (se movió a
+`negocio_pin`) — toda llamada tiraba error, el cajero no podía confirmar ningún canje
+verificable hasta este fix.
+
+Migración aplicada: `supabase/migrations/0024_consolidado_rate_limiting.sql` — la fuente
+original (`0023_rate_limiting_rpcs.sql`, en `main`) se aplicó en pedazos mezclados entre dos
+sesiones trabajando sobre el mismo Supabase sin coordinarse; 0024 es el bloque de recuperación
+que dejó las 8 funciones en el estado final correcto en una sola pasada, ya verificado.
 
 ## 5.2 Otras preguntas de infraestructura que NO se pueden verificar desde el código
 
