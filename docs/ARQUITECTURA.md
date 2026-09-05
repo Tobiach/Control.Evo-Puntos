@@ -65,6 +65,29 @@ No duplicar lógica entre ambos: si un cálculo (ej. cruzar historial de todos l
 falta en los dos lados, extraerlo a `lib/` (ver `historialCruzado` en `lib/club.ts`, usado
 tanto por el preview del Home como por la vista completa en Perfil).
 
+## Nivel global (XP cross-comercio) — capa nueva, aditiva
+
+Distinto del nivel POR NEGOCIO (`nivelDe`/`nivelesDeNegocio` en `lib/club.ts`, los puntos que
+el cliente tiene en ESE local puntual, que sigue existiendo igual): el XP global suma los
+puntos de TODOS los negocios donde el cliente tiene relación en un solo número. No es un
+sistema de puntos aparte ni una columna nueva en Supabase — es una agregación que se calcula
+en el cliente a partir de datos que ya existen.
+
+- **Cálculo**: `calcularXpTotal(relaciones)` en `lib/club.ts` — `Object.values(relaciones)`
+  sumando `.puntos` de cada uno. Nada se guarda; se recalcula cada vez que cambian las
+  relaciones del cliente.
+- **Niveles**: `NIVELES_XP_GLOBAL` en `lib/club.ts` — 5 niveles con nombre propio, fijos para
+  todos los rubros (no configurables por negocio, a diferencia de `vipDesdePuntos`): Nuevo (0)
+  → Explorador ⭐ (200) → Habitué 🔥 (1000) → Habitué Plus ⚡ (3000) → VIP del Barrio 👑 (8000).
+- **Dónde se muestra**: un solo componente, `CardNivelXp.tsx`, reusado sin variación en 3
+  lugares — `TabMisLocales.tsx` (Mis Premios), `TabPerfilMarketplace.tsx` (Perfil del
+  marketplace) y `TabPerfil.tsx` (Perfil dentro de un negocio, vía el `xpTotal` que ya calcula
+  `MarketplaceApp.tsx`) — siempre el mismo número cross-comercio, nunca el de un solo local.
+  Premín aparece en la tarjeta celebrando el nivel.
+- **Para verlo cambiar de verdad** hace falta un cliente con puntos en más de un negocio — con
+  uno solo, el XP global coincide siempre con el nivel de ese local y la capa nueva pasa
+  desapercibida.
+
 ## Paneles de dueño y cajero
 
 `PasoDueno`/`PasoCajero` (demo) y sus equivalentes reales en `components/dueno/` y
