@@ -58,6 +58,7 @@ scripts/               # Scripts de siembra de datos reales en Supabase (uno por
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) — cómo está armada la app: modos, pantallas, mock vs Supabase, marketplace vs negocio único.
 - [docs/DISENO.md](docs/DISENO.md) — sistema de diseño: paleta, tipografía, convenciones de componentes.
 - [docs/DEPLOY.md](docs/DEPLOY.md) — cómo se despliega a producción (Vercel) y desde qué PC.
+- [docs/SUPABASE.md](docs/SUPABASE.md) — estado real del proyecto de Supabase, separación demo/real, y cómo conectar el CLI.
 - [CONTRIBUTING.md](CONTRIBUTING.md) — reglas de trabajo en este repo.
 
 ## Modelo de negocio (contexto para decisiones de producto)

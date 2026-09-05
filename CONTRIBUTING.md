@@ -10,7 +10,8 @@ Reglas de trabajo para cualquiera que toque este código — humano o agente de 
    recientemente por otro trabajo en paralelo.
 3. Si el cambio toca el esquema de Supabase: proponer el approach y esperar OK antes de
    escribir la migración. No hay CLI conectado — se aplica a mano en el SQL Editor. Nunca
-   asumir que una migración recién escrita ya corrió en producción.
+   asumir que una migración recién escrita ya corrió en producción. Ver
+   [docs/SUPABASE.md](docs/SUPABASE.md) para el estado real y el plan para conectar el CLI.
 
 ## Verificación — no negociable
 

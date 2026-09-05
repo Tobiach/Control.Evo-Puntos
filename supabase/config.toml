@@ -1,0 +1,9 @@
+# Config del Supabase CLI. Este archivo NO conecta nada solo — hace falta correr
+# `supabase link --project-ref ajydiowgrdtivndthidh` a mano desde una PC con acceso al
+# proyecto (pide login interactivo, no se puede hacer desde un agente sin credenciales).
+# Ver docs/SUPABASE.md para el procedimiento completo antes de usar cualquier comando
+# `supabase db ...` contra producción.
+project_id = "ajydiowgrdtivndthidh"
+
+[db.migrations]
+schema_paths = []
