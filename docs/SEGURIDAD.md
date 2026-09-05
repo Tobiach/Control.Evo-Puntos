@@ -36,14 +36,18 @@ No hay infraestructura propia — ni servidores, ni base de datos self-hosted.
 
 ## 3. ¿Qué pasa si el sistema (app web) se cae?
 
-**Error tracking: sí, activo desde el 9/8/2026 — verificado, no es una promesa.** Sentry
-conectado (`src/lib/sentry.ts`, null-safe igual criterio que Supabase — PAT-001), probado en
-vivo (un error real disparó el request al ingest de Sentry antes de darlo por hecho) y
-deployado a producción (DSN horneada en el bundle de `premia-ar.vercel.app`, confirmado con
-curl). Hay una alerta activa (`id 17399089`, proyecto `javascript-react-premia` en la org
-`control-evo`) que avisa por email ante cualquier error nuevo o una regresión — apunta al
-equipo `notificaciones-premia`, con reenvío automático a miembros activos si el equipo no
-tiene notificaciones configuradas.
+**Error tracking: activo desde el 9/8/2026, con una regresión real encontrada y corregida el
+14/8/2026.** Sentry conectado (`src/lib/sentry.ts`, null-safe igual criterio que Supabase —
+PAT-001), probado en vivo originalmente. El 14/8 se detectó que `Sentry.init()` fallaba en
+silencio en producción con "Invalid Sentry Dsn" — la env var `VITE_SENTRY_DSN` en Vercel tenía
+un BOM invisible pegado adelante, probablemente de cuando se cargó desde Windows. Mientras tanto
+(desde que se rompió hasta el fix) no se capturó ningún error real. Corregido con `.trim()` al
+leer la env var (defensivo, no depende de limpiar el valor guardado en Vercel) y redeployado —
+confirmar con un error real que vuelva a llegar al ingest antes de darlo por resuelto de nuevo.
+Hay una alerta activa (`id 17399089`, proyecto `javascript-react-premia` en la org `control-evo`)
+que avisa por email ante cualquier error nuevo o una regresión — apunta al equipo
+`notificaciones-premia`, con reenvío automático a miembros activos si el equipo no tiene
+notificaciones configuradas.
 
 **Uptime (caída total del sitio): sí, activo desde el 9/8/2026.** UptimeRobot (cuenta propia
 de Premia.ar, `premia.latam@gmail.com` — separada de la cuenta general que usa Tobias para
