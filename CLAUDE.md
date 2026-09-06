@@ -24,6 +24,11 @@ Este archivo es solo el "estado actual" — no repite lo que ya está en esos do
   login interactivo (no lo puede correr un agente).
 - **`main` sin branch protection** — el CI (`.github/workflows/ci.yml`) ya corre en cada
   PR, pero no es obligatorio todavía para poder mergear.
+- **Lote de 73 negocios de muestra cargado en Supabase** (`es_muestra = true`, cuenta
+  `dueno.muestras-premia.demo@gmail.com`) — escaparate privado de venta. Cartas/recompensas
+  son **genéricas por rubro**, hay que cargar el menú real de cada negocio antes de
+  pitchearlo, y nunca pasar `es_muestra` a `false` en lote. Todo en
+  [docs/MUESTRAS-LOTE.md](docs/MUESTRAS-LOTE.md).
 
 ## Convención de trabajo entre sesiones/PCs
 
