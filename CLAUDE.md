@@ -9,6 +9,15 @@ Leer antes de tocar código: [README.md](README.md) (qué es, stack, estructura)
 
 Este archivo es solo el "estado actual" — no repite lo que ya está en esos docs.
 
+## Roadmap de experiencia (activo desde 6/9/2026)
+
+Diagnóstico de producto y plan de reconstrucción de la experiencia del cliente:
+[docs/DIAGNOSTICO-PRODUCTO.md](docs/DIAGNOSTICO-PRODUCTO.md) (el porqué — F1-F8, experience
+map, el "momento hábito") y [docs/ROADMAP-PRODUCTO.md](docs/ROADMAP-PRODUCTO.md) (fases,
+qué decide Tobías, checklist de avance). Antes de trabajar en Home/marketplace, mostrador,
+gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en la rama
+`snapshot/pre-roadmap-2026-09-06` / tag `snapshot-pre-roadmap-2026-09-06` (commit `40c0d70`).
+
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
 - **Confirmar en el SQL Editor de Supabase si `0022_fix_confirmar_canje_pin.sql` y

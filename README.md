@@ -56,6 +56,8 @@ scripts/               # Scripts de siembra de datos reales en Supabase (uno por
 ## Documentación
 
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) — cómo está armada la app: modos, pantallas, mock vs Supabase, marketplace vs negocio único.
+- [docs/DIAGNOSTICO-PRODUCTO.md](docs/DIAGNOSTICO-PRODUCTO.md) — diagnóstico de experiencia (F1-F8, experience map, el "momento hábito").
+- [docs/ROADMAP-PRODUCTO.md](docs/ROADMAP-PRODUCTO.md) — plan de reconstrucción de la experiencia del cliente por fases.
 - [docs/DISENO.md](docs/DISENO.md) — sistema de diseño: paleta, tipografía, convenciones de componentes.
 - [docs/DEPLOY.md](docs/DEPLOY.md) — cómo se despliega a producción (Vercel) y desde qué PC.
 - [docs/SUPABASE.md](docs/SUPABASE.md) — estado real del proyecto de Supabase, separación demo/real, y cómo conectar el CLI.
