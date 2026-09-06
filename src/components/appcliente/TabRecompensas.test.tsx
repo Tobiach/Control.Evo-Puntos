@@ -26,7 +26,7 @@ describe('TabRecompensas', () => {
     // Con 1300 pts el cliente alcanza todas: la primera de la lista es "Cocktail de bienvenida" (150).
     render(<TabRecompensas data={gastro} cliente={cliente(1300)} onCanjear={onCanjear} />);
 
-    const botones = screen.getAllByRole('button', { name: 'Canjear' });
+    const botones = screen.getAllByRole('button', { name: 'CANJEAR AHORA' });
     fireEvent.click(botones[0]);
 
     expect(onCanjear).toHaveBeenCalledTimes(1);
@@ -43,7 +43,7 @@ describe('TabRecompensas', () => {
     const onCanjear = vi.fn().mockResolvedValue({ ok: false, error: 'No tenés puntos suficientes para este premio.' });
     render(<TabRecompensas data={gastro} cliente={cliente(1300)} onCanjear={onCanjear} />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Canjear' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'CANJEAR AHORA' })[0]);
 
     await waitFor(() =>
       expect(screen.getByText('No tenés puntos suficientes para este premio.')).toBeInTheDocument(),
@@ -56,7 +56,7 @@ describe('TabRecompensas', () => {
     // Con 100 pts no llega a ninguna recompensa (la más barata es 150).
     render(<TabRecompensas data={gastro} cliente={cliente(100)} onCanjear={onCanjear} />);
 
-    expect(screen.queryByRole('button', { name: 'Canjear' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'CANJEAR AHORA' })).toBeNull();
     expect(screen.getAllByText(/Te faltan/).length).toBeGreaterThan(0);
   });
 

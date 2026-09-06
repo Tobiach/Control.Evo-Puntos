@@ -16,7 +16,9 @@ export const DIAS_VENCIMIENTO = 60;
 
 export const soloDigitos = (valor: string) => valor.replace(/\D/g, '');
 
-export function nivelDe(niveles: Nivel[], puntos: number): Nivel {
+/** Genérico en el nombre del nivel: sirve tanto para `Nivel` (por negocio) como para
+ *  `NIVELES_XP_GLOBAL` (nombres propios, ej. "Explorador ⭐", fuera de `NombreNivel`). */
+export function nivelDe<T extends { nombre: string; min: number }>(niveles: T[], puntos: number): T {
   let actual = niveles[0];
   for (const nivel of niveles) {
     if (puntos >= nivel.min) actual = nivel;
@@ -38,7 +40,7 @@ export function nivelesDeNegocio(vipDesdePuntos: number | null | undefined, nive
   ];
 }
 
-export function progresoNivel(niveles: Nivel[], puntos: number) {
+export function progresoNivel<T extends { nombre: string; min: number }>(niveles: T[], puntos: number) {
   const actual = nivelDe(niveles, puntos);
   const siguiente = niveles.find((nivel) => nivel.min > puntos) ?? null;
   const pct = siguiente
@@ -49,6 +51,24 @@ export function progresoNivel(niveles: Nivel[], puntos: number) {
 
 export function proximaRecompensa(recompensas: Recompensa[], puntos: number): Recompensa | null {
   return recompensas.find((recompensa) => recompensa.pts > puntos) ?? null;
+}
+
+/** La recompensa más cara que el cliente ya puede pagar, o null si ninguna está a su alcance. */
+export function mejorRecompensaDisponible(recompensas: Recompensa[], puntos: number): Recompensa | null {
+  const alcanzables = recompensas.filter((recompensa) => recompensa.pts <= puntos);
+  if (alcanzables.length === 0) return null;
+  return alcanzables.reduce((mejor, actual) => (actual.pts > mejor.pts ? actual : mejor));
+}
+
+/**
+ * Color semántico de una barra de progreso hacia una recompensa — misma regla en todas
+ * las pantallas donde aparece (mapa, Mis Premios): 100% lista = premio (coral), ≥80% casi
+ * = acento (dorado), el resto = verde (acumulando).
+ */
+export function colorBarraProgreso(pct: number): string {
+  if (pct >= 100) return 'bg-premio';
+  if (pct >= 80) return 'bg-acento';
+  return 'bg-verde-ok';
 }
 
 export interface RecompensaCercana {
@@ -84,6 +104,99 @@ export const formatMonto = (data: RubroData, monto: number) =>
   `${data.monedaPrefijo} ${monto.toLocaleString(data.locale)}`;
 
 export const formatPuntos = (puntos: number) => puntos.toLocaleString('es-AR');
+
+// ── Nivel global cross-negocio (FEATURE NUEVA — no existía en ARQUITECTURA.md antes de
+// este pedido) ─────────────────────────────────────────────────────
+// Distinto de `nivelDe`/`nivelesDeNegocio` de arriba, que son el nivel POR negocio (los
+// puntos que el cliente tiene en ESE local puntual). Este suma los puntos de TODAS las
+// relaciones del cliente en el marketplace en un solo "XP" — un sistema adicional, no un
+// reemplazo. Los niveles por negocio siguen intactos.
+/** Nivel del sistema de XP global — nombres propios, no restringidos a `NombreNivel`. */
+export interface NivelXp {
+  nombre: string;
+  min: number;
+}
+
+export const NIVELES_XP_GLOBAL: NivelXp[] = [
+  { nombre: 'Nuevo', min: 0 },
+  { nombre: 'Explorador ⭐', min: 200 },
+  { nombre: 'Habitué 🔥', min: 1000 },
+  { nombre: 'Habitué Plus ⚡', min: 3000 },
+  { nombre: 'VIP del Barrio 👑', min: 8000 },
+];
+
+export function calcularXpTotal(relaciones: Record<string, RelacionNegocio>): number {
+  return Object.values(relaciones).reduce((suma, relacion) => suma + relacion.puntos, 0);
+}
+
+// ── Perfil: "Tu recorrido" y badges (todo derivado de datos reales, sin thresholds
+// inventados) ─────────────────────────────────────────────────────
+
+/** Suma de visitas (compras) reales en todos los negocios donde el cliente tiene relación. */
+export function contarVisitasTotales(relaciones: Record<string, RelacionNegocio>): number {
+  return Object.values(relaciones).reduce((suma, relacion) => suma + relacion.historial.length, 0);
+}
+
+/** Negocios donde el cliente ya tiene relación y son de `rubro` (primario o secundario). */
+export function contarNegociosPorRubro(
+  negocios: Negocio[],
+  relaciones: Record<string, RelacionNegocio>,
+  rubro: Negocio['rubro'],
+): number {
+  return negocios.filter(
+    (negocio) =>
+      relaciones[negocio.id] && (negocio.rubro === rubro || negocio.rubrosSecundarios?.includes(rubro)),
+  ).length;
+}
+
+/** El negocio "ancla" del cliente: donde más puntos tiene. Null si no tiene relación en ninguno. */
+export function negocioAncla(negocios: Negocio[], relaciones: Record<string, RelacionNegocio>): Negocio | null {
+  const conRelacion = negocios.filter((negocio) => relaciones[negocio.id]);
+  if (conRelacion.length === 0) return null;
+  return conRelacion.reduce((mejor, actual) =>
+    relaciones[actual.id].puntos > relaciones[mejor.id].puntos ? actual : mejor,
+  );
+}
+
+// ── Actividad de UN negocio: timeline fusionada (visitas reales + canjes confirmados
+// reales) ──────────────────────────────────────────────────────────
+// Sin bonus por racha ni ningún otro evento inventado: la racha hoy es solo un contador
+// visual, no acredita puntos de verdad (ver Ola 3).
+
+export type EventoTimeline =
+  | { tipo: 'visita'; fechaOrden: number; visita: Visita }
+  | { tipo: 'canje'; fechaOrden: number; descripcion: string; pts: number };
+
+/** Cualquier fuente de canjes confirmados que tenga esta forma (evita depender del tipo
+ *  nominal `CanjeConfirmado` de panelCliente.ts, que a su vez importa de este módulo). */
+export interface CanjeParaTimeline {
+  descripcion: string;
+  pts: number;
+  confirmadoAt: string;
+}
+
+/** Fusiona visitas + canjes confirmados de UN negocio en una sola timeline, más reciente
+ *  primero. `ahora` inyectado para que sea testeable sin depender del reloj real. */
+export function fusionarTimeline(
+  historial: Visita[],
+  canjes: CanjeParaTimeline[],
+  ahora: number,
+): EventoTimeline[] {
+  const deVisitas: EventoTimeline[] = historial.map((visita) => ({
+    tipo: 'visita',
+    fechaOrden: ahora - visita.diasAtras * MS_DIA,
+    visita,
+  }));
+  const deCanjes: EventoTimeline[] = canjes
+    .filter((canje) => canje.confirmadoAt)
+    .map((canje) => ({
+      tipo: 'canje',
+      fechaOrden: new Date(canje.confirmadoAt).getTime(),
+      descripcion: canje.descripcion,
+      pts: canje.pts,
+    }));
+  return [...deVisitas, ...deCanjes].sort((a, b) => b.fechaOrden - a.fechaOrden);
+}
 
 // ── Canje verificable (código de mostrador, migración 0021) ──────
 
@@ -173,6 +286,13 @@ export function fechaDeVisita(diasAtras: number, locale: string): string {
     day: '2-digit',
     month: 'short',
   });
+}
+
+/** Fecha corta 'DD/MM/AAAA' a partir de un ISO — string vacío si no es una fecha válida. */
+export function formatFechaCorta(iso: string): string {
+  const fecha = new Date(iso);
+  if (Number.isNaN(fecha.getTime())) return '';
+  return fecha.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 export interface VisitaCruzada {

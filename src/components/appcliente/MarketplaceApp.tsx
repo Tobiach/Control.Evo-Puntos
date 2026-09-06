@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
@@ -16,14 +16,14 @@ import {
   type Negocio,
   type RelacionNegocio,
 } from '../../data/negocios';
-import { nivelesDeNegocio, type ResultadoCanje } from '../../lib/club';
+import { calcularXpTotal, nivelesDeNegocio, type ResultadoCanje } from '../../lib/club';
 import { usePermisoNotificaciones } from '../../lib/notificaciones';
 import { supabase, supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
 import {
   cargarAppCliente,
   iniciarCanje,
-  regalarPuntosReal,
+  type CanjeConfirmado,
   type ClienteApp,
 } from '../../lib/panelCliente';
 import { procesarReferidoPendiente } from '../../lib/referidos';
@@ -52,6 +52,9 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
   ...DATA_RUBROS[negocio.rubro],
   nombreNegocio: negocio.nombre,
   emoji: negocio.emoji,
+  categoria: negocio.categoria,
+  portadaUrl: negocio.portadaUrl,
+  horarioApertura: negocio.horarioApertura,
   monedaPrefijo: '$',
   locale: 'es-AR',
   montoPorPunto: 100,
@@ -83,6 +86,7 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
     ...RELACIONES_INICIALES,
   }));
   const [clienteReal, setClienteReal] = useState<ClienteApp | null>(null);
+  const [canjesConfirmados, setCanjesConfirmados] = useState<CanjeConfirmado[]>([]);
   // Última tirada de la ruleta semanal por negocio (mismo patrón in-memory que `relaciones`).
   const [tiradasRuleta, setTiradasRuleta] = useState<Record<string, number>>({});
   const [cargando, setCargando] = useState(usarReal);
@@ -108,6 +112,7 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         setNegocios([...reales, ...NEGOCIOS]);
         setRelaciones({ ...RELACIONES_INICIALES, ...res.valor.relaciones });
         setClienteReal(res.valor.cliente);
+        setCanjesConfirmados(res.valor.canjesConfirmados);
         // Ya hay sesión + cliente vinculado: registramos el referido pendiente (si vino de un
         // link de invitación). Idempotente y server-side; no bloquea la carga de la app.
         void procesarReferidoPendiente();
@@ -169,6 +174,9 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
 
   const negocio = negocios.find((n) => n.id === negocioId) ?? null;
   const relacion = negocio ? relaciones[negocio.id] : undefined;
+  // Nivel XP global (cross-negocio): mismo cálculo que Perfil marketplace, se muestra también
+  // dentro de cada local (CardNivelXp), no es un sistema separado por negocio.
+  const xpTotal = useMemo(() => calcularXpTotal(relaciones), [relaciones]);
 
   // Dentro de un negocio manda el tema de ESE negocio; en el marketplace, el del rubro base.
   useLayoutEffect(() => {
@@ -224,31 +232,6 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
     return resultado;
   };
 
-  // Real: pega contra `regalar_puntos` (server, acotado al mismo negocio). En modo demo
-  // (sin backend) sigue siendo local, para no romper el recorrido de venta.
-  const regalarPuntos = async (telefonoDestino: string, cantidad: number) => {
-    if (!negocio) return { ok: false, error: 'Elegí un negocio primero.' };
-    if (!usarReal) {
-      setRelaciones((previas) => {
-        const actual = previas[negocio.id];
-        if (!actual) return previas;
-        return {
-          ...previas,
-          [negocio.id]: { ...actual, puntos: Math.max(0, actual.puntos - cantidad) },
-        };
-      });
-      return { ok: true };
-    }
-    const resultado = await regalarPuntosReal(negocio.id, telefonoDestino, cantidad);
-    if (!resultado.ok) return { ok: false, error: resultado.error };
-    setRelaciones((previas) => {
-      const actual = previas[negocio.id];
-      if (!actual) return previas;
-      return { ...previas, [negocio.id]: { ...actual, puntos: resultado.valor.puntosRestantes } };
-    });
-    return { ok: true };
-  };
-
   const girarRuleta = () => {
     if (!negocio) return;
     setTiradasRuleta((previas) => ({ ...previas, [negocio.id]: Date.now() }));
@@ -282,12 +265,13 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         negocioId={negocio.id}
         cliente={clienteNegocio}
         clientes={clientesNegocio}
+        canjesConfirmados={canjesConfirmados}
+        xpTotal={xpTotal}
         permisoNotif={permisoNotif}
         onPedirPermisoNotif={pedirPermisoNotif}
         ultimaRuletaTs={tiradasRuleta[negocio.id]}
         onGirarRuleta={girarRuleta}
         onCanjear={canjear}
-        onRegalar={regalarPuntos}
         onSalir={volverAlMarketplace}
         onVolverMarketplace={volverAlMarketplace}
       />
@@ -307,6 +291,7 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
           <MarketplaceShell
             negocios={negocios}
             relaciones={relaciones}
+            canjesConfirmados={canjesConfirmados}
             nombreCliente={clienteEfectivo.nombre}
             cliente={clienteEfectivo}
             esNuevo={usarReal && !Object.keys(relaciones).some((id) => !idsEjemplo.has(id))}

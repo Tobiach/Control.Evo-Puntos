@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Gift, Lock, Sparkles } from 'lucide-react';
 import { formatPuntos } from '../../lib/club';
 import { lanzarConfetti } from '../../lib/confetti';
+import { sonidoChasquido } from '../../lib/sonidos';
 
 interface Props {
   /** El cliente ya juntó los puntos suficientes para una nueva sorpresa. */
@@ -35,6 +36,7 @@ export default function RecompensaSorpresa({ disponible, faltan, onUsar }: Props
     if (!disponible || revelado) return;
     setRevelado(true);
     onUsar();
+    sonidoChasquido();
     const caja = evento.currentTarget.getBoundingClientRect();
     lanzarConfetti({
       x: (caja.left + caja.width / 2) / window.innerWidth,

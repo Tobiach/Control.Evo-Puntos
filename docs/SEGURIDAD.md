@@ -79,7 +79,7 @@ Ver `controlevo-os/playbooks/technical/uptime-monitoring.md` — actualizado con
     acreditar; el monto y los puntos se calculan server-side (`floor(monto / monto_por_punto)`).
   - `canjear_recompensa` — chequea `puntos_actuales >= pts_requeridos` antes de descontar.
   - `registrar_referido` / `revisar_premio_referido` — el premio se acredita solo si
-    `COUNT(*)` de visitas REALES del referido en `visitas` llega a 4, contado en el momento
+    `COUNT(*)` de visitas REALES del referido en `visitas` llega a 1 (0022, antes 4), contado en el momento
     de la llamada, nunca confiado del cliente.
   - `crear_desafio` / `revisar_desafios` — mismo patrón: cuenta visitas reales dentro de la
     ventana del desafío antes de premiar.
@@ -106,21 +106,27 @@ exista), pero sí para poder cumplirlo de verdad si alguien cancela antes de con
 
 ## 5.1 Rate limiting en endpoints de puntos/canjes/referidos
 
-**Resuelto (2026-08-25, migración `0023_rate_limiting_rpcs.sql`).** Las 8 RPC sensibles
-(`verificar_pin_cajero`, `cobrar_con_pin`, `confirmar_canje`, `iniciar_canje`,
-`registrar_referido`, `revisar_premio_referido`, `crear_desafio`, `revisar_desafios`) ahora
-cortan si se pasa un máximo de intentos en una ventana de tiempo, vía una tabla de eventos +
-función helper (`verificar_rate_limit`) — límites generosos (pensados para tolerar el uso real
-a mano, no para un script en loop). La clave del límite es `negocio_id` para las funciones sin
-sesión (PIN de mostrador, anon) y `auth.uid()` para las autenticadas. `canjear_recompensa`
-(0004/0017, ya sin ningún uso real desde que existe `iniciar_canje`/`confirmar_canje`, 0021)
-se cerró en vez de agregarle rate limiting a código muerto. **Pendiente de aplicar en
-producción vía SQL Editor de Supabase** — escrito, no corrido todavía (ver `docs/DEPLOY.md`).
+**Resuelto (14/9/2026), verificado con una consulta real a `pg_proc` en producción — no
+supuesto.** Las 8 RPC sensibles (`verificar_pin_cajero`, `cobrar_con_pin`, `confirmar_canje`,
+`iniciar_canje`, `registrar_referido`, `revisar_premio_referido`, `crear_desafio`,
+`revisar_desafios`) cortan si se pasa un máximo de intentos en una ventana de tiempo, vía una
+tabla de eventos (`rate_limit_eventos`) + función helper (`verificar_rate_limit`) — límites
+generosos (pensados para tolerar el uso real a mano, no un script en loop). La clave del límite
+es `negocio_id` para las funciones sin sesión (PIN de mostrador, anon) y `auth.uid()` para las
+autenticadas. `canjear_recompensa` (0004/0017, sin uso real desde que existe
+`iniciar_canje`/`confirmar_canje`) quedó con el `EXECUTE` revocado a `authenticated` en vez de
+agregarle rate limiting a código muerto.
 
-De paso se encontró y corrigió (migración `0022_fix_confirmar_canje_pin.sql`) un bug real:
-`confirmar_canje` (0021) validaba el PIN contra `negocios.pin_cajero`, columna que ya no
-existe desde el fix de 0005 (se movió a `negocio_pin`). Toda llamada tiraba error — el cajero
-no podía confirmar ningún canje verificable hasta este fix. También pendiente de aplicar.
+De paso se corrigió `confirmar_canje`, que estaba rota desde que se creó: validaba el PIN
+contra `negocios.pin_cajero`, columna que ya no existe desde el fix de 0005 (se movió a
+`negocio_pin`) — toda llamada tiraba error, el cajero no podía confirmar ningún canje
+verificable hasta este fix.
+
+Migración aplicada: `supabase/migrations/0024_consolidado_rate_limiting.sql` — las fuentes
+originales (`0022_fix_confirmar_canje_pin.sql` y `0023_rate_limiting_rpcs.sql`) se aplicaron en
+pedazos mezclados entre dos sesiones trabajando sobre el mismo Supabase sin coordinarse; 0024
+es el bloque de recuperación que dejó las 8 funciones en el estado final correcto en una sola
+pasada, ya verificado.
 
 ## 5.2 Otras preguntas de infraestructura que NO se pueden verificar desde el código
 

@@ -1,6 +1,14 @@
 import { motion } from 'motion/react';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
-import { formatPuntos } from '../../lib/club';
+import {
+  calcularXpTotal,
+  colorBarraProgreso,
+  formatPuntos,
+  mejorRecompensaDisponible,
+  proximaRecompensa,
+} from '../../lib/club';
+import CardNivelXp from './CardNivelXp';
+import FilaMetricas from './FilaMetricas';
 
 interface Props {
   negocios: Negocio[];
@@ -8,80 +16,186 @@ interface Props {
   onAbrirNegocio: (negocio: Negocio) => void;
 }
 
-/** Recompensa alcanzable más cercana en ESTE negocio (para la barra de progreso de la card). */
-function proximaRecompensaLocal(negocio: Negocio, puntos: number) {
-  return negocio.recompensas
-    .filter((recompensa) => recompensa.pts > puntos)
-    .sort((a, b) => a.pts - b.pts)[0];
+type EstadoTarjeta = 'canjeable' | 'casi' | 'acumulando' | 'nuevo';
+
+/** Tiene al menos una recompensa ya alcanzable en este negocio (pts >= meta). */
+const tieneRecompensaDisponible = (negocio: Negocio, puntos: number) =>
+  negocio.recompensas.some((recompensa) => recompensa.pts <= puntos);
+
+function estadoDe(negocio: Negocio, relacion: RelacionNegocio | undefined): EstadoTarjeta {
+  if (!relacion) return 'nuevo';
+  if (negocio.recompensas.length === 0) return 'acumulando';
+  const puntos = relacion.puntos;
+  if (tieneRecompensaDisponible(negocio, puntos)) return 'canjeable';
+  const proxima = proximaRecompensa(negocio.recompensas, puntos);
+  const pct = proxima ? (puntos / proxima.pts) * 100 : 100;
+  return pct >= 80 ? 'casi' : 'acumulando';
 }
 
+/** Orden de urgencia: canjeable → casi → acumulando → nuevo (mismo criterio que la imagen de
+ *  referencia del Estudio de Diseño). */
+const PRIORIDAD: Record<EstadoTarjeta, number> = { canjeable: 0, casi: 1, acumulando: 2, nuevo: 3 };
+
 /**
- * Reemplazo real de "Favoritos": no hay corazón para marcar arbitrariamente, es la lista de
- * negocios donde el cliente YA tiene una relación (puntos/historial real), sea del marketplace
- * de ejemplo o de Supabase. Reforzado con progreso real a la próxima recompensa de cada local.
+ * Reemplazo real de "Favoritos": mezcla los negocios donde el cliente YA tiene puntos (del
+ * marketplace de ejemplo o de Supabase) con los que todavía no visitó — 4 estados con su
+ * propio color y CTA, ordenados por urgencia real, no por orden de alta.
  */
 export default function TabMisLocales({ negocios, relaciones, onAbrirNegocio }: Props) {
-  const misLocales = negocios.filter((negocio) => relaciones[negocio.id]);
+  const conRelacion = negocios.filter((negocio) => relaciones[negocio.id]);
+  const listos = conRelacion.filter((negocio) => tieneRecompensaDisponible(negocio, relaciones[negocio.id].puntos)).length;
+  const enCurso = conRelacion.length - listos;
+  const xpTotal = calcularXpTotal(relaciones);
+
+  const tarjetas = [...negocios].sort(
+    (a, b) => PRIORIDAD[estadoDe(a, relaciones[a.id])] - PRIORIDAD[estadoDe(b, relaciones[b.id])],
+  );
 
   return (
     <div className="flex flex-col gap-4 px-5 pt-6 pb-10">
       <div>
         <h1 className="text-2xl font-bold text-verde-ok">Mis premios</h1>
-        <p className="mt-0.5 text-xs text-texto-muted">Tu progreso en cada local donde ya sumás</p>
+        <p className="mt-0.5 text-xs text-texto-muted">
+          {conRelacion.length} {conRelacion.length === 1 ? 'comercio' : 'comercios'}
+          {listos > 0 && ` · ${listos} ${listos === 1 ? 'listo' : 'listos'} para canjear`}
+        </p>
       </div>
 
-      {misLocales.length === 0 ? (
+      <CardNivelXp xpTotal={xpTotal} />
+
+      {conRelacion.length > 0 && (
+        <FilaMetricas
+          metricas={[
+            { valor: listos, label: 'Listo', color: 'text-premio' },
+            { valor: enCurso, label: 'En curso', color: 'text-texto' },
+            { valor: xpTotal, label: 'XP total', color: 'text-acento' },
+          ]}
+        />
+      )}
+
+      {tarjetas.length === 0 ? (
         <p className="rounded-2xl border border-borde bg-card px-4 py-6 text-center text-sm text-texto-muted">
-          Todavía no sumaste en ningún local. Entrá a uno desde &ldquo;Inicio&rdquo; para empezar.
+          Todavía no hay locales para mostrar.
         </p>
       ) : (
-        <div className="flex flex-col gap-2.5">
-          {misLocales.map((negocio) => {
-            const puntos = relaciones[negocio.id].puntos;
-            const recompensa = proximaRecompensaLocal(negocio, puntos);
-            return (
-              <button
-                key={negocio.id}
-                type="button"
-                onClick={() => onAbrirNegocio(negocio)}
-                className="flex flex-col gap-2.5 rounded-2xl border border-borde bg-card px-4 py-3.5 text-left"
-              >
-                <span className="flex items-center gap-3">
-                  <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-xl ${
-                      negocio.logoUrl ? 'bg-white' : 'bg-premio-suave'
-                    }`}
-                  >
-                    {negocio.logoUrl ? (
-                      <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-1" />
-                    ) : (
-                      negocio.emoji
+        <div>
+          <p className="mb-2.5 text-sm font-bold text-texto">Tus tarjetas</p>
+          <div className="flex flex-col gap-2.5">
+            {tarjetas.map((negocio) => {
+              const relacion = relaciones[negocio.id];
+              const puntos = relacion?.puntos ?? 0;
+              const sinRecompensas = negocio.recompensas.length === 0;
+              const proxima = sinRecompensas ? null : proximaRecompensa(negocio.recompensas, puntos);
+              const pct = sinRecompensas ? 0 : proxima ? Math.min(100, Math.round((puntos / proxima.pts) * 100)) : 100;
+              const estado = estadoDe(negocio, relacion);
+              // La recompensa que se destaca en el header de la card: la mejor ya alcanzable
+              // (canjeable), la más barata como aspiracional (nuevo) o la próxima (el resto).
+              const recompensaDestacada = sinRecompensas
+                ? null
+                : estado === 'canjeable'
+                  ? mejorRecompensaDisponible(negocio.recompensas, puntos)
+                  : estado === 'nuevo'
+                    ? negocio.recompensas[0]
+                    : proxima;
+
+              const estiloCard =
+                estado === 'canjeable'
+                  ? 'border-premio bg-premio-suave/40 shadow-[0_4px_16px_rgba(242,138,99,0.18)]'
+                  : estado === 'nuevo'
+                    ? 'border-dashed border-borde-fuerte bg-fondo-medio'
+                    : 'border-borde bg-card';
+              const colorTexto =
+                estado === 'canjeable'
+                  ? 'text-premio'
+                  : estado === 'casi'
+                    ? 'text-acento'
+                    : estado === 'acumulando'
+                      ? 'text-verde-ok'
+                      : 'text-texto-disabled';
+
+              return (
+                <button
+                  key={negocio.id}
+                  type="button"
+                  onClick={() => onAbrirNegocio(negocio)}
+                  className={`flex flex-col gap-2.5 rounded-2xl border px-4 py-3.5 text-left ${estiloCard}`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-xl ${
+                        negocio.logoUrl ? 'bg-white' : 'bg-premio-suave'
+                      }`}
+                    >
+                      {negocio.logoUrl ? (
+                        <img src={negocio.logoUrl} alt="" className="h-full w-full object-contain p-1" />
+                      ) : (
+                        negocio.emoji
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-bold tracking-wide text-texto-muted uppercase">
+                        {negocio.nombre}
+                      </span>
+                      <span className="line-clamp-2 block text-[13px] leading-snug font-bold text-texto">
+                        {recompensaDestacada?.descripcion ?? negocio.categoria}
+                      </span>
+                    </span>
+                    {recompensaDestacada && (
+                      <span className="shrink-0 text-right">
+                        <span className={`font-titulo block text-xl leading-none font-extrabold ${colorTexto}`}>
+                          {formatPuntos(puntos)}
+                        </span>
+                        <span className="block text-[9px] font-semibold text-texto-muted">
+                          {estado === 'canjeable' ? 'pts' : `/ ${formatPuntos(recompensaDestacada.pts)} pts`}
+                        </span>
+                      </span>
                     )}
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-texto">{negocio.nombre}</span>
-                    <span className="block text-xs font-bold text-premio">{formatPuntos(puntos)} pts</span>
-                  </span>
-                </span>
 
-                {recompensa && (
-                  <span className="block">
-                    <span className="flex items-center justify-between text-[11px] font-semibold text-texto-muted">
-                      <span>Te faltan {formatPuntos(recompensa.pts - puntos)} pts para {recompensa.descripcion}</span>
+                  {!sinRecompensas && estado !== 'nuevo' && (
+                    <>
+                      {estado === 'canjeable' && (
+                        <span className={`text-[11px] font-semibold ${colorTexto}`}>✓ Meta alcanzada</span>
+                      )}
+                      <span className="block h-1.5 overflow-hidden rounded-full bg-borde">
+                        <motion.span
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ duration: 0.6, ease: 'easeOut' }}
+                          className={`block h-full rounded-full ${colorBarraProgreso(pct)}`}
+                        />
+                      </span>
+                    </>
+                  )}
+
+                  <span className="flex items-center justify-between border-t border-borde/60 pt-2">
+                    <span className={`text-[11px] font-bold ${colorTexto}`}>
+                      {estado === 'canjeable'
+                        ? 'Premio disponible ahora'
+                        : estado === 'casi'
+                          ? 'Casi llegás'
+                          : estado === 'acumulando'
+                            ? 'Seguí visitando'
+                            : 'Nuevo negocio'}
                     </span>
-                    <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-borde">
-                      <motion.span
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, (puntos / recompensa.pts) * 100)}%` }}
-                        transition={{ duration: 0.6, ease: 'easeOut' }}
-                        className="block h-full rounded-full bg-acento"
-                      />
-                    </span>
+                    {estado === 'canjeable' ? (
+                      <span className="rounded-full bg-premio px-3 py-1 text-[10px] font-bold text-white">
+                        Ver PIN →
+                      </span>
+                    ) : estado === 'nuevo' ? (
+                      <span className="rounded-full bg-card px-2.5 py-1 text-[10px] font-bold text-texto-muted">
+                        Explorar →
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-fondo-medio px-2.5 py-1 text-[10px] font-bold text-texto-muted">
+                        {formatPuntos((proxima?.pts ?? 0) - puntos)} pts más
+                      </span>
+                    )}
                   </span>
-                )}
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

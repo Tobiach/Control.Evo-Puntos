@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { DATA_RUBROS, type Visita } from '../data/mockClientes';
-import { RELACIONES_INICIALES } from '../data/negocios';
+import { NEGOCIOS, RELACIONES_INICIALES } from '../data/negocios';
 import {
   buscarClientes,
   calcularPuntos,
+  calcularXpTotal,
   categoriaFavorita,
+  colorBarraProgreso,
+  contarNegociosPorRubro,
+  contarVisitasTotales,
   formatCuentaRegresiva,
+  formatFechaCorta,
+  fusionarTimeline,
+  mejorRecompensaDisponible,
+  negocioAncla,
+  NIVELES_XP_GLOBAL,
   nivelDe,
   nivelesDeNegocio,
   progresoNivel,
@@ -62,6 +71,136 @@ describe('progresoNivel', () => {
 
   it('nunca supera 100%', () => {
     expect(progresoNivel(NIVELES, 249).pct).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('mejorRecompensaDisponible', () => {
+  const recompensas = gastro.recompensas; // 150, 200, 300, 450, 500, 800, 1200
+
+  it('devuelve la más cara entre las alcanzables', () => {
+    expect(mejorRecompensaDisponible(recompensas, 350)?.descripcion).toBe('Postre de la casa');
+  });
+
+  it('null si no alcanza ninguna', () => {
+    expect(mejorRecompensaDisponible(recompensas, 100)).toBeNull();
+  });
+
+  it('la más cara de todas si superó el tope', () => {
+    expect(mejorRecompensaDisponible(recompensas, 5000)?.descripcion).toBe('Cena para dos (30% off)');
+  });
+});
+
+describe('colorBarraProgreso', () => {
+  it('coral (premio) al 100%', () => {
+    expect(colorBarraProgreso(100)).toBe('bg-premio');
+  });
+
+  it('dorado (acento) desde 80% y hasta antes de 100%', () => {
+    expect(colorBarraProgreso(80)).toBe('bg-acento');
+    expect(colorBarraProgreso(99)).toBe('bg-acento');
+  });
+
+  it('verde por debajo de 80%', () => {
+    expect(colorBarraProgreso(0)).toBe('bg-verde-ok');
+    expect(colorBarraProgreso(79)).toBe('bg-verde-ok');
+  });
+});
+
+describe('calcularXpTotal', () => {
+  it('suma los puntos de todas las relaciones del cliente', () => {
+    const relaciones = {
+      'cafe-nardo': { puntos: 300, ultimaVisitaDias: 1, historial: [] },
+      'bar-aguirre': { puntos: 150, ultimaVisitaDias: 5, historial: [] },
+    };
+    expect(calcularXpTotal(relaciones)).toBe(450);
+  });
+
+  it('0 sin relaciones', () => {
+    expect(calcularXpTotal({})).toBe(0);
+  });
+});
+
+describe('NIVELES_XP_GLOBAL (nivel global cross-negocio, feature nueva)', () => {
+  it('progresoNivel ubica el nivel correcto por umbral con nombres propios', () => {
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 0).actual.nombre).toBe('Nuevo');
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 625).actual.nombre).toBe('Explorador ⭐');
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 8000).actual.nombre).toBe('VIP del Barrio 👑');
+  });
+
+  it('nivel máximo no tiene siguiente y marca 100%', () => {
+    const r = progresoNivel(NIVELES_XP_GLOBAL, 9000);
+    expect(r.siguiente).toBeNull();
+    expect(r.pct).toBe(100);
+  });
+});
+
+describe('contarVisitasTotales', () => {
+  it('suma el historial de todas las relaciones', () => {
+    // RELACIONES_INICIALES: cafe-nardo(7) + cerveceria-soler(7) + almacen-guatemala(4) + rooftop-malabia(2)
+    expect(contarVisitasTotales(RELACIONES_INICIALES)).toBe(20);
+  });
+
+  it('0 sin relaciones', () => {
+    expect(contarVisitasTotales({})).toBe(0);
+  });
+});
+
+describe('contarNegociosPorRubro', () => {
+  it('cuenta negocios con relación de un rubro (primario o secundario)', () => {
+    expect(contarNegociosPorRubro(NEGOCIOS, RELACIONES_INICIALES, 'gastro')).toBe(3);
+    expect(contarNegociosPorRubro(NEGOCIOS, RELACIONES_INICIALES, 'super')).toBe(1);
+    // cafe-nardo tiene rubrosSecundarios: ['cafeteria'] y sí tiene relación.
+    expect(contarNegociosPorRubro(NEGOCIOS, RELACIONES_INICIALES, 'cafeteria')).toBe(1);
+  });
+
+  it('0 sin relaciones', () => {
+    expect(contarNegociosPorRubro(NEGOCIOS, {}, 'gastro')).toBe(0);
+  });
+});
+
+describe('negocioAncla', () => {
+  it('devuelve el negocio con más puntos entre los que tiene relación', () => {
+    expect(negocioAncla(NEGOCIOS, RELACIONES_INICIALES)?.id).toBe('cerveceria-soler');
+  });
+
+  it('null sin relaciones', () => {
+    expect(negocioAncla(NEGOCIOS, {})).toBeNull();
+  });
+});
+
+describe('formatFechaCorta', () => {
+  it('formatea DD/MM/AAAA', () => {
+    expect(formatFechaCorta('2026-08-01T12:00:00Z')).toBe('01/08/2026');
+  });
+
+  it('vacío con una fecha inválida', () => {
+    expect(formatFechaCorta('no-es-fecha')).toBe('');
+  });
+});
+
+describe('fusionarTimeline', () => {
+  const AHORA = new Date('2026-08-25T12:00:00Z').getTime();
+  const visita = (diasAtras: number, puntos: number): Visita => ({ diasAtras, monto: puntos * 100, puntos });
+
+  it('mezcla visitas y canjes ordenados por más reciente primero', () => {
+    const historial = [visita(5, 30), visita(1, 20)];
+    const canjes = [{ descripcion: 'Café gratis', pts: 120, confirmadoAt: '2026-08-24T12:00:00Z' }]; // hace 1 día
+    const timeline = fusionarTimeline(historial, canjes, AHORA);
+
+    expect(timeline.map((e) => e.tipo)).toEqual(['visita', 'canje', 'visita']);
+    // La visita de "hace 1 día" y el canje de "hace 1 día" empatan, pero la más vieja
+    // (5 días) siempre queda última.
+    expect(timeline[2].tipo).toBe('visita');
+    if (timeline[2].tipo === 'visita') expect(timeline[2].visita.puntos).toBe(30);
+  });
+
+  it('ignora canjes sin confirmadoAt (nunca debería pasar, pero no rompe)', () => {
+    const timeline = fusionarTimeline([], [{ descripcion: 'X', pts: 10, confirmadoAt: '' }], AHORA);
+    expect(timeline).toHaveLength(0);
+  });
+
+  it('vacío sin historial ni canjes', () => {
+    expect(fusionarTimeline([], [], AHORA)).toHaveLength(0);
   });
 });
 

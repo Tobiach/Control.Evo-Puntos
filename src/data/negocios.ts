@@ -45,6 +45,13 @@ export interface Negocio {
   eventos?: EventoNegocio[];
   /** Franja horaria valle con puntos x2, informada al cliente como beneficio. */
   horarioValle?: HorarioValle;
+  /**
+   * Horario real de apertura del local (ficticio pero plausible — no hay dato real de
+   * horarios de dueños todavía). Array porque un negocio puede tener franjas distintas
+   * (ej. mediodía y noche); soporta cruzar medianoche (`hasta` < `desde`, ver lib/horarios.ts).
+   * Sin este campo, la pantalla no muestra "Abierto"/"Cerrado" — nunca se inventa el dato.
+   */
+  horarioApertura?: HorarioValle[];
   /** Promos permanentes del local (2x1, delivery gratis, descuento, horario). */
   promos?: Promo[];
   /** Beneficios NO monetarios reservados al nivel más alto (VIP) de ESTE local. */
@@ -89,6 +96,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4254,
     clientesActivos: 168,
     fechaAlta: '2026-03-18',
+    horarioApertura: [{ desde: '08:00', hasta: '20:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 120, descripcion: 'Café de especialidad', categoria: 'Bebidas' },
       { pts: 260, descripcion: 'Tostado + café', categoria: 'Comida' },
@@ -120,6 +128,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4295,
     clientesActivos: 92,
     fechaAlta: '2026-05-06',
+    horarioApertura: [{ desde: '19:00', hasta: '02:00', dias: [2, 3, 4, 5, 6, 0] }],
     recompensas: [
       { pts: 180, descripcion: 'Trago clásico', categoria: 'Bebidas' },
       { pts: 350, descripcion: '2x1 en tragos de autor', categoria: 'Bebidas' },
@@ -143,6 +152,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4337,
     clientesActivos: 235,
     fechaAlta: '2026-03-27',
+    horarioApertura: [{ desde: '18:00', hasta: '01:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 150, descripcion: 'Pinta IPA de la casa', categoria: 'Bebidas' },
       { pts: 280, descripcion: 'Papas con cheddar', categoria: 'Comida' },
@@ -174,6 +184,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4315,
     clientesActivos: 121,
     fechaAlta: '2026-04-14',
+    horarioApertura: [{ desde: '18:00', hasta: '00:00', dias: [4, 5, 6, 0] }],
     recompensas: [
       { pts: 200, descripcion: 'Spritz al atardecer', categoria: 'Bebidas' },
       { pts: 400, descripcion: 'Entrada + brindis', categoria: 'Comida' },
@@ -194,6 +205,10 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4289,
     clientesActivos: 76,
     fechaAlta: '2026-06-02',
+    horarioApertura: [
+      { desde: '12:00', hasta: '16:00', dias: [2, 3, 4, 5, 6, 0] },
+      { desde: '20:00', hasta: '00:00', dias: [2, 3, 4, 5, 6, 0] },
+    ],
     recompensas: [
       { pts: 220, descripcion: 'Copa de vino de la casa', categoria: 'Bebidas' },
       { pts: 380, descripcion: 'Postre del día', categoria: 'Comida' },
@@ -211,6 +226,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4323,
     clientesActivos: 143,
     fechaAlta: '2026-04-30',
+    horarioApertura: [{ desde: '19:00', hasta: '00:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 160, descripcion: 'Fainá + bebida', categoria: 'Comida' },
       { pts: 320, descripcion: 'Muzzarella grande 30% off', categoria: 'Descuentos' },
@@ -234,6 +250,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4243,
     clientesActivos: 197,
     fechaAlta: '2026-03-21',
+    horarioApertura: [{ desde: '08:00', hasta: '21:00', dias: [1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 140, descripcion: 'Docena de huevos', categoria: 'Regalos' },
       { pts: 300, descripcion: '5% off en la compra', categoria: 'Descuentos' },
@@ -253,6 +270,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4215,
     clientesActivos: 264,
     fechaAlta: '2026-04-08',
+    horarioApertura: [{ desde: '08:00', hasta: '22:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 150, descripcion: 'Gaseosa 2L de regalo', categoria: 'Regalos' },
       { pts: 350, descripcion: '5% off en la compra', categoria: 'Descuentos' },
@@ -277,6 +295,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4305,
     clientesActivos: 58,
     fechaAlta: '2026-06-09',
+    horarioApertura: [{ desde: '08:00', hasta: '21:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 120, descripcion: 'Pan del día', categoria: 'Comida' },
       { pts: 260, descripcion: 'Fiambre 200g de regalo', categoria: 'Regalos' },
@@ -295,6 +314,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4369,
     clientesActivos: 110,
     fechaAlta: '2026-05-19',
+    horarioApertura: [{ desde: '08:00', hasta: '22:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 130, descripcion: 'Bolsa de frutas de estación', categoria: 'Regalos' },
       { pts: 280, descripcion: 'Jugo exprimido 1L', categoria: 'Bebidas' },
@@ -312,6 +332,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4271,
     clientesActivos: 154,
     fechaAlta: '2026-04-02',
+    horarioApertura: [{ desde: '12:00', hasta: '23:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 110, descripcion: 'Cucurucho de 2 gustos', categoria: 'Comida' },
       { pts: 240, descripcion: 'Kilo de helado artesanal', categoria: 'Comida', costoDinero: 4200 },
@@ -334,6 +355,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4258,
     clientesActivos: 88,
     fechaAlta: '2026-05-28',
+    horarioApertura: [{ desde: '07:00', hasta: '20:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 90, descripcion: 'Media docena de medialunas', categoria: 'Comida' },
       { pts: 180, descripcion: 'Café + tostado de campo', categoria: 'Comida' },
@@ -355,6 +377,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4292,
     clientesActivos: 132,
     fechaAlta: '2026-04-21',
+    horarioApertura: [{ desde: '19:30', hasta: '00:00', dias: [2, 3, 4, 5, 6, 0] }],
     recompensas: [
       { pts: 200, descripcion: 'Roll de la casa', categoria: 'Comida' },
       { pts: 380, descripcion: 'Combinado de 15 piezas', categoria: 'Comida', costoDinero: 5200 },
@@ -376,6 +399,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4283,
     clientesActivos: 67,
     fechaAlta: '2026-06-11',
+    horarioApertura: [{ desde: '18:00', hasta: '01:00', dias: [3, 4, 5, 6, 0] }],
     recompensas: [
       { pts: 220, descripcion: 'Copa de vino de autor', categoria: 'Bebidas' },
       { pts: 400, descripcion: 'Tabla de quesos + copa', categoria: 'Comida', costoDinero: 3800 },
@@ -405,6 +429,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4348,
     clientesActivos: 79,
     fechaAlta: '2026-05-12',
+    horarioApertura: [{ desde: '07:00', hasta: '20:00', dias: [1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 120, descripcion: 'Cajón de frutas de estación', categoria: 'Regalos' },
       { pts: 260, descripcion: '10% off en verdura', categoria: 'Descuentos' },
@@ -428,6 +453,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4267,
     clientesActivos: 173,
     fechaAlta: '2026-03-30',
+    horarioApertura: [{ desde: '11:00', hasta: '21:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 150, descripcion: 'Porción de pollo al spiedo', categoria: 'Comida' },
       { pts: 300, descripcion: 'Combo familiar (pollo + papas)', categoria: 'Comida', costoDinero: 4500 },
@@ -450,6 +476,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4291,
     clientesActivos: 96,
     fechaAlta: '2026-06-04',
+    horarioApertura: [{ desde: '00:00', hasta: '23:59', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 80, descripcion: 'Gaseosa línea 500ml', categoria: 'Regalos' },
       { pts: 200, descripcion: 'Combo golosinas de regalo', categoria: 'Regalos' },
@@ -473,6 +500,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4276,
     clientesActivos: 214,
     fechaAlta: '2026-03-24',
+    horarioApertura: [{ desde: '08:00', hasta: '20:00', dias: [0, 1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 130, descripcion: 'Chorizos parrilleros x6', categoria: 'Regalos' },
       { pts: 320, descripcion: '10% off en tu compra', categoria: 'Descuentos' },
@@ -501,6 +529,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4332,
     clientesActivos: 148,
     fechaAlta: '2026-04-16',
+    horarioApertura: [{ desde: '08:30', hasta: '20:00', dias: [1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 150, descripcion: 'Provoleta de regalo', categoria: 'Regalos' },
       { pts: 300, descripcion: 'Combo hamburguesas caseras x8', categoria: 'Comida', costoDinero: 4000 },
@@ -525,6 +554,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4258,
     clientesActivos: 96,
     fechaAlta: '2026-05-22',
+    horarioApertura: [{ desde: '08:00', hasta: '20:00', dias: [1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 120, descripcion: 'Docena de empanadas de carne', categoria: 'Comida' },
       { pts: 280, descripcion: '8% off en tu compra', categoria: 'Descuentos' },
@@ -551,6 +581,7 @@ export const NEGOCIOS: Negocio[] = [
     lng: -58.4351,
     clientesActivos: 127,
     fechaAlta: '2026-06-07',
+    horarioApertura: [{ desde: '08:30', hasta: '19:30', dias: [1, 2, 3, 4, 5, 6] }],
     recompensas: [
       { pts: 140, descripcion: 'Morcillas x6 de regalo', categoria: 'Regalos' },
       { pts: 300, descripcion: 'Combo milanesas caseras x10', categoria: 'Comida', costoDinero: 3500 },
