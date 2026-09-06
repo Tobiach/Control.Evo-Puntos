@@ -1,17 +1,28 @@
-# Lote de negocios de muestra (escaparate privado de venta)
+# Lote de 73 locales reales de CABA en el marketplace
 
-73 negocios reales de CABA cargados en Supabase con **`es_muestra = true`**, para que Tobías
-le muestre a cada prospecto su propio local dentro de Premia durante el pitch, sin que ese
-negocio aparezca en el mapa/marketplace de clientes reales. Misma lógica que Victoria Café
-(ver `scripts/sembrar-victoria-cafe.mjs` y `docs/ARQUITECTURA.md` → "Marketplace vs negocio único").
+73 negocios reales de CABA (relevamiento de Tobías) cargados en Supabase y **publicados en
+el marketplace**: aparecen en el mapa y en la lista de locales afiliados para cualquier
+usuario final, con o sin cuenta.
 
-## Regla no negociable
+> **Historial de la decisión.** Este lote se cargó primero como escaparate privado
+> (`es_muestra = true`, solo visible por link directo). El **6/9/2026 Tobías decidió
+> publicarlos en el marketplace real** para usuario final navegando, asumiendo que: los
+> dueños no dieron consentimiento explícito, y las cartas/premios son genéricos por rubro
+> (placeholder), no el menú real de cada local. Para revertir, ver "Despublicar".
 
-Todo lo de este lote entra y se queda con **`es_muestra = true`**. Nunca se pasa a `false`
-en lote ni por default. Se cambia **uno por uno**, y solo cuando Tobías confirma que ESE
-dueño puntual dijo que sí y quiere estar en el marketplace real. `src/lib/panelCliente.ts`
-ya filtra `es_muestra = false` antes de mostrar negocios a un cliente real — mientras el flag
-esté en `true`, el negocio solo es accesible por link directo.
+## Cómo quedan visibles
+
+Dos capas, las dos tocadas en este lote:
+
+1. **Supabase** — los 73 tienen `es_muestra = false`. `src/lib/panelCliente.ts` los trae
+   para cualquier **cliente logueado** (`cargarAppCliente`).
+2. **`src/data/negocios.ts`** — los 73 están también en el array `NEGOCIOS` (mock), que es
+   lo que ve un **invitado navegando sin cuenta** y la demo de venta interna. Ahí figuran
+   como locales de ejemplo (`idsEjemplo`): se ven en el mapa y el perfil, pero un canje no
+   pega contra Supabase (no tienen cajero/PIN configurado — un canje real se rompería).
+
+Los cambios en `src/data/negocios.ts` **solo se ven después de un deploy** (ver
+`docs/DEPLOY.md`: un push a `main` no despliega).
 
 ## De dónde salió cada negocio
 
@@ -29,24 +40,22 @@ Datos disponibles en las planillas: nombre, coordenadas, dirección (parcial), r
 Maps, rango de precio, categoría, teléfono. **No había menú, logo ni fotos** en ninguna de
 las dos — ver "Qué es genérico".
 
-## La cuenta para mostrarlo
+## La cuenta dueño
 
-Una sola cuenta de dueño compartida por los 73:
+Los 73 comparten una sola cuenta de dueño (sirve para editar cualquiera desde el panel):
 
 - **Usuario:** `dueno.muestras-premia.demo@gmail.com`
 - **Clave:** `ControlEvo2026!`
-- **Panel en vivo:** `https://premia-ar.vercel.app/?admin` (entra directo al login de dueño)
-- **Carta pública de un negocio:** `https://premia-ar.vercel.app/?carta=<id>` (sin login, para mandar por WhatsApp)
+- **Panel:** `https://premia-ar.vercel.app/?admin` (entra directo al login de dueño)
+- **Carta pública de un negocio:** `https://premia-ar.vercel.app/?carta=<id>`
 
-Para el pitch a un prospecto: compartís su `?carta=<id>`, o entrás al `?admin` con esa
-cuenta y le mostrás el panel de su negocio. Cuando un dueño cierra, se le arma su propia
-cuenta y recién ahí se evalúa pasarlo a `es_muestra = false` (ver "Promover uno a real").
+Cuando un dueño real quiera hacerse cargo de su local, se le arma su propia cuenta y se le
+transfiere el `dueno_user_id` de ese negocio (hoy todos apuntan a la cuenta de arriba).
 
-## Qué es genérico (revisar antes de cada pitch)
+## Qué es genérico (revisar antes de vender un local puntual)
 
 Carga **liviana**: `negocios` + `carta_items` + `recompensas` + `premios_ruleta`. Sin
-clientes demo ni visitas backdateadas (eso es el "tratamiento completo", se hace después,
-negocio por negocio).
+clientes demo ni visitas backdateadas.
 
 - **Carta y recompensas de los 73 son genéricas por rubro** (cervecería → estilos de
   cerveza + para picar + hamburguesas; almacén → sin carta, solo recompensas; bar de vinos
@@ -91,20 +100,20 @@ node scripts/sembrar-muestras-lote.mjs --desde=15 --hasta=40
 
 ### Agregar más negocios al lote
 
-Editar `scripts/muestras-lote.data.json` (mismo formato: `negocio` con columnas reales de la
-tabla, `carta`, `recompensas`, `premios_ruleta`) y correr el script. Mantener
-`es_muestra: true`.
+1. Editar `scripts/muestras-lote.data.json` (mismo formato: `negocio` con columnas reales de
+   la tabla, `carta`, `recompensas`, `premios_ruleta`; `es_muestra: false`).
+2. `node scripts/sembrar-muestras-lote.mjs` → los mete en Supabase.
+3. Agregarlos también a `src/data/negocios.ts` (array `NEGOCIOS`) para que los vea un
+   invitado, y **deployar**.
 
-### Promover uno a real (marketplace)
+### Despublicar (volver a escaparate privado)
 
-Solo con confirmación explícita de Tobías, negocio por negocio. Desde el SQL Editor de
-Supabase:
-
-```sql
-update negocios set es_muestra = false where id = '<id-del-negocio>';
+```bash
+node scripts/sembrar-muestras-lote.mjs --despublicar    # es_muestra = true en los 73
 ```
 
-Y darle al dueño su propia cuenta (no dejarlo bajo la cuenta compartida de muestras).
+Y sacar el bloque "Lote de locales reales de CABA" de `src/data/negocios.ts` + deployar,
+si no querés que un invitado los siga viendo.
 
 ---
 

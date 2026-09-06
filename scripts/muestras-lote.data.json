@@ -10,7 +10,7 @@
       "lng": -58.437,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -233,7 +233,7 @@
       "lng": -58.429,
       "calle": "Uriarte",
       "altura": "1177",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -338,7 +338,7 @@
       "lng": -58.433,
       "calle": "Uriarte",
       "altura": "1466",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -443,7 +443,7 @@
       "lng": -58.436,
       "calle": "Serrano",
       "altura": "1434",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -548,7 +548,7 @@
       "lng": -58.4763792,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -653,7 +653,7 @@
       "lng": -58.4465358,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -758,7 +758,7 @@
       "lng": -58.4859817,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -863,7 +863,7 @@
       "lng": -58.4855,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -968,7 +968,7 @@
       "lng": -58.450455,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -1073,7 +1073,7 @@
       "lng": -58.471009,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -1178,7 +1178,7 @@
       "lng": -58.4712,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -1283,7 +1283,7 @@
       "lng": -58.4508117,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -1388,7 +1388,7 @@
       "lng": -58.4559877,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -1493,7 +1493,7 @@
       "lng": -58.4922684,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -1598,7 +1598,7 @@
       "lng": -58.4264211,
       "calle": "José A. Cabrera",
       "altura": "4427",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -1890,7 +1890,7 @@
       "lng": -58.424431,
       "calle": "Gorriti",
       "altura": "4295",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -2182,7 +2182,7 @@
       "lng": -58.4260112,
       "calle": "José A. Cabrera",
       "altura": "4354",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -2474,7 +2474,7 @@
       "lng": -58.4335435,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -2766,7 +2766,7 @@
       "lng": -58.433737,
       "calle": "Castillo",
       "altura": "422",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -3058,7 +3058,7 @@
       "lng": -58.4288816,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -3350,7 +3350,7 @@
       "lng": -58.4306482,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -3642,7 +3642,7 @@
       "lng": -58.4304442,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -3934,7 +3934,7 @@
       "lng": -58.4297038,
       "calle": "Gorriti",
       "altura": "4857",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -4226,7 +4226,7 @@
       "lng": -58.4275463,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -4518,7 +4518,7 @@
       "lng": -58.4384621,
       "calle": "Vera",
       "altura": "601",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -4810,7 +4810,7 @@
       "lng": -58.4373569,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -5036,7 +5036,7 @@
       "lng": -58.4296783,
       "calle": "Jorge Luis Borges",
       "altura": "1654",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -5328,7 +5328,7 @@
       "lng": -58.4284693,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -5620,7 +5620,7 @@
       "lng": -58.4341756,
       "calle": "José A. Cabrera",
       "altura": "5225",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -5912,7 +5912,7 @@
       "lng": -58.437724,
       "calle": "Loyola",
       "altura": "788",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -6204,7 +6204,7 @@
       "lng": -58.440742,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -6496,7 +6496,7 @@
       "lng": -58.4274111,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -6788,7 +6788,7 @@
       "lng": -58.4394159,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -7014,7 +7014,7 @@
       "lng": -58.4449358,
       "calle": "Av. Warnes",
       "altura": "602",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -7306,7 +7306,7 @@
       "lng": -58.4489387,
       "calle": "Galicia",
       "altura": "528",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -7598,7 +7598,7 @@
       "lng": -58.4512942,
       "calle": "Delgado",
       "altura": "658",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -7890,7 +7890,7 @@
       "lng": -58.425617,
       "calle": "Nicaragua",
       "altura": "4610",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -8182,7 +8182,7 @@
       "lng": -58.4179169,
       "calle": "Lavalle",
       "altura": "3702",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -8474,7 +8474,7 @@
       "lng": -58.4270193,
       "calle": "Costa Rica",
       "altura": "4699",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -8766,7 +8766,7 @@
       "lng": -58.4436323,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -9058,7 +9058,7 @@
       "lng": -58.415296,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -9350,7 +9350,7 @@
       "lng": -58.4066474,
       "calle": "Bulnes",
       "altura": "2587",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -9642,7 +9642,7 @@
       "lng": -58.408964,
       "calle": "3108, C1215AAB, Carlos Gardel",
       "altura": "3108",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -9934,7 +9934,7 @@
       "lng": -58.4379155,
       "calle": "Av. Acoyte",
       "altura": "380",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -10226,7 +10226,7 @@
       "lng": -58.4365428,
       "calle": "Honduras",
       "altura": "5602",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -10518,7 +10518,7 @@
       "lng": -58.38048,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -10810,7 +10810,7 @@
       "lng": -58.4229623,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -11102,7 +11102,7 @@
       "lng": -58.4152132,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -11394,7 +11394,7 @@
       "lng": -58.4298236,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -11686,7 +11686,7 @@
       "lng": -58.4147821,
       "calle": "Mario Bravo",
       "altura": "1233",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -11912,7 +11912,7 @@
       "lng": -58.4258817,
       "calle": "José A. Cabrera",
       "altura": "4399",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -12204,7 +12204,7 @@
       "lng": -58.4274665,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -12496,7 +12496,7 @@
       "lng": -58.455705,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -12788,7 +12788,7 @@
       "lng": -58.4169303,
       "calle": "Av. Boedo",
       "altura": "521",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -13080,7 +13080,7 @@
       "lng": -58.4537155,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -13372,7 +13372,7 @@
       "lng": -58.4314953,
       "calle": "Formosa",
       "altura": "223",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -13664,7 +13664,7 @@
       "lng": -58.4043113,
       "calle": "French",
       "altura": "2929",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -13956,7 +13956,7 @@
       "lng": -58.435751,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -14248,7 +14248,7 @@
       "lng": -58.3876439,
       "calle": "Marcelo Torcuato de Alvear",
       "altura": "1450",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -14540,7 +14540,7 @@
       "lng": -58.4713211,
       "calle": "Av. Álvarez Thomas",
       "altura": "2136",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -14832,7 +14832,7 @@
       "lng": -58.4535993,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -15124,7 +15124,7 @@
       "lng": -58.4815534,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -15416,7 +15416,7 @@
       "lng": -58.4838573,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -15708,7 +15708,7 @@
       "lng": -58.4244154,
       "calle": "Av. del Libertador",
       "altura": "3949",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -16000,7 +16000,7 @@
       "lng": -58.4279251,
       "calle": "Av. Pedro Goyena",
       "altura": "40",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -16292,7 +16292,7 @@
       "lng": -58.4246326,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -16584,7 +16584,7 @@
       "lng": -58.3711795,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -16876,7 +16876,7 @@
       "lng": -58.4876677,
       "calle": "Av. S. Martín",
       "altura": "4949",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -17168,7 +17168,7 @@
       "lng": -58.4184452,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -17460,7 +17460,7 @@
       "lng": -58.4280556,
       "calle": "Av. Pedro Goyena",
       "altura": "60",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -17752,7 +17752,7 @@
       "lng": -58.3740734,
       "calle": "Perú",
       "altura": "1172",
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -18044,7 +18044,7 @@
       "lng": -58.3785455,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },
@@ -18336,7 +18336,7 @@
       "lng": -58.39162,
       "calle": null,
       "altura": null,
-      "es_muestra": true,
+      "es_muestra": false,
       "activo": true,
       "vip_desde_puntos": 300
     },

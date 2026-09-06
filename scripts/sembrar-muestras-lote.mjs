@@ -37,6 +37,11 @@ const args = new Map(
   }),
 );
 const DRY = args.has('dry');
+// Decisión de Tobías (sept 2026): este lote SÍ va al marketplace real.
+//   --publicar    -> es_muestra = false (visible para clientes reales)
+//   --despublicar -> es_muestra = true  (vuelve a ser solo escaparate por link directo)
+// Sin ninguno de los dos, el script mantiene el es_muestra que trae cada fila del .json.
+const PUBLICAR = args.has('publicar') ? true : args.has('despublicar') ? false : null;
 
 function leerEnvLocal() {
   const texto = readFileSync(new URL('../.env.local', import.meta.url), 'utf-8');
@@ -101,7 +106,9 @@ async function autenticar() {
 }
 
 async function sembrarNegocio(uid, entrada, i) {
-  const { negocio, carta, recompensas, premios_ruleta } = entrada;
+  const { carta, recompensas, premios_ruleta } = entrada;
+  const negocio =
+    PUBLICAR === null ? entrada.negocio : { ...entrada.negocio, es_muestra: !PUBLICAR };
   const etiqueta = `[${String(i).padStart(2, ' ')}/${lote.length}] ${negocio.id}`;
 
   if (DRY) {
@@ -149,9 +156,11 @@ async function sembrarNegocio(uid, entrada, i) {
 }
 
 async function main() {
+  const esMuestraFinal =
+    PUBLICAR === null ? lote[0]?.negocio.es_muestra : !PUBLICAR;
   console.log(
-    `${DRY ? '[DRY RUN] ' : ''}Sembrando ${lote.length} negocio(s) de muestra ` +
-      `(es_muestra = true) como ${EMAIL_DUENO}\n`,
+    `${DRY ? '[DRY RUN] ' : ''}Sembrando ${lote.length} negocio(s) ` +
+      `(es_muestra = ${esMuestraFinal}) como ${EMAIL_DUENO}\n`,
   );
 
   let uid = 'dry-run';
