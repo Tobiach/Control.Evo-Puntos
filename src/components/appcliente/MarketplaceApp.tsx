@@ -70,7 +70,7 @@ const dataDeNegocio = (negocio: Negocio, relacion: RelacionNegocio | undefined):
 });
 
 export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }: Props) {
-  const { sesion } = useSesion();
+  const { sesion, cargando: sesionCargando } = useSesion();
   const usarReal = supabaseEnabled && !!sesion;
 
   // Qué negocio está abierto vive en la URL (`?local=`), no en useState: entrar es un drill-down
@@ -80,16 +80,19 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
   const [searchParams, setSearchParams] = useSearchParams();
   const negocioId = searchParams.get('local');
   const volverAlMarketplace = useVolverSeguro('/');
-  // Con backend real, negocios y relaciones vienen de Supabase; sin backend, del mock.
+  // Con backend real, negocios y relaciones vienen de Supabase; sin backend (demo/invitado),
+  // del mock — pero las relaciones de ejemplo (saldos precargados) las siembra el efecto de
+  // abajo solo cuando NO hay sesión real, nunca para un usuario autenticado.
   const [negocios, setNegocios] = useState<Negocio[]>(NEGOCIOS);
-  const [relaciones, setRelaciones] = useState<Record<string, RelacionNegocio>>(() => ({
-    ...RELACIONES_INICIALES,
-  }));
+  const [relaciones, setRelaciones] = useState<Record<string, RelacionNegocio>>({});
   const [clienteReal, setClienteReal] = useState<ClienteApp | null>(null);
   const [canjesConfirmados, setCanjesConfirmados] = useState<CanjeConfirmado[]>([]);
   // Última tirada de la ruleta semanal por negocio (mismo patrón in-memory que `relaciones`).
   const [tiradasRuleta, setTiradasRuleta] = useState<Record<string, number>>({});
-  const [cargando, setCargando] = useState(usarReal);
+  // Arranca en `true` hasta saber si la sesión es real: así un usuario autenticado nunca ve,
+  // ni por un frame, las relaciones de ejemplo (decisión de producto 6/9/2026 — ver F0 en
+  // docs/DIAGNOSTICO-PRODUCTO.md). Los efectos de abajo lo apagan según corresponda.
+  const [cargando, setCargando] = useState(true);
   // El permiso se pide recién cuando el usuario confirma en AvisoActivarNotificaciones,
   // nunca en frío al montar (ver notificaciones.ts).
   const [permisoNotif, pedirPermisoNotif] = usePermisoNotificaciones();
@@ -110,7 +113,8 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         // negocios reales — sin duplicar si algún día colisiona un id real con uno de ejemplo.
         const reales = res.valor.negocios.filter((n) => !idsEjemplo.has(n.id));
         setNegocios([...reales, ...NEGOCIOS]);
-        setRelaciones({ ...RELACIONES_INICIALES, ...res.valor.relaciones });
+        // Solo lo que devuelve Supabase: un usuario real nunca hereda las relaciones de ejemplo.
+        setRelaciones({ ...res.valor.relaciones });
         setClienteReal(res.valor.cliente);
         setCanjesConfirmados(res.valor.canjesConfirmados);
         // Ya hay sesión + cliente vinculado: registramos el referido pendiente (si vino de un
@@ -123,6 +127,17 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
       activo = false;
     };
   }, [usarReal, userId, idsEjemplo]);
+
+  // Demo de venta e invitado (sin sesión real): sembramos las relaciones de ejemplo —saldos,
+  // racha e historial precargados— para que la exploración sin cuenta se vea completa. Un
+  // usuario REAL autenticado nunca las ve: arranca solo con lo que devuelve Supabase. Para ver
+  // la experiencia con datos, entrar con un usuario de demostración.
+  useEffect(() => {
+    if (sesionCargando || usarReal) return;
+    setNegocios(NEGOCIOS);
+    setRelaciones({ ...RELACIONES_INICIALES });
+    setCargando(false);
+  }, [sesionCargando, usarReal]);
 
   // Sincronización en tiempo real: si el cajero cobra mientras el cliente tiene la app
   // abierta, el saldo de puntos se actualiza solo (sin refrescar). RLS ya filtra esto a

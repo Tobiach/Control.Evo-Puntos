@@ -90,8 +90,11 @@ Formato: PROBLEMA / EVIDENCIA / COMPORTAMIENTO ACTUAL / COMPORTAMIENTO DESEADO /
 - **Problema:** el stack de juego está invertido — lo que grita más (amigos, desafíos, ruleta,
   sorpresa) es ficticio o no persiste; lo que motiva (progreso a recompensa nombrada, referido,
   VIP del local) está diluido.
-- **Evidencia:** `src/lib/social.ts` (`AMIGOS_MOCK`, `desafioSemanal`); ruleta y sorpresa en
-  `useState`; temporada/racha/insignias no acreditan puntos (comentario propio en `club.ts:163`).
+- **Evidencia:** `src/lib/social.ts` (`AMIGOS_MOCK`, `desafioSemanal`) alimenta "Tu grupo esta
+  semana" y "Desafío entre amigos" en `TabPerfil` — 100% mock, se muestra con backend real.
+  (Ojo: `SeccionDesafios` / `SeccionReferidos`, más abajo en la misma pantalla, SÍ son reales —
+  RPC migración 0009/0008; el problema es que conviven con la versión mock.) Ruleta y sorpresa
+  en `useState`; temporada/racha/insignias no acreditan puntos (comentario propio en `club.ts:163`).
 - **Actual:** el usuario gasta atención en un ranking de amigos que no son sus amigos y en una
   ruleta que no recuerda si giró.
 - **Deseado:** sacar de producción lo que no tiene backend; amplificar progreso a recompensa

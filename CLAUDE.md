@@ -20,17 +20,17 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
-- **Confirmar en el SQL Editor de Supabase si `0022_fix_confirmar_canje_pin.sql` y
-  `0023_rate_limiting_rpcs.sql` ya corrieron en producción.** Sin esto, no asumir que el
-  rate limiting de las RPCs sensibles ni la confirmación de canjes verificables funcionan
-  en producción — ver `docs/SEGURIDAD.md` §5.1 y `docs/SUPABASE.md`.
-- **Rama `design/explorar-mis-premios-xp`**: 12 commits sin mergear (rediseño de
-  Explorar/Mis Premios/Perfil), diverge de `main`, y trae su propia
-  `supabase/migrations/0022_referidos_una_visita.sql` que pisa el número de la `0022` que
-  ya está en `main` con contenido distinto. No mergear tal cual — primero hay que
-  renombrar/reconciliar esa migración. Decisión pendiente de Tobias.
+- **Confirmar en el SQL Editor de Supabase si `0022_fix_confirmar_canje_pin.sql`,
+  `0023_rate_limiting_rpcs.sql` y `0024_consolidado_rate_limiting.sql` ya corrieron en
+  producción.** Sin esto, no asumir que el rate limiting de las RPCs sensibles ni la
+  confirmación de canjes verificables funcionan en producción — ver `docs/SEGURIDAD.md` §5.1
+  y `docs/SUPABASE.md`. La última migración del repo es `0024`; **la próxima es `0025`**.
+- ~~Rama `design/explorar-mis-premios-xp`~~: **RESUELTO** (6/9/2026) — ya estaba mergeada a
+  `main` (`9d290c0`); el choque del número `0022` se resolvió absorbiendo
+  `0022_referidos_una_visita.sql` en `0024_consolidado_rate_limiting.sql`. Nada pendiente.
 - **CLI de Supabase todavía no conectado** — procedimiento en `docs/SUPABASE.md`, requiere
-  login interactivo (no lo puede correr un agente).
+  login interactivo (no lo puede correr un agente). Toda migración nueva del roadmap se
+  aplica a mano en el SQL Editor (checkpoint humano #1 en `docs/ROADMAP-PRODUCTO.md`).
 - **`main` sin branch protection** — el CI (`.github/workflows/ci.yml`) ya corre en cada
   PR, pero no es obligatorio todavía para poder mergear.
 - **Lote de 73 locales reales de CABA publicados en el marketplace** (`es_muestra = false`
