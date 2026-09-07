@@ -50,6 +50,8 @@ Tobías pidió ejecutar sin depender de sus permisos a cada paso. Reglas:
 3. **Confirmar en el SQL Editor si `0022` / `0023` / `0024` ya corrieron en producción**
    (pendiente viejo, ver `docs/SUPABASE.md` y `SEGURIDAD.md` §5.1). No bloquea el front.
 4. **(Opcional)** Hacer el CI obligatorio para mergear a `main` (branch protection en GitHub).
+5. **5 assets de Premín evolucionado** (`/premin/1.png` … `/premin/5.png`) — brief por forma en
+   `docs/NIVELES-Y-PREMIN.md`. Bloquea 2.6 (el momento "evolucionó" y la Pokédex de Perfil).
 
 ---
 
@@ -100,13 +102,21 @@ Marcar acá el avance. `[~]` = en progreso.
   `home.test.ts` (9 tests). `horarioValleActivoAhora` ahora acepta `ahora` inyectable.
 - [ ] 2.2 · Rediseñar `Marketplace.tsx`: héroe + máx. 2 secciones curadas. Buscador y filtros de
   rubro se van a `Explorar`. Retirar chips de intención y "Premia recomienda" con "Foto pendiente"
-- [ ] 2.3 · Estados del héroe: sin señales / invitado / 1 sola relación / usuario nuevo real (0 relaciones)
+- [x] 2.3a · **Nombres de nivel + evolución de Premín** (decisión de Tobías 7/9): renombrado
+  `NIVELES_XP_GLOBAL` (Recién Llegado → Cliente Fijo → Habitué → Cráneo del Barrio → Prócer del
+  Barrio, sin emoji), campo `NivelXp.premin` para el asset por nivel, `docs/NIVELES-Y-PREMIN.md`
+  con el enfoque de juego + brief de las 5 formas.
+- [ ] 2.3b · Usuario nuevo real + estados (SPEC §J, framing de juego): `src/lib/entrada.ts`
+  (`contextoDeEntrada()` + clave durable `celp_entrada`), `HomeVacio.tsx` ("Arrancás la partida",
+  variantes referido / QR / genérico), `ComoFunciona.tsx`, branch en `Marketplace.tsx`. Tests.
 - [ ] 2.4 · Post-canje reabre el loop (F8): pantalla de cierre con próxima meta nombrada + razón
   concreta de próxima visita (x2 / evento / combo) + gancho de referido
 - [ ] 2.5 · Referido en momentos de intención (F6): post-canje, post-subida de nivel, y héroe del
   Home cuando no hay urgencia mayor. Copy con el número real ("cuando vaya 1 vez, 100 pts c/u")
-- [ ] 2.6 · Tests + verificación en navegador
-- [ ] 2.7 · Aviso "listo para deploy" → **checkpoint humano**
+- [ ] 2.6 · Evolución de Premín: momento "Premín evolucionó" al cruzar umbral + línea de evolución
+  (siluetas) en Perfil. **Depende de los 5 assets** (brief en `docs/NIVELES-Y-PREMIN.md`) → checkpoint humano
+- [ ] 2.7 · Tests + verificación en navegador
+- [ ] 2.8 · Aviso "listo para deploy" → **checkpoint humano**
 
 ## Fase 3 — Canal de reenganche (F2) · Web Push
 

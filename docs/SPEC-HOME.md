@@ -83,11 +83,37 @@ El del héroe, y cambia según la señal:
 ## J. Estados
 
 - **loading**: skeleton del héroe (una card gris), no spinner suelto.
-- **sin señales + con relaciones**: héroe = "Estás al día. {negocio con más puntos}: te faltan X
+- **sin señales + con relaciones**: héroe = "Vas bien en {negocio con más puntos} — te faltan X
   para {próxima}." (near-win aunque esté lejos — siempre hay un próximo objetivo).
-- **sin señales + sin relaciones** (nuevo real): héroe = descubrimiento.
 - **invitado**: igual que "con relaciones" usando las de ejemplo; el CTA de crear cuenta ya vive en Perfil.
 - **error de carga**: el que ya maneja `MarketplaceApp` (no cambia).
+
+### Usuario nuevo real (0 relaciones, 0 XP) — Home "Arrancás la partida"
+
+Enfoque de juego (ver `docs/NIVELES-Y-PREMIN.md`). Su único trabajo: llevar a la primera visita.
+
+- **Header**: Premín base + "Sos {nombre} · Recién Llegado".
+- **Héroe = "Misión 1 · Tu primera visita"**: "Andá a {local} y registrá tu visita. Desbloqueás
+  {recompensa más barata} y Premín evoluciona." CTA "Empezar". El {local} sale del contexto de
+  entrada (ver abajo); si no hay ancla, del fallback `descubrir` de `heroeDelHome`.
+- **"Cómo se juega"** — 3 pasos, se ve una vez (flag `celp_como_funciona_visto`), desaparece al
+  aparecer la primera relación: elegís un local → registrás tu visita → subís, desbloqueás,
+  Premín evoluciona.
+- **Línea de evolución** — las 5 formas de Premín, las próximas en silueta, "Faltan 200 XP para
+  {Cliente Fijo}". El gancho: se ve el camino desde el minuto cero.
+- **"Locales para tu primera visita" — 3**, curados (`clientesActivos` o cercanía).
+- **NO**: métricas en cero, lista de 90, mapa completo, tutorial largo, permisos.
+
+**Variantes por contexto de entrada** (`contextoDeEntrada()`, Fase 2.3):
+- **referido** (`celp_referido_pendiente` / `celp_entrada`): héroe = "Un amigo te sumó a su
+  equipo en {local}. Van 1 visita cada uno = 100 pts los dos." CTA "Ver {local}".
+- **QR en un local** (`?carta`/`?local` al alta): héroe = "Estás en {local}. Registrá tu primera
+  visita ahora."
+- **genérico** (`?club`): el héroe "Misión 1" con el local del fallback `descubrir`. Acá sí
+  ofrecer geo, descartable ("Ver los que tenés cerca").
+
+**Transición de salida**: al aparecer la primera relación, el Home pasa al motor de relevancia
+normal y "Cómo se juega" desaparece. El puente es el momento del mostrador (Fase 1, `CreditoEnVivo`).
 
 ## K. Riesgos UX
 
@@ -107,11 +133,14 @@ en `docs/METRICAS.sql`, tiempo entre `app_abierta` y primer `negocio_abierto` (d
 
 ## Alcance de la implementación (Fase 2)
 
-1. **2.1 — `src/lib/home.ts`**: `señalesDelCliente(negocios, relaciones, ahora)` → lista ordenada
-   por prioridad; `heroeDelHome(...)` → la primera. Puro, testeable, `ahora` inyectable. **← este paso**
+1. **2.1 — `src/lib/home.ts`** ✅: `senalesDelCliente()` / `heroeDelHome()`, puro y testeable.
 2. **2.2 — `Marketplace.tsx`**: reescribir el render según G. Mover buscador/filtros a `Explorar`.
-3. **2.3 — estados** (J).
+3. **2.3 — usuario nuevo real + estados** (J): `src/lib/entrada.ts` (`contextoDeEntrada()` +
+   clave durable `celp_entrada`), `HomeVacio.tsx` ("Arrancás la partida", 3 variantes),
+   `ComoFunciona.tsx`, branch en `Marketplace.tsx`. Framing de juego (`docs/NIVELES-Y-PREMIN.md`).
 4. **2.4 — post-canje reabre el loop** (F8): en `TabRecompensas`, al confirmar, mostrar próxima
    meta + razón de próxima visita + gancho de referido.
 5. **2.5 — referido en momentos de intención** (F6): héroe alternativo cuando no hay urgencia, y
    en el cierre post-canje/post-nivel.
+6. **2.6 — evolución de Premín**: momento "Premín evolucionó" al cruzar umbral de XP + línea de
+   evolución (siluetas) en Perfil. Depende de los 5 assets — ver `docs/NIVELES-Y-PREMIN.md`.

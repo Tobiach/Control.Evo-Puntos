@@ -42,8 +42,8 @@ describe('TabPerfilMarketplace', () => {
   it('calcula el saludo y el nivel a partir de datos reales, no hardcodeados', () => {
     renderPerfil(clienteReal);
     expect(screen.getByText('Hola, Martina 👋')).toBeInTheDocument();
-    // xpTotal = 320+720+160+95 = 1295 → nivel "Habitué 🔥" (rango 1000-2999).
-    expect(screen.getByText(/Habitué 🔥 · Nivel 3/)).toBeInTheDocument();
+    // xpTotal = 320+720+160+95 = 1295 → nivel "Habitué" (rango 1000-2999).
+    expect(screen.getByText(/Habitué · Nivel 3/)).toBeInTheDocument();
   });
 
   it('"Premios que ya conseguiste" muestra los canjes confirmados reales', () => {

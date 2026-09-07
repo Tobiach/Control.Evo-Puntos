@@ -121,9 +121,11 @@ Formato: PROBLEMA / EVIDENCIA / COMPORTAMIENTO ACTUAL / COMPORTAMIENTO DESEADO /
 ### F7 · La red es invisible: el usuario tiene N tarjetas, no "un barrio"
 - **Problema:** nada hace sentir "estoy dentro de una red". El cross-comercio se reduce a un
   número (XP) que no desbloquea nada.
-- **Evidencia:** `NIVELES_XP_GLOBAL` (`club.ts:120-126`): 5 niveles ("VIP del Barrio 👑" a 8000
-  pts) que no habilitan ningún beneficio. `TabMapa` es un mapa de utilidad. El banner "Comunidad
+- **Evidencia:** `NIVELES_XP_GLOBAL` (`club.ts`): 5 niveles ("Prócer del Barrio" a 8000 pts)
+  que no habilitan ningún beneficio. `TabMapa` es un mapa de utilidad. El banner "Comunidad
   Premia" es copy genérico. Al abrir un negocio no se sugiere otro de la red.
+  (Con el giro de comunicación de juego + evolución de Premín, cada nivel al menos "vale"
+  como identidad/forma — ver `docs/NIVELES-Y-PREMIN.md`.)
 - **Actual:** el usuario acumula relaciones sueltas; cambiar de negocio es navegar una lista.
 - **Deseado:** "tu barrio en Premia" — panel personal de lugares donde tenés historia, saldo sin
   reclamar y estatus, con la red enrutándote al próximo ("terminaste el café — a 2 cuadras el

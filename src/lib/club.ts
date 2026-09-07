@@ -17,7 +17,7 @@ export const DIAS_VENCIMIENTO = 60;
 export const soloDigitos = (valor: string) => valor.replace(/\D/g, '');
 
 /** Genérico en el nombre del nivel: sirve tanto para `Nivel` (por negocio) como para
- *  `NIVELES_XP_GLOBAL` (nombres propios, ej. "Explorador ⭐", fuera de `NombreNivel`). */
+ *  `NIVELES_XP_GLOBAL` (nombres propios, ej. "Habitué", fuera de `NombreNivel`). */
 export function nivelDe<T extends { nombre: string; min: number }>(niveles: T[], puntos: number): T {
   let actual = niveles[0];
   for (const nivel of niveles) {
@@ -111,18 +111,26 @@ export const formatPuntos = (puntos: number) => puntos.toLocaleString('es-AR');
 // puntos que el cliente tiene en ESE local puntual). Este suma los puntos de TODAS las
 // relaciones del cliente en el marketplace en un solo "XP" — un sistema adicional, no un
 // reemplazo. Los niveles por negocio siguen intactos.
-/** Nivel del sistema de XP global — nombres propios, no restringidos a `NombreNivel`. */
+/**
+ * Nivel del sistema de XP global — nombres propios, no restringidos a `NombreNivel`.
+ * `premin` apunta a la forma evolucionada de Premín para ese nivel (una imagen por nivel,
+ * estilo evolución Pokémon). Mientras no existan los 5 assets, se cae a `/premin.png`
+ * (ver `CardNivelXp` y docs/NIVELES-Y-PREMIN.md).
+ */
 export interface NivelXp {
   nombre: string;
   min: number;
+  premin?: string;
 }
 
+// Nombres de marca (set "lunfardo/humor", elegido por Tobías 7/9/2026). El visual de cada
+// nivel es la forma de Premín, no un emoji — por eso los nombres van "pelados".
 export const NIVELES_XP_GLOBAL: NivelXp[] = [
-  { nombre: 'Nuevo', min: 0 },
-  { nombre: 'Explorador ⭐', min: 200 },
-  { nombre: 'Habitué 🔥', min: 1000 },
-  { nombre: 'Habitué Plus ⚡', min: 3000 },
-  { nombre: 'VIP del Barrio 👑', min: 8000 },
+  { nombre: 'Recién Llegado', min: 0 },
+  { nombre: 'Cliente Fijo', min: 200 },
+  { nombre: 'Habitué', min: 1000 },
+  { nombre: 'Cráneo del Barrio', min: 3000 },
+  { nombre: 'Prócer del Barrio', min: 8000 },
 ];
 
 export function calcularXpTotal(relaciones: Record<string, RelacionNegocio>): number {

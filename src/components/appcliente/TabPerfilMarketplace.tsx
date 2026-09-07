@@ -199,9 +199,9 @@ export default function TabPerfilMarketplace({
   const badges = [
     {
       icono: Star,
-      label: 'Explorador',
-      sub: `Nivel ${nivelIndice}`,
-      desbloqueada: true, // siempre hay un nivel, aunque sea "Nuevo"
+      label: 'Nivel',
+      sub: `${nivelIndice} de ${NIVELES_XP_GLOBAL.length}`,
+      desbloqueada: true, // siempre hay un nivel, aunque sea el primero
       color: '#D89B2B',
     },
     {

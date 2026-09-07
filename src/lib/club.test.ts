@@ -122,9 +122,9 @@ describe('calcularXpTotal', () => {
 
 describe('NIVELES_XP_GLOBAL (nivel global cross-negocio, feature nueva)', () => {
   it('progresoNivel ubica el nivel correcto por umbral con nombres propios', () => {
-    expect(progresoNivel(NIVELES_XP_GLOBAL, 0).actual.nombre).toBe('Nuevo');
-    expect(progresoNivel(NIVELES_XP_GLOBAL, 625).actual.nombre).toBe('Explorador ⭐');
-    expect(progresoNivel(NIVELES_XP_GLOBAL, 8000).actual.nombre).toBe('VIP del Barrio 👑');
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 0).actual.nombre).toBe('Recién Llegado');
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 625).actual.nombre).toBe('Cliente Fijo');
+    expect(progresoNivel(NIVELES_XP_GLOBAL, 8000).actual.nombre).toBe('Prócer del Barrio');
   });
 
   it('nivel máximo no tiene siguiente y marca 100%', () => {

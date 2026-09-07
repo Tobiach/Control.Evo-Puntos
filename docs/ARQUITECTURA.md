@@ -84,8 +84,11 @@ en el cliente a partir de datos que ya existen.
   sumando `.puntos` de cada uno. Nada se guarda; se recalcula cada vez que cambian las
   relaciones del cliente.
 - **Niveles**: `NIVELES_XP_GLOBAL` en `lib/club.ts` — 5 niveles con nombre propio, fijos para
-  todos los rubros (no configurables por negocio, a diferencia de `vipDesdePuntos`): Nuevo (0)
-  → Explorador ⭐ (200) → Habitué 🔥 (1000) → Habitué Plus ⚡ (3000) → VIP del Barrio 👑 (8000).
+  todos los rubros (no configurables por negocio, a diferencia de `vipDesdePuntos`): Recién
+  Llegado (0) → Cliente Fijo (200) → Habitué (1000) → Cráneo del Barrio (3000) → Prócer del
+  Barrio (8000). Cada nivel tiene una **forma de Premín** propia (evolución tipo Pokémon);
+  ver [NIVELES-Y-PREMIN.md](NIVELES-Y-PREMIN.md). El campo `NivelXp.premin` apunta al asset por
+  nivel; mientras no existan los 5, `CardNivelXp` cae a `/premin.png`.
 - **Dónde se muestra**: un solo componente, `CardNivelXp.tsx`, reusado sin variación en 3
   lugares — `TabMisLocales.tsx` (Mis Premios), `TabPerfilMarketplace.tsx` (Perfil del
   marketplace) y `TabPerfil.tsx` (Perfil dentro de un negocio, vía el `xpTotal` que ya calcula

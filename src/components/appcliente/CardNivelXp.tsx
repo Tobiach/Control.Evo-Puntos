@@ -31,8 +31,8 @@ export default function CardNivelXp({ xpTotal, abajo }: { xpTotal: number; abajo
           </p>
         </div>
         <img
-          src="/premin.png"
-          alt="Premín"
+          src={actual.premin ?? '/premin.png'}
+          alt={`Premín — ${actual.nombre}`}
           className="-mt-3 -mr-1 h-[72px] w-[72px] shrink-0 object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.35)]"
         />
       </div>
