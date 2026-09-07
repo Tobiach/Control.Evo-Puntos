@@ -170,9 +170,9 @@ const DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'vier
 /**
  * true si el horario valle configurado por el dueño está vigente en este momento
  * (día de la semana + franja horaria reales, nunca un countdown decorativo).
+ * `ahora` inyectable para testear sin depender del reloj real.
  */
-export function horarioValleActivoAhora(horario: HorarioValle): boolean {
-  const ahora = new Date();
+export function horarioValleActivoAhora(horario: HorarioValle, ahora: Date = new Date()): boolean {
   if (!horario.dias.includes(ahora.getDay())) return false;
   const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
   const [horaDesde, minDesde] = horario.desde.split(':').map(Number);

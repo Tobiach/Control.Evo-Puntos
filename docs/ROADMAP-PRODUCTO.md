@@ -92,10 +92,12 @@ Marcar acá el avance. `[~]` = en progreso.
 
 ## Fase 2 — El Home como motor de relevancia (F1, F6, F8)
 
-- [ ] 2.0 · Spec escrita en `docs/` (objetivo, JTBD, jerarquía, estados, métrica) antes de tocar código
-- [ ] 2.1 · Subir `avisosCliente` a nivel marketplace + hacerlo **cross-comercio**: recorrer
-  todas las relaciones, calcular señales (vencimiento, near-win, recompensa alcanzada, x2
-  activo/próximo, racha en riesgo), rankear por urgencia, elegir **1 héroe**
+- [x] 2.0 · Spec escrita: [SPEC-HOME.md](SPEC-HOME.md) (A–L: objetivo, usuario, JTBD, señales y
+  su fuente real, jerarquía, estados, riesgos, métrica)
+- [x] 2.1 · Motor de relevancia cross-comercio: `src/lib/home.ts` — `senalesDelCliente()` /
+  `heroeDelHome()`, puro y con `ahora` inyectable. Señales: vencimiento (2 niveles de urgencia),
+  recompensa-lista, x2-ahora, near-win, racha-riesgo, + fallbacks `al-dia` / `descubrir`.
+  `home.test.ts` (9 tests). `horarioValleActivoAhora` ahora acepta `ahora` inyectable.
 - [ ] 2.2 · Rediseñar `Marketplace.tsx`: héroe + máx. 2 secciones curadas. Buscador y filtros de
   rubro se van a `Explorar`. Retirar chips de intención y "Premia recomienda" con "Foto pendiente"
 - [ ] 2.3 · Estados del héroe: sin señales / invitado / 1 sola relación / usuario nuevo real (0 relaciones)
