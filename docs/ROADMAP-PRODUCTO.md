@@ -70,16 +70,25 @@ Marcar acá el avance. `[~]` = en progreso.
 
 ## Fase 1 — El momento del mostrador (F3)
 
-- [ ] 1.1 · Detectar el delta positivo de puntos en la suscripción realtime de
-  `relaciones_negocio` (`MarketplaceApp.tsx:131-167`)
-- [ ] 1.2 · Componente `CreditoEnVivo`: overlay "+N pts en {negocio}" + vibración
-  (`navigator.vibrate`) + sonido (`lib/sonidos.ts`) + confetti (`lib/confetti.ts`)
-- [ ] 1.3 · El progreso a la próxima recompensa **nombrada** (`proximaRecompensa`) se anima con
-  ese evento — barra de `TabInicio` y anillo de `TabActividad`
-- [ ] 1.4 · Estado "crédito reciente" accesible al reabrir la app (no se pierde si bloqueó el
-  teléfono unos segundos)
-- [ ] 1.5 · Tests nuevos (patrón del `*.test.tsx` vecino) + verificación en navegador móvil
-- [ ] 1.6 · Aviso "listo para deploy" → **checkpoint humano**
+- [x] 1.1 · Detectar el delta positivo de puntos en la suscripción realtime de
+  `relaciones_negocio` (`MarketplaceApp.tsx`, con `relacionesRef`/`negociosRef`/`cargaListaRef`
+  para no re-suscribir el canal ni disparar un delta falso antes del primer snapshot)
+- [x] 1.2 · Componente `CreditoEnVivo`: overlay "+N pts en {negocio}" (zona del pulgar) +
+  vibración (`navigator.vibrate`) + sonido (`sonidoPuntos` nuevo en `lib/sonidos.ts`) +
+  confetti (`lib/confetti.ts`) + barra a la próxima recompensa nombrada. Se va solo a los ~5 s.
+- [x] 1.3 · El progreso a la próxima recompensa se anima con el evento: `useConteoAnimado`
+  extraído a `src/hooks/` y ahora anima desde el valor anterior (no siempre desde 0), y las
+  barras/anillo de `TabInicio`/`TabActividad` ya reaccionan al cambio de `cliente.puntos`
+- [x] 1.4 · Crédito reciente persistido en `sessionStorage` (90 s): sobrevive un bloqueo corto
+  de pantalla / reapertura de la app
+- [x] 1.5 · `CreditoEnVivo.test.tsx` (5 tests, sin fake timers — usa `msVisible` + `waitFor`).
+  lint 0 · build ok. `CreditoEnVivo` y `Marketplace` pasan aislados (5/5 y 10/10). **Flake
+  pre-existente** (ya se veía antes de Fase 1): `Marketplace.test.tsx` / `TabRecompensas.test.tsx`
+  fallan de forma intermitente en la corrida completa bajo carga de CPU, en los `waitFor` sobre
+  animaciones de salida de `AnimatePresence`. No lo introdujo este cambio y no toca `Marketplace.tsx`.
+  Se sube `asyncUtilTimeout` a 5 s (mejora real). Fix de raíz → C.5.
+- [ ] 1.6 · Verificación en navegador móvil real (cajero acredita → cliente lo siente) → **pendiente**
+- [ ] 1.7 · Aviso "listo para deploy" → **checkpoint humano**
 
 ## Fase 2 — El Home como motor de relevancia (F1, F6, F8)
 
@@ -124,6 +133,9 @@ Marcar acá el avance. `[~]` = en progreso.
   solo en el marketplace, rotulado "Red Premia"
 - [ ] C.3 · Mover hex hardcodeados a tokens de `src/index.css`
 - [ ] C.4 · `aria-*` en barras de progreso y `aria-current` en las nav
+- [ ] C.5 · Estabilizar `Marketplace.test.tsx` / `TabRecompensas.test.tsx`: sus tests esperan a
+  animaciones de salida de `AnimatePresence` con `waitFor` y flakean bajo carga. Opciones: mockear
+  `AnimatePresence` a passthrough en esos tests, o asertar sin depender del timing de la salida.
 
 ---
 

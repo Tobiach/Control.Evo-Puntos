@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
@@ -16,7 +16,12 @@ import {
   type Negocio,
   type RelacionNegocio,
 } from '../../data/negocios';
-import { calcularXpTotal, nivelesDeNegocio, type ResultadoCanje } from '../../lib/club';
+import {
+  calcularXpTotal,
+  nivelesDeNegocio,
+  proximaRecompensa,
+  type ResultadoCanje,
+} from '../../lib/club';
 import { usePermisoNotificaciones } from '../../lib/notificaciones';
 import { supabase, supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
@@ -29,6 +34,11 @@ import {
 import { procesarReferidoPendiente } from '../../lib/referidos';
 import AppCliente from './AppCliente';
 import MarketplaceShell from './MarketplaceShell';
+import CreditoEnVivo, { type CreditoReciente } from './CreditoEnVivo';
+
+/** Un crédito recién acreditado sobrevive un bloqueo corto de pantalla / reapertura de la app. */
+const CLAVE_CREDITO = 'celp_credito_reciente';
+const MS_CREDITO_VIGENTE = 90_000;
 
 interface Props {
   /** Rubro elegido en la bienvenida: define el tema del marketplace y la persona logueada. */
@@ -89,6 +99,49 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
   const [canjesConfirmados, setCanjesConfirmados] = useState<CanjeConfirmado[]>([]);
   // Última tirada de la ruleta semanal por negocio (mismo patrón in-memory que `relaciones`).
   const [tiradasRuleta, setTiradasRuleta] = useState<Record<string, number>>({});
+  // Crédito de puntos recién acreditado por el cajero (F3) — lo celebra CreditoEnVivo.
+  const [creditoReciente, setCreditoReciente] = useState<CreditoReciente | null>(null);
+  // Refs para leer estado actual dentro del callback de realtime sin re-suscribir el canal.
+  const relacionesRef = useRef(relaciones);
+  const negociosRef = useRef(negocios);
+  const cargaListaRef = useRef(false);
+  useEffect(() => {
+    relacionesRef.current = relaciones;
+  }, [relaciones]);
+  useEffect(() => {
+    negociosRef.current = negocios;
+  }, [negocios]);
+
+  const mostrarCredito = (credito: CreditoReciente) => {
+    setCreditoReciente(credito);
+    try {
+      sessionStorage.setItem(CLAVE_CREDITO, JSON.stringify({ ...credito, ts: Date.now() }));
+    } catch {
+      // sessionStorage puede fallar (modo privado, cuota): el overlay igual se muestra.
+    }
+  };
+  const cerrarCredito = () => {
+    setCreditoReciente(null);
+    try {
+      sessionStorage.removeItem(CLAVE_CREDITO);
+    } catch {
+      /* no-op */
+    }
+  };
+
+  // Reapertura de la app poco después de un crédito (ej. desbloqueó el teléfono): rehidratamos
+  // el overlay una vez si el crédito sigue fresco.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(CLAVE_CREDITO);
+      if (!raw) return;
+      const guardado = JSON.parse(raw) as CreditoReciente & { ts: number };
+      if (Date.now() - guardado.ts < MS_CREDITO_VIGENTE) setCreditoReciente(guardado);
+      else sessionStorage.removeItem(CLAVE_CREDITO);
+    } catch {
+      /* no-op */
+    }
+  }, []);
   // Arranca en `true` hasta saber si la sesión es real: así un usuario autenticado nunca ve,
   // ni por un frame, las relaciones de ejemplo (decisión de producto 6/9/2026 — ver F0 en
   // docs/DIAGNOSTICO-PRODUCTO.md). Los efectos de abajo lo apagan según corresponda.
@@ -117,6 +170,9 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         setRelaciones({ ...res.valor.relaciones });
         setClienteReal(res.valor.cliente);
         setCanjesConfirmados(res.valor.canjesConfirmados);
+        // A partir de acá el snapshot real está en memoria: recién ahora un evento de realtime
+        // con más puntos es un crédito de verdad (antes, el "anterior" sería 0 y el delta falso).
+        cargaListaRef.current = true;
         // Ya hay sesión + cliente vinculado: registramos el referido pendiente (si vino de un
         // link de invitación). Idempotente y server-side; no bloquea la carga de la app.
         void procesarReferidoPendiente();
@@ -159,6 +215,19 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         (payload) => {
           const fila = payload.new as { negocio_id: string; puntos: number; ultima_visita_at: string | null } | null;
           if (!fila) return;
+          // Delta positivo con el snapshot ya cargado = el cajero acreditó puntos: se celebra.
+          const anterior = relacionesRef.current[fila.negocio_id]?.puntos ?? 0;
+          if (cargaListaRef.current && fila.puntos > anterior) {
+            const negocioCredito = negociosRef.current.find((n) => n.id === fila.negocio_id);
+            mostrarCredito({
+              negocioNombre: negocioCredito?.nombre ?? 'tu local',
+              delta: fila.puntos - anterior,
+              puntosTotales: fila.puntos,
+              proxima: negocioCredito
+                ? proximaRecompensa(negocioCredito.recompensas, fila.puntos)
+                : null,
+            });
+          }
           setRelaciones((previas) => {
             const actual = previas[fila.negocio_id];
             const dias = fila.ultima_visita_at
@@ -294,6 +363,8 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
   }
 
   return (
+    <>
+    <CreditoEnVivo credito={creditoReciente} onCerrar={cerrarCredito} />
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={negocio ? negocio.id : 'marketplace'}
@@ -327,5 +398,6 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         )}
       </motion.div>
     </AnimatePresence>
+    </>
   );
 }

@@ -57,6 +57,32 @@ export function sonidoRuletaGirando(duracionMs: number): void {
 }
 
 /**
+ * Puntos acreditados en vivo (el cajero cobra y el saldo sube en el teléfono): tres notas
+ * ascendentes cortas y brillantes, tipo "moneda que entra". Distinto del chasquido de revelar.
+ * Puede no sonar en iOS si el AudioContext quedó suspendido (esto no cuelga de un gesto de
+ * usuario, es un push del servidor) — el confetti y el overlay son el feedback principal.
+ */
+export function sonidoPuntos(): void {
+  const audio = contexto();
+  if (!audio) return;
+  const inicio = audio.currentTime;
+  const notas = [660, 880, 1320]; // mi5 - la5 - mi6
+  notas.forEach((frecuencia, indice) => {
+    const cuando = inicio + indice * 0.075;
+    const osc = audio.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = frecuencia;
+    const ganancia = audio.createGain();
+    ganancia.gain.setValueAtTime(0.0001, cuando);
+    ganancia.gain.exponentialRampToValueAtTime(0.16, cuando + 0.02);
+    ganancia.gain.exponentialRampToValueAtTime(0.001, cuando + 0.22);
+    osc.connect(ganancia).connect(audio.destination);
+    osc.start(cuando);
+    osc.stop(cuando + 0.24);
+  });
+}
+
+/**
  * Chasquido al revelar la recompensa sorpresa: un "snap" seco (barrido de tono descendente
  * muy rápido) + una chispa de brillos agudos ascendentes justo después — pensado para el
  * momento de "revelar algo", no un click genérico.

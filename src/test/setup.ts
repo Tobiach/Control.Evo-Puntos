@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+
+// `waitFor` por defecto espera 1 s. Varios tests esperan a que terminen animaciones de salida
+// de `AnimatePresence` (motion/react), que son wall-clock: en máquinas de pocos cores, bajo
+// carga, 1 s no alcanza y el test flakea sin que haya nada roto. 5 s da margen sin volver
+// lento el camino feliz (resuelve apenas la condición se cumple).
+configure({ asyncUtilTimeout: 5000 });
 
 // Limpia el DOM entre tests (react testing library no lo hace solo sin globals).
 afterEach(() => {

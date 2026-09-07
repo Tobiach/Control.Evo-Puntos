@@ -48,6 +48,7 @@ import {
 } from '../../lib/misiones';
 import type { Aviso, PermisoNotif } from '../../lib/notificaciones';
 import { lanzarConfetti } from '../../lib/confetti';
+import { useConteoAnimado } from '../../hooks/useConteoAnimado';
 import { supabaseEnabled } from '../../lib/supabase';
 import { MOSTRAR_RULETA_Y_SORPRESA } from '../../lib/flags';
 import { gradienteCss } from '../../lib/temaNegocio';
@@ -134,28 +135,6 @@ function InvitarDesdeInicio({
       </span>
     </button>
   );
-}
-
-/** Cuenta de 0 al valor con easing, para que el contador "suba" al entrar. */
-function useConteoAnimado(valor: number, duracionMs = 900): number {
-  const [mostrado, setMostrado] = useState(0);
-  useEffect(() => {
-    if (valor <= 0) {
-      setMostrado(0);
-      return;
-    }
-    let raf = 0;
-    const inicio = performance.now();
-    const paso = (ahora: number) => {
-      const avance = Math.min(1, (ahora - inicio) / duracionMs);
-      const suavizado = 1 - Math.pow(1 - avance, 3);
-      setMostrado(Math.round(valor * suavizado));
-      if (avance < 1) raf = requestAnimationFrame(paso);
-    };
-    raf = requestAnimationFrame(paso);
-    return () => cancelAnimationFrame(raf);
-  }, [valor, duracionMs]);
-  return mostrado;
 }
 
 export default function TabInicio({
