@@ -63,10 +63,10 @@ Marcar acá el avance. `[~]` = en progreso.
 - [x] 0.2 · Diagnóstico + roadmap versionados en `docs/`
 - [x] 0.3 · Decisión de analítica (archivo SQL, no PostHog aún) — documentado arriba
 - [x] 0.4a · **F0** — usuarios reales sin relaciones de ejemplo (`MarketplaceApp.tsx`)
-- [ ] 0.4b · `src/lib/flags.ts` + ocultar ruleta y recompensa sorpresa en `TabInicio`
-- [ ] 0.4c · Ocultar "Tu grupo esta semana" y "Desafío entre amigos" mock de `TabPerfil` cuando hay backend
-- [ ] 0.4d · Nota en `docs/ARQUITECTURA.md`: demos = usuario de demostración
-- [ ] 0.5 · `docs/METRICAS.sql` — queries de funnel sobre tablas existentes
+- [x] 0.4b · `src/lib/flags.ts` + ocultar ruleta y recompensa sorpresa en `TabInicio`
+- [x] 0.4c · Ocultar "Tu grupo esta semana" y "Desafío entre amigos" mock de `TabPerfil` cuando hay backend
+- [x] 0.4d · Nota en `docs/ARQUITECTURA.md`: demos = usuario de demostración
+- [x] 0.5 · `docs/METRICAS.sql` — queries de funnel sobre tablas existentes
 
 ## Fase 1 — El momento del mostrador (F3)
 

@@ -49,6 +49,7 @@ import {
 import type { Aviso, PermisoNotif } from '../../lib/notificaciones';
 import { lanzarConfetti } from '../../lib/confetti';
 import { supabaseEnabled } from '../../lib/supabase';
+import { MOSTRAR_RULETA_Y_SORPRESA } from '../../lib/flags';
 import { gradienteCss } from '../../lib/temaNegocio';
 import RecompensaSorpresa from './RecompensaSorpresa';
 import RuletaSemanal from './RuletaSemanal';
@@ -549,14 +550,20 @@ export default function TabInicio({
         </div>
       )}
 
-      <RuletaSemanal ultimaTiradaTs={ultimaRuletaTs} onGirar={onGirarRuleta} premios={data.premiosRuleta} />
+      {/* F5: ruleta y recompensa sorpresa no persisten server-side (se resetean al recargar).
+          Ocultas hasta tener backend real — flag en src/lib/flags.ts. */}
+      {MOSTRAR_RULETA_Y_SORPRESA && (
+        <>
+          <RuletaSemanal ultimaTiradaTs={ultimaRuletaTs} onGirar={onGirarRuleta} premios={data.premiosRuleta} />
 
-      <RecompensaSorpresa
-        key={sorpresasUsadas}
-        disponible={sorpresaDisponible}
-        faltan={faltanSorpresa}
-        onUsar={() => setSorpresasUsadas((valor) => valor + 1)}
-      />
+          <RecompensaSorpresa
+            key={sorpresasUsadas}
+            disponible={sorpresaDisponible}
+            faltan={faltanSorpresa}
+            onUsar={() => setSorpresasUsadas((valor) => valor + 1)}
+          />
+        </>
+      )}
       </div>
     </div>
   );

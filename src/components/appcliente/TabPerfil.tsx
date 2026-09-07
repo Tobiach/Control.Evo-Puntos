@@ -21,6 +21,8 @@ import type { Cliente, RubroData, Visita } from '../../data/mockClientes';
 import { formatPuntos, nivelDe, type CanjeParaTimeline } from '../../lib/club';
 import { estadoAperturaAhora } from '../../lib/horarios';
 import { desafioSemanal, rankingGrupo } from '../../lib/social';
+import { supabaseEnabled } from '../../lib/supabase';
+import { MOSTRAR_SOCIAL_MOCK_CON_BACKEND } from '../../lib/flags';
 import CardNivelXp from './CardNivelXp';
 import SeccionReferidos from './SeccionReferidos';
 import SeccionDesafios from './SeccionDesafios';
@@ -69,6 +71,10 @@ export default function TabPerfil({
 }: Props) {
   const [enRanking, setEnRanking] = useState(false);
 
+  // "Tu grupo esta semana" y "Desafío entre amigos" salen de datos mock (lib/social.ts).
+  // Solo se muestran en la demo de venta; con backend real, SeccionReferidos + SeccionDesafios
+  // (más abajo, RPC reales) cubren la capa social. Ver F5 y src/lib/flags.ts.
+  const mostrarSocialMock = !supabaseEnabled || MOSTRAR_SOCIAL_MOCK_CON_BACKEND;
   const grupo = rankingGrupo(negocioId, historial, cliente.nombre);
   const desafio = desafioSemanal(negocioId, historial);
   const nivelActual = nivelDe(data.niveles, cliente.puntos);
@@ -209,6 +215,8 @@ export default function TabPerfil({
         </section>
       )}
 
+      {mostrarSocialMock && (
+      <>
       <section>
         <p className="mb-2 flex items-center gap-1.5 text-xs font-bold tracking-widest text-texto-muted uppercase">
           <Users size={13} /> Tu grupo esta semana
@@ -277,6 +285,8 @@ export default function TabPerfil({
           </div>
         </div>
       </section>
+      </>
+      )}
 
       <SeccionReferidos negocioId={negocioId} data={data} cliente={cliente} />
 

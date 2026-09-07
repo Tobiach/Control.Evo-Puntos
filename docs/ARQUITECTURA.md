@@ -46,6 +46,13 @@ Dos cosas están desacopladas y conviene no confundirlas:
    un cliente demo siempre navega sobre el array mock `NEGOCIOS` (`src/data/negocios.ts`),
    sin importar si Supabase está configurado.
 
+**Relaciones de ejemplo (`RELACIONES_INICIALES`)**: los 4 saldos/rachas/historiales precargados
+solo se siembran para **invitado y demo** (`!usarReal`). Un usuario autenticado real **arranca
+sin ninguna relación** — solo ve lo que devuelve Supabase (decisión de producto del 6/9/2026,
+ver `docs/DIAGNOSTICO-PRODUCTO.md` F0). Para mostrarle a alguien la experiencia "con datos
+cargados", entrar con un **usuario de demostración** (`SelectorDemo` / invitado), nunca con una
+cuenta real.
+
 `es_muestra` en la tabla `negocios` de Supabase separa negocios de **demo de venta privada**
 (un prospecto viendo su propio local antes de decidir) de negocios **reales del marketplace**
 público — solo los segundos aparecen para clientes reales.
