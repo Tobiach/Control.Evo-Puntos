@@ -24,8 +24,10 @@ import {
   formatCuentaRegresiva,
   formatMonto,
   formatPuntos,
+  proximaRecompensa,
   type ResultadoCanje,
 } from '../../lib/club';
+import { textoHorarioValle } from '../../lib/misiones';
 
 interface Props {
   data: RubroData;
@@ -75,6 +77,9 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
 
   const restanteMs = canjeActivo ? Math.max(0, canjeActivo.expiraAtMs - ahora) : 0;
   const expirado = canjeActivo !== null && restanteMs <= 0;
+  // Para el cierre post-canje: `cliente.puntos` ya viene descontado cuando se abre el modal
+  // (el padre actualiza la relación al confirmar el canje).
+  const proximaTrasCanje = proximaRecompensa(data.recompensas, cliente.puntos);
 
   const canjear = async (recompensa: Recompensa) => {
     if (canjeando) return;
@@ -286,12 +291,34 @@ export default function TabRecompensas({ data, cliente, onCanjear }: Props) {
                   <p className="mt-3 flex items-center justify-center gap-1.5 text-sm font-bold text-white/80">
                     <Clock size={14} /> {formatCuentaRegresiva(restanteMs)}
                   </p>
+
+                  {/* Reabre el loop en el pico de dopamina: qué sigue + una razón para volver. */}
+                  <div className="mt-4 rounded-2xl bg-white/5 px-4 py-3 text-left">
+                    {proximaTrasCanje ? (
+                      <p className="text-xs leading-snug text-white/70">
+                        Te quedan{' '}
+                        <span className="font-bold text-white">{formatPuntos(cliente.puntos)} pts</span>. Vas
+                        para <span className="font-bold text-white">{proximaTrasCanje.descripcion}</span> — te
+                        faltan {formatPuntos(proximaTrasCanje.pts - cliente.puntos)}.
+                      </p>
+                    ) : (
+                      <p className="text-xs leading-snug text-white/70">
+                        Con esto te alcanza para todo el catálogo de {data.nombreNegocio}. 👑
+                      </p>
+                    )}
+                    {data.horarioValle && (
+                      <p className="mt-1.5 text-xs font-bold text-premio-claro">
+                        🔥 {textoHorarioValle(data.horarioValle)} — volvé y sumás el doble.
+                      </p>
+                    )}
+                  </div>
+
                   <button
                     type="button"
                     onClick={() => setCanjeActivo(null)}
                     className="mt-5 w-full rounded-2xl bg-acento py-3 text-sm font-bold text-on-acento active:bg-acento-hover"
                   >
-                    Listo
+                    Seguir sumando
                   </button>
                 </>
               )}

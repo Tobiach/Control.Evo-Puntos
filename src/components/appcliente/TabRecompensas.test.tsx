@@ -39,6 +39,19 @@ describe('TabRecompensas', () => {
     ).toBeInTheDocument();
   });
 
+  it('el cierre post-canje reabre el loop y cierra el modal con "Seguir sumando"', async () => {
+    const onCanjear = vi.fn().mockResolvedValue(canjeOk());
+    render(<TabRecompensas data={gastro} cliente={cliente(1300)} onCanjear={onCanjear} />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'CANJEAR AHORA' })[0]);
+    await waitFor(() => expect(screen.getByText('A1B2C3')).toBeInTheDocument());
+    // Con 1300 pts alcanza todo el catálogo gastro → mensaje de catálogo completo.
+    expect(screen.getByText(/te alcanza para todo el catálogo/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Seguir sumando' }));
+    await waitFor(() => expect(screen.queryByText('A1B2C3')).toBeNull());
+  });
+
   it('muestra el error del servidor sin abrir el modal de código', async () => {
     const onCanjear = vi.fn().mockResolvedValue({ ok: false, error: 'No tenés puntos suficientes para este premio.' });
     render(<TabRecompensas data={gastro} cliente={cliente(1300)} onCanjear={onCanjear} />);

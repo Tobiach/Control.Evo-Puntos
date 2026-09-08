@@ -134,7 +134,10 @@ en `docs/METRICAS.sql`, tiempo entre `app_abierta` y primer `negocio_abierto` (d
 ## Alcance de la implementación (Fase 2)
 
 1. **2.1 — `src/lib/home.ts`** ✅: `senalesDelCliente()` / `heroeDelHome()`, puro y testeable.
-2. **2.2 — `Marketplace.tsx`**: reescribir el render según G. Mover buscador/filtros a `Explorar`.
+2. **2.2 — `Marketplace.tsx`** ✅: héroe + "Tus lugares" + "Nuevos para vos" según G. Se retiraron
+   todas las secciones débiles. Desviación consciente: buscador + filtros + lista completa quedan
+   abajo como "Todos los locales" en vez de irse a Explorar — mover eso es 2.2b (requiere que la
+   lista de `TabMapa` deje de depender de la geo).
 3. **2.3 — usuario nuevo real + estados** (J): `src/lib/entrada.ts` (`contextoDeEntrada()` +
    clave durable `celp_entrada`), `HomeVacio.tsx` ("Arrancás la partida", 3 variantes),
    `ComoFunciona.tsx`, branch en `Marketplace.tsx`. Framing de juego (`docs/NIVELES-Y-PREMIN.md`).

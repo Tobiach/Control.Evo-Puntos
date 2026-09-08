@@ -102,8 +102,13 @@ Marcar acá el avance. `[~]` = en progreso.
   `heroeDelHome()`, puro y con `ahora` inyectable. Señales: vencimiento (2 niveles de urgencia),
   recompensa-lista, x2-ahora, near-win, racha-riesgo, + fallbacks `al-dia` / `descubrir`.
   `home.test.ts` (9 tests). `horarioValleActivoAhora` ahora acepta `ahora` inyectable.
-- [ ] 2.2 · Rediseñar `Marketplace.tsx`: héroe + máx. 2 secciones curadas. Buscador y filtros de
-  rubro se van a `Explorar`. Retirar chips de intención y "Premia recomienda" con "Foto pendiente"
+- [x] 2.2 · **Rediseñado `Marketplace.tsx`**: héroe (`heroeDelHome`) arriba + "Tus lugares" +
+  "Nuevos para vos". Retirados: banner Comunidad, chips de intención, card "Puntos sumados",
+  card "N locales cerca", "Los más elegidos", "Hoy pasa esto", "Premia recomienda" (Foto
+  pendiente), "Tu historia reciente". Buscador + filtros de rubro + lista completa quedan
+  **abajo** como "Todos los locales" (con link "En el mapa" a Explorar) — mover eso del todo a
+  Explorar es 2.2b, requiere de-gatear la lista de `TabMapa` de la geo. `Marketplace.test.tsx`
+  reescrito (9 tests).
 - [x] 2.3a · **Nombres de nivel + evolución de Premín** (decisión de Tobías 7/9): renombrado
   `NIVELES_XP_GLOBAL` (Recién Llegado → Cliente Fijo → Habitué → Cráneo del Barrio → Prócer del
   Barrio, sin emoji), campo `NivelXp.premin` para el asset por nivel, `docs/NIVELES-Y-PREMIN.md`
@@ -111,8 +116,10 @@ Marcar acá el avance. `[~]` = en progreso.
 - [ ] 2.3b · Usuario nuevo real + estados (SPEC §J, framing de juego): `src/lib/entrada.ts`
   (`contextoDeEntrada()` + clave durable `celp_entrada`), `HomeVacio.tsx` ("Arrancás la partida",
   variantes referido / QR / genérico), `ComoFunciona.tsx`, branch en `Marketplace.tsx`. Tests.
-- [ ] 2.4 · Post-canje reabre el loop (F8): pantalla de cierre con próxima meta nombrada + razón
-  concreta de próxima visita (x2 / evento / combo) + gancho de referido
+- [x] 2.4 · **Post-canje reabre el loop** (F8): el modal de código, tras confirmar, muestra
+  "te quedan X pts · vas para {próxima} · te faltan Y" + si hay horario valle "volvé {texto} y
+  sumás el doble". Botón "Seguir sumando". `TabRecompensas.tsx`. El gancho de referido acá va
+  en 2.5.
 - [ ] 2.5 · Referido en momentos de intención (F6): post-canje, post-subida de nivel, y héroe del
   Home cuando no hay urgencia mayor. Copy con el número real ("cuando vaya 1 vez, 100 pts c/u")
 - [x] 2.6a · **Track de evolución de Premín** (Pokédex): `TrackEvolucion.tsx` — 5 formas, actual
@@ -157,6 +164,9 @@ Marcar acá el avance. `[~]` = en progreso.
 - [ ] C.5 · Estabilizar `Marketplace.test.tsx` / `TabRecompensas.test.tsx`: sus tests esperan a
   animaciones de salida de `AnimatePresence` con `waitFor` y flakean bajo carga. Opciones: mockear
   `AnimatePresence` a passthrough en esos tests, o asertar sin depender del timing de la salida.
+- [ ] C.6 · 2.2b — sacar buscador + filtros de rubro + lista completa del Home y llevarlos a
+  `Explorar`. Requiere que la lista de `TabMapa` funcione sin permiso de geolocalización (hoy
+  todo su contenido está detrás de `geo.estado === 'ok'`).
 
 ---
 
