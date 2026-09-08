@@ -50,8 +50,10 @@ Tobías pidió ejecutar sin depender de sus permisos a cada paso. Reglas:
 3. **Confirmar en el SQL Editor si `0022` / `0023` / `0024` ya corrieron en producción**
    (pendiente viejo, ver `docs/SUPABASE.md` y `SEGURIDAD.md` §5.1). No bloquea el front.
 4. **(Opcional)** Hacer el CI obligatorio para mergear a `main` (branch protection en GitHub).
-5. **5 assets de Premín evolucionado** (`/premin/1.png` … `/premin/5.png`) — brief por forma en
-   `docs/NIVELES-Y-PREMIN.md`. Bloquea 2.6 (el momento "evolucionó" y la Pokédex de Perfil).
+5. **Assets de Premín**: las 5 formas están **aprobadas** (hoja del 8/9). Falta el corte fino:
+   5 PNG transparentes por nivel (`public/premin/1..5.png`) + 5 siluetas + subir la hoja a
+   `docs/assets/`. Los produce el diseñador. Sin esto, `TrackEvolucion` y `CardNivelXp` funcionan
+   igual con `/premin.png`; el momento "evolucionó" (2.6b) se puede construir en paralelo.
 
 ---
 
@@ -113,8 +115,14 @@ Marcar acá el avance. `[~]` = en progreso.
   concreta de próxima visita (x2 / evento / combo) + gancho de referido
 - [ ] 2.5 · Referido en momentos de intención (F6): post-canje, post-subida de nivel, y héroe del
   Home cuando no hay urgencia mayor. Copy con el número real ("cuando vaya 1 vez, 100 pts c/u")
-- [ ] 2.6 · Evolución de Premín: momento "Premín evolucionó" al cruzar umbral + línea de evolución
-  (siluetas) en Perfil. **Depende de los 5 assets** (brief en `docs/NIVELES-Y-PREMIN.md`) → checkpoint humano
+- [x] 2.6a · **Track de evolución de Premín** (Pokédex): `TrackEvolucion.tsx` — 5 formas, actual
+  con anillo, bloqueadas en silueta, "Faltan X XP para {forma}". Montado en `TabPerfilMarketplace`.
+  Degrada bien con `/premin.png`; mejora solo cuando lleguen los assets. 4 tests. Las 5 formas
+  quedaron **aprobadas** (8/9) — ver `docs/NIVELES-Y-PREMIN.md`.
+- [ ] 2.6b · Momento "Premín evolucionó" al cruzar umbral de XP (patrón `CreditoEnVivo`: detectar
+  el salto de nivel, hoja celebratoria con la forma nueva + confetti + sonido).
+- [ ] 2.6c · Assets: 5 PNG por nivel (`public/premin/1..5.png`) + 5 siluetas + subir la hoja
+  aprobada a `docs/assets/`. → **checkpoint humano** (los produce el diseñador).
 - [ ] 2.7 · Tests + verificación en navegador
 - [ ] 2.8 · Aviso "listo para deploy" → **checkpoint humano**
 

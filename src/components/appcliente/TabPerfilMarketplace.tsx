@@ -50,6 +50,7 @@ import { compartir } from '../../lib/compartir';
 import { supabaseEnabled } from '../../lib/supabase';
 import { gradienteCss } from '../../lib/temaNegocio';
 import CardNivelXp from './CardNivelXp';
+import TrackEvolucion from './TrackEvolucion';
 import FilaMetricas from './FilaMetricas';
 
 const MESES = [
@@ -319,6 +320,7 @@ export default function TabPerfilMarketplace({
         <>
           {/* 02 — Tu progreso */}
           <CardNivelXp xpTotal={xpTotal} />
+          <TrackEvolucion xpTotal={xpTotal} />
 
           {/* 03 — Tu recorrido */}
           <div>

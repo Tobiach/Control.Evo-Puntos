@@ -47,28 +47,32 @@ Distinto del **rango por local** (`vipDesdePuntos` → "Nuevo → VIP de ESE com
 `beneficiosVip` que configura el dueño): eso es "tu estatus en {local}". La evolución de Premín
 es tu identidad global en toda la Red.
 
-## 3. Evolución de Premín — brief de assets
+## 3. Evolución de Premín — las 5 formas (APROBADAS 8/9/2026)
 
-5 formas, una por nivel. **Assets nuevos a encargar** — el brief maestro §16 prohíbe redibujar a
-Premín; esto lo hace el diseñador. Base: el Premín actual (`/premin.png`).
+5 formas, una por nivel, sobre el Premín real (copa dorada, "P", brújula, zapatillas coral).
+La hoja de referencia aprobada la tiene Tobías — **falta subirla al repo** como
+`docs/assets/premin-evolucion.png` (fuente de verdad para el diseñador).
 
-| Nivel | Forma de Premín (concepto para el diseñador) |
+| Nivel | Forma (como quedó en la hoja aprobada) |
 |---|---|
-| Recién Llegado | Premín base, tal cual hoy. Chico, redondo, ojos grandes, expresión de recién llegado. |
-| Cliente Fijo | Un poco más grande. Suma **un accesorio del barrio** (bufanda, gorrito, mate en la mano). Postura más cómoda. |
-| Habitué | Postura segura, **taza de café en mano**. Se lo ve "en su lugar". Es la forma que más se va a ver — que sea la más carismática. |
-| Cráneo del Barrio | Más accesorios: **anteojos, diario bajo el brazo**, quizás una credencial. Cara de "yo te consigo eso". |
-| Prócer del Barrio | Forma final. Guiño de "monumento": **pedestal, laureles o busto de bronce**, aura dorada sutil. Épico pero con humor, no solemne. |
+| Recién Llegado | Premín base, tal cual `/premin.png`. Brújula de esfera coral. |
+| Cliente Fijo | + **vincha/cinta coral** en la cabeza (señal de "siempre vuelve"). Parado, calmo. Brújula coral. |
+| Habitué | + **bufanda tejida coral/crema** entre las asas, **tacita de café humeante** en una mano, brújula dorada en la otra. La forma más relajada, "como en su casa". |
+| Cráneo del Barrio | + **capa corta verde oscuro**, **bandolera verde con "P"**, 3–4 esferitas orbitando (red). Brújula dorada ornamentada. Sonrisa canchera. |
+| Prócer del Barrio | Forma final: **capa larga coral al viento**, **corona dorada con gema**, **halo dorado**, destellos, brújula dorada tipo sol. |
 
-Requisitos técnicos: PNG con fondo transparente, misma proporción y encuadre que `/premin.png`
-(así el `<img>` no cambia de tamaño al evolucionar), nombres `/premin/1.png` … `/premin/5.png`.
+Requisitos técnicos: PNG con fondo transparente, canvas cuadrado, personaje centrado y parado,
+**misma altura visual en las 5** (que el `<img>` no salte al evolucionar), nombres
+`public/premin/1.png` … `public/premin/5.png`. Además: **silueta plana** de cada una (relleno
+oscuro sobre transparente) para los estados bloqueados de la Pokédex.
 
-### Wiring (ya listo en el código)
+### Wiring (ya en el código)
 
 - `NivelXp.premin?: string` — campo por nivel en `NIVELES_XP_GLOBAL`. Se completa con las rutas
   cuando existan los assets (una línea por nivel).
-- `CardNivelXp` usa `actual.premin ?? '/premin.png'` — hasta que estén los 5, todos muestran el
-  Premín actual. Sin romper nada mientras tanto.
+- `CardNivelXp` y `TrackEvolucion` usan `nivel.premin ?? '/premin.png'` — hasta que estén los 5,
+  todos muestran el Premín actual; en `TrackEvolucion` las formas bloqueadas se ven como silueta
+  (`brightness-0 opacity-30`), que mejora sola cuando lleguen los assets reales por nivel.
 
 ## 4. El momento "Premín evolucionó" (pendiente de implementar)
 
@@ -77,11 +81,12 @@ Cuando el XP global cruza un umbral: pantalla/hoja celebratoria propia — la fo
 `lib/sonidos.ts`, patrón de `CreditoEnVivo`), copy "Premín evolucionó a **{nombre}**". Es el
 gancho más fuerte del sistema de juego: hay que tratarlo como un evento, no como un toast.
 
-## 5. La "Pokédex" — línea de evolución siempre visible
+## 5. La "Pokédex" — línea de evolución siempre visible ✅ (componente hecho)
 
-En Perfil (y en `CardNivelXp` expandido): las 5 formas en fila. Las alcanzadas a color, las
-próximas **en silueta**, con "Faltan {X} XP para {forma}". Se ve desde el nivel 1 — es lo que
-hace que el usuario quiera seguir. Requiere las siluetas (derivables de los assets finales).
+`src/components/appcliente/TrackEvolucion.tsx` — las 5 formas en fila, la actual con anillo, las
+bloqueadas en silueta, y "Faltan {X} XP para que Premín evolucione a {forma}". Ya montado en
+`TabPerfilMarketplace` debajo de `CardNivelXp`. Funciona hoy con `/premin.png` + silueta;
+mejora solo cuando lleguen los 5 assets por nivel.
 
 ## 6. Home del usuario nuevo — framing de juego ("Arrancás la partida")
 
