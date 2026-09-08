@@ -83,6 +83,44 @@ export function sonidoPuntos(): void {
 }
 
 /**
+ * Premín evolucionó (subís de nivel de XP global): un arpegio ascendente + un acorde final
+ * brillante. Es un evento raro y grande — merece más que el chime de puntos.
+ * Mismo caveat de iOS que `sonidoPuntos`.
+ */
+export function sonidoEvolucion(): void {
+  const audio = contexto();
+  if (!audio) return;
+  const inicio = audio.currentTime;
+  const arpegio = [392, 523, 659, 784, 1047]; // sol4 do5 mi5 sol5 do6
+  arpegio.forEach((frecuencia, indice) => {
+    const cuando = inicio + indice * 0.09;
+    const osc = audio.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = frecuencia;
+    const ganancia = audio.createGain();
+    ganancia.gain.setValueAtTime(0.0001, cuando);
+    ganancia.gain.exponentialRampToValueAtTime(0.18, cuando + 0.02);
+    ganancia.gain.exponentialRampToValueAtTime(0.001, cuando + 0.4);
+    osc.connect(ganancia).connect(audio.destination);
+    osc.start(cuando);
+    osc.stop(cuando + 0.42);
+  });
+  [784, 988, 1175].forEach((frecuencia) => {
+    const cuando = inicio + 0.5;
+    const osc = audio.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = frecuencia;
+    const ganancia = audio.createGain();
+    ganancia.gain.setValueAtTime(0.0001, cuando);
+    ganancia.gain.exponentialRampToValueAtTime(0.12, cuando + 0.03);
+    ganancia.gain.exponentialRampToValueAtTime(0.001, cuando + 0.95);
+    osc.connect(ganancia).connect(audio.destination);
+    osc.start(cuando);
+    osc.stop(cuando + 1);
+  });
+}
+
+/**
  * Chasquido al revelar la recompensa sorpresa: un "snap" seco (barrido de tono descendente
  * muy rápido) + una chispa de brillos agudos ascendentes justo después — pensado para el
  * momento de "revelar algo", no un click genérico.

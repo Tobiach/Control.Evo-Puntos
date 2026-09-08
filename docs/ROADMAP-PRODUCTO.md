@@ -119,8 +119,9 @@ Marcar acá el avance. `[~]` = en progreso.
   con anillo, bloqueadas en silueta, "Faltan X XP para {forma}". Montado en `TabPerfilMarketplace`.
   Degrada bien con `/premin.png`; mejora solo cuando lleguen los assets. 4 tests. Las 5 formas
   quedaron **aprobadas** (8/9) — ver `docs/NIVELES-Y-PREMIN.md`.
-- [ ] 2.6b · Momento "Premín evolucionó" al cruzar umbral de XP (patrón `CreditoEnVivo`: detectar
-  el salto de nivel, hoja celebratoria con la forma nueva + confetti + sonido).
+- [x] 2.6b · **Momento "Premín evolucionó"**: `PreminEvoluciono.tsx` + wiring en `MarketplaceApp`
+  (detecta el salto de nivel de XP global, gate para no dispararlo en el arranque). Hoja centrada
+  con la forma nueva, confetti + `sonidoEvolucion` + vibración. 3 tests. Degrada a `/premin.png`.
 - [ ] 2.6c · Assets: 5 PNG por nivel (`public/premin/1..5.png`) + 5 siluetas + subir la hoja
   aprobada a `docs/assets/`. → **checkpoint humano** (los produce el diseñador).
 - [ ] 2.7 · Tests + verificación en navegador

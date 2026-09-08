@@ -74,12 +74,13 @@ oscuro sobre transparente) para los estados bloqueados de la Pokédex.
   todos muestran el Premín actual; en `TrackEvolucion` las formas bloqueadas se ven como silueta
   (`brightness-0 opacity-30`), que mejora sola cuando lleguen los assets reales por nivel.
 
-## 4. El momento "Premín evolucionó" (pendiente de implementar)
+## 4. El momento "Premín evolucionó" ✅ (componente hecho)
 
-Cuando el XP global cruza un umbral: pantalla/hoja celebratoria propia — la forma nueva aparece
-(transición de la anterior a la nueva), confetti + sonido (reusar `lib/confetti.ts`,
-`lib/sonidos.ts`, patrón de `CreditoEnVivo`), copy "Premín evolucionó a **{nombre}**". Es el
-gancho más fuerte del sistema de juego: hay que tratarlo como un evento, no como un toast.
+`src/components/appcliente/PreminEvoluciono.tsx` + wiring en `MarketplaceApp`: cuando el XP global
+cruza un umbral, hoja centrada con la forma nueva entrando con rebote, confetti + fanfarria
+(`sonidoEvolucion` en `lib/sonidos.ts`) + vibración, "¡Premín evolucionó! · Llegaste a {nombre}".
+No se cierra sola: pide un toque. El salto 0 → real del arranque (carga o siembra de demo) no
+cuenta como evolución (gate por `cargando` + `nivelXpListoRef`). Usa `nivel.premin ?? '/premin.png'`.
 
 ## 5. La "Pokédex" — línea de evolución siempre visible ✅ (componente hecho)
 

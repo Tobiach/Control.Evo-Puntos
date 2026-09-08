@@ -18,6 +18,8 @@ import {
 } from '../../data/negocios';
 import {
   calcularXpTotal,
+  NIVELES_XP_GLOBAL,
+  nivelDe,
   nivelesDeNegocio,
   proximaRecompensa,
   type ResultadoCanje,
@@ -35,6 +37,7 @@ import { procesarReferidoPendiente } from '../../lib/referidos';
 import AppCliente from './AppCliente';
 import MarketplaceShell from './MarketplaceShell';
 import CreditoEnVivo, { type CreditoReciente } from './CreditoEnVivo';
+import PreminEvoluciono, { type Evolucion } from './PreminEvoluciono';
 
 /** Un crédito recién acreditado sobrevive un bloqueo corto de pantalla / reapertura de la app. */
 const CLAVE_CREDITO = 'celp_credito_reciente';
@@ -101,6 +104,10 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
   const [tiradasRuleta, setTiradasRuleta] = useState<Record<string, number>>({});
   // Crédito de puntos recién acreditado por el cajero (F3) — lo celebra CreditoEnVivo.
   const [creditoReciente, setCreditoReciente] = useState<CreditoReciente | null>(null);
+  // Premín cruzó un umbral de XP global y evolucionó (2.6b) — lo celebra PreminEvoluciono.
+  const [evolucion, setEvolucion] = useState<Evolucion | null>(null);
+  const nivelXpRef = useRef(-1);
+  const nivelXpListoRef = useRef(false);
   // Refs para leer estado actual dentro del callback de realtime sin re-suscribir el canal.
   const relacionesRef = useRef(relaciones);
   const negociosRef = useRef(negocios);
@@ -262,6 +269,24 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
   // dentro de cada local (CardNivelXp), no es un sistema separado por negocio.
   const xpTotal = useMemo(() => calcularXpTotal(relaciones), [relaciones]);
 
+  // Detecta el salto de nivel de XP global → Premín evoluciona. Mientras `cargando` (o antes de
+  // la primera medición estable) solo sincroniza la referencia, nunca dispara — así el salto
+  // 0 → real del arranque (carga real o siembra de demo) no cuenta como evolución.
+  useEffect(() => {
+    const idx = NIVELES_XP_GLOBAL.indexOf(nivelDe(NIVELES_XP_GLOBAL, xpTotal));
+    if (cargando || !nivelXpListoRef.current) {
+      nivelXpRef.current = idx;
+      if (!cargando) nivelXpListoRef.current = true;
+      return;
+    }
+    if (idx > nivelXpRef.current) {
+      const nv = NIVELES_XP_GLOBAL[idx];
+      setEvolucion({ nivelNombre: nv.nombre, premin: nv.premin ?? '/premin.png' });
+      setCreditoReciente(null); // la evolución subsume el "sumaste N pts" de ese mismo cambio
+    }
+    nivelXpRef.current = idx;
+  }, [xpTotal, cargando]);
+
   // Dentro de un negocio manda el tema de ESE negocio; en el marketplace, el del rubro base.
   useLayoutEffect(() => {
     const rubroVista = negocio ? negocio.rubro : data.rubro;
@@ -364,6 +389,7 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
 
   return (
     <>
+    <PreminEvoluciono evolucion={evolucion} onCerrar={() => setEvolucion(null)} />
     <CreditoEnVivo credito={creditoReciente} onCerrar={cerrarCredito} />
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
