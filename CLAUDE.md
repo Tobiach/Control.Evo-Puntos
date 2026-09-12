@@ -37,8 +37,10 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
   en Supabase + agregados a `src/data/negocios.ts` para invitados; cuenta dueño
   `dueno.muestras-premia.demo@gmail.com`). Decisión de Tobías del 6/9/2026 — los dueños no
   dieron consentimiento y las cartas/recompensas son **genéricas por rubro** (placeholder).
-  **Pendiente: deployar** para que los invitados los vean (el cambio en `src/data/` no sale
-  con un push a `main`). Cómo revertir y todo el detalle en
+  **Reafirmada el 12/9/2026**: se mantienen activos a conciencia (riesgo aceptado, no
+  olvidado) — ver `docs/AUDITORIA-REFERENCIAS-PASITO.md`. **Pendiente técnico sin resolver:
+  deployar** para que los invitados vean el cambio en `src/data/` (un push a `main` no
+  despliega). Cómo revertir y todo el detalle en
   [docs/MUESTRAS-LOTE.md](docs/MUESTRAS-LOTE.md).
 
 ## Convención de trabajo entre sesiones/PCs

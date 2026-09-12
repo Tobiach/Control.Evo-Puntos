@@ -153,6 +153,21 @@ Marcar acá el avance. `[~]` = en progreso.
 - [ ] 4.5 · Prototipo validado con usuarios antes de construir
 - [ ] 4.6 · Implementación + tests + aviso "listo para deploy" → **checkpoint humano**
 
+## Fase 2b — Backlog de la auditoría de referencias (Pasito, 12/9)
+
+Detalle completo, qué logra cada una y por qué importa:
+[AUDITORIA-REFERENCIAS-PASITO.md](AUDITORIA-REFERENCIAS-PASITO.md). Prioridad P1→P3.
+
+- [ ] G2 · Premio visible (pill) en `TarjetaExplorar` — P1, sin dependencias
+- [ ] G1 · Filtro "Te alcanza" en `TabMapa` — P1, sin dependencias
+- [ ] G4 · Filtros "Abierto ahora" + "Favoritos" en `TabMapa` — P2 ("Favoritos" arranca en localStorage)
+- [ ] G3 · Cierre de racha perdida + comparación a tu promedio (`TabActividad`) — P2, valor completo depende de Fase 3
+- [ ] G5 · Misión "subí foto y ganá" — P3, **necesita decisión de moderación/fraude antes de construir**
+- [ ] G6 · Grupos — P3, espera la investigación 4.1
+
+**Ya resuelto en la auditoría, sin acción nueva:** los 73 negocios sin consentimiento se
+mantienen activos a conciencia (decisión de Tobías 12/9, ver `docs/MUESTRAS-LOTE.md`).
+
 ## Continuo — Foco
 
 - [ ] C.1 · Reducir `TabInicio` a: card de puntos + near-win + 1 acción + 1 oportunidad activa (F4)

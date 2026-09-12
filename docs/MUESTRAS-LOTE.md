@@ -9,6 +9,12 @@ usuario final, con o sin cuenta.
 > publicarlos en el marketplace real** para usuario final navegando, asumiendo que: los
 > dueños no dieron consentimiento explícito, y las cartas/premios son genéricos por rubro
 > (placeholder), no el menú real de cada local. Para revertir, ver "Despublicar".
+>
+> **Reafirmada el 12/9/2026.** En la auditoría de cara al lanzamiento
+> (`docs/AUDITORIA-REFERENCIAS-PASITO.md`) se marcó esto como el riesgo P0 más alto de
+> "listo para lanzar" (legal/reputacional: un dueño enterándose sin haber dado consentimiento).
+> Tobías decidió explícitamente **mantenerlos activos y publicados** — riesgo aceptado a
+> conciencia, no un olvido. Sin acción pendiente sobre el consentimiento.
 
 ## Cómo quedan visibles
 
