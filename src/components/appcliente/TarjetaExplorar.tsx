@@ -9,7 +9,8 @@ import { gradienteCss } from '../../lib/temaNegocio';
 interface Props {
   negocio: Negocio;
   relacion: RelacionNegocio | undefined;
-  distanciaKm: number;
+  /** `undefined` sin permiso de ubicación — la card se ve igual, solo sin el chip de distancia. */
+  distanciaKm?: number;
   activo: boolean;
   onAbrir: () => void;
 }
@@ -53,9 +54,11 @@ export default function TarjetaExplorar({ negocio, relacion, distanciaKm, activo
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 from-0% to-transparent to-60%" />
-        <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-white/92 px-2 py-1 text-[10px] font-bold text-texto">
-          <MapPin size={11} strokeWidth={2.5} /> {formatDistancia(distanciaKm)}
-        </span>
+        {distanciaKm != null && (
+          <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-white/92 px-2 py-1 text-[10px] font-bold text-texto">
+            <MapPin size={11} strokeWidth={2.5} /> {formatDistancia(distanciaKm)}
+          </span>
+        )}
         {!negocio.portadaUrl && (
           <span className="absolute right-2.5 bottom-2 flex items-center gap-1 text-[9px] font-semibold text-white/70">
             <Camera size={10} /> Sin foto todavía

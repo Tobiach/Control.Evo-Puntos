@@ -105,10 +105,9 @@ Marcar acá el avance. `[~]` = en progreso.
 - [x] 2.2 · **Rediseñado `Marketplace.tsx`**: héroe (`heroeDelHome`) arriba + "Tus lugares" +
   "Nuevos para vos". Retirados: banner Comunidad, chips de intención, card "Puntos sumados",
   card "N locales cerca", "Los más elegidos", "Hoy pasa esto", "Premia recomienda" (Foto
-  pendiente), "Tu historia reciente". Buscador + filtros de rubro + lista completa quedan
-  **abajo** como "Todos los locales" (con link "En el mapa" a Explorar) — mover eso del todo a
-  Explorar es 2.2b, requiere de-gatear la lista de `TabMapa` de la geo. `Marketplace.test.tsx`
-  reescrito (9 tests).
+  pendiente), "Tu historia reciente", saludo largo. Buscador + filtros de rubro + lista completa
+  se fueron del todo del Home — viven solo en `Explorar` (ver C.6/2.2b). `Marketplace.test.tsx`
+  reescrito.
 - [x] 2.3a · **Nombres de nivel + evolución de Premín** (decisión de Tobías 7/9): renombrado
   `NIVELES_XP_GLOBAL` (Recién Llegado → Cliente Fijo → Habitué → Cráneo del Barrio → Prócer del
   Barrio, sin emoji), campo `NivelXp.premin` para el asset por nivel, `docs/NIVELES-Y-PREMIN.md`
@@ -164,9 +163,10 @@ Marcar acá el avance. `[~]` = en progreso.
 - [ ] C.5 · Estabilizar `Marketplace.test.tsx` / `TabRecompensas.test.tsx`: sus tests esperan a
   animaciones de salida de `AnimatePresence` con `waitFor` y flakean bajo carga. Opciones: mockear
   `AnimatePresence` a passthrough en esos tests, o asertar sin depender del timing de la salida.
-- [ ] C.6 · 2.2b — sacar buscador + filtros de rubro + lista completa del Home y llevarlos a
-  `Explorar`. Requiere que la lista de `TabMapa` funcione sin permiso de geolocalización (hoy
-  todo su contenido está detrás de `geo.estado === 'ok'`).
+- [x] C.6 · **2.2b — hecho (10/9, a pedido de Tobías)**: el Home ya no tiene buscador/filtros/
+  lista — eso vive solo en `Explorar`. `TabMapa` ya no gatea la lista detrás de la geo: se ve
+  siempre (`TarjetaExplorar.distanciaKm` ahora opcional), solo el mapa y "ver mapa completo"
+  siguen pidiendo ubicación. `TabMapa.test.tsx` nuevo (2 tests).
 
 ---
 

@@ -103,7 +103,6 @@ export default function MarketplaceShell({
                 nombreCliente={nombreCliente}
                 esNuevo={esNuevo}
                 onAbrirNegocio={onAbrirNegocio}
-                onIrAMapa={() => setTab('mapa')}
               />
             )}
             {tab === 'mapa' && (

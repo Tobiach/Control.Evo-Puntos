@@ -105,11 +105,7 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
   return (
     <div className="flex flex-1 flex-col">
       {/* Mapa + filtros fijos arriba: bajar a ver más locales nunca los tapa. */}
-      <div
-        className={`sticky top-0 z-10 flex flex-col gap-4 bg-fondo pt-6 pb-3 ${
-          geo.estado === 'ok' ? 'border-b border-borde' : ''
-        }`}
-      >
+      <div className="sticky top-0 z-10 flex flex-col gap-4 border-b border-borde bg-fondo pt-6 pb-3">
         <div className="flex flex-col gap-4 px-5">
           <h1 className="text-2xl font-bold text-texto">Explorar</h1>
 
@@ -183,54 +179,54 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
         )}
       </div>
 
-      {geo.estado === 'ok' && (
-        <>
-          <div className="flex flex-col gap-3 px-5 pt-4 pb-6">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-texto">Cerca tuyo</p>
-              <button
-                type="button"
-                onClick={() => setMapaCompleto(true)}
-                className="flex items-center gap-1 text-xs font-bold text-premio"
-              >
-                <Maximize2 size={12} strokeWidth={2.5} /> Ver mapa completo
-              </button>
-            </div>
+      {/* La lista nunca depende del permiso de ubicación — sin geo se ve igual, solo sin
+          ordenar por distancia y sin el chip de "a Xkm" en cada card. */}
+      <div className="flex flex-col gap-3 px-5 pt-4 pb-6">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-texto">{coords ? 'Cerca tuyo' : 'Locales'}</p>
+          {geo.estado === 'ok' && (
+            <button
+              type="button"
+              onClick={() => setMapaCompleto(true)}
+              className="flex items-center gap-1 text-xs font-bold text-premio"
+            >
+              <Maximize2 size={12} strokeWidth={2.5} /> Ver mapa completo
+            </button>
+          )}
+        </div>
 
-            {cercanos.length === 0 ? (
-              <p className="rounded-2xl border border-borde bg-card px-4 py-6 text-center text-sm text-texto-muted">
-                No encontramos locales con ese filtro.
-              </p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {cercanos.map((negocio) => (
-                  <TarjetaExplorar
-                    key={negocio.id}
-                    negocio={negocio}
-                    relacion={relaciones[negocio.id]}
-                    distanciaKm={distanciaKm(geo.coords, negocio)}
-                    activo={negocio.id === negocioActivoId}
-                    onAbrir={() => onAbrirNegocio(negocio)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          <AnimatePresence>
-            {mapaCompleto && (
-              <MapaCompleto
-                negocios={visibles}
-                relaciones={relaciones}
-                coords={geo.coords}
-                negocioActivoId={negocioActivoId}
-                onSeleccionar={seleccionar}
-                onCerrar={() => setMapaCompleto(false)}
+        {cercanos.length === 0 ? (
+          <p className="rounded-2xl border border-borde bg-card px-4 py-6 text-center text-sm text-texto-muted">
+            No encontramos locales con ese filtro.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {cercanos.map((negocio) => (
+              <TarjetaExplorar
+                key={negocio.id}
+                negocio={negocio}
+                relacion={relaciones[negocio.id]}
+                distanciaKm={coords ? distanciaKm(coords, negocio) : undefined}
+                activo={negocio.id === negocioActivoId}
+                onAbrir={() => onAbrirNegocio(negocio)}
               />
-            )}
-          </AnimatePresence>
-        </>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {mapaCompleto && geo.estado === 'ok' && (
+          <MapaCompleto
+            negocios={visibles}
+            relaciones={relaciones}
+            coords={geo.coords}
+            negocioActivoId={negocioActivoId}
+            onSeleccionar={seleccionar}
+            onCerrar={() => setMapaCompleto(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
