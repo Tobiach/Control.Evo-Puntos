@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { NEGOCIOS, RELACIONES_INICIALES } from '../../data/negocios';
+import { NEGOCIOS, RELACIONES_INICIALES, type Negocio } from '../../data/negocios';
 import Marketplace from './Marketplace';
 
 const renderMarketplace = () =>
@@ -37,6 +37,33 @@ describe('Marketplace', () => {
       .filter((negocio) => !RELACIONES_INICIALES[negocio.id])
       .sort((a, b) => b.clientesActivos - a.clientesActivos)[0];
     expect(screen.getByText(esperado.nombre)).toBeInTheDocument();
+  });
+
+  it('el héroe en tono calmo usa la foto real del negocio como fondo (G8)', () => {
+    const negocioConFoto: Negocio = {
+      id: 'con-foto',
+      nombre: 'Café De Prueba',
+      categoria: 'Café',
+      rubro: 'cafeteria',
+      emoji: '☕',
+      lat: -34.58,
+      lng: -58.42,
+      clientesActivos: 999,
+      fechaAlta: '2026-01-01',
+      recompensas: [{ pts: 100000, descripcion: 'Lejano', categoria: 'Bebidas' }],
+      portadaUrl: '/portadas/cafe-de-prueba.jpg',
+    };
+    // Sin relaciones → fallback "descubrir" (tono calmo) sobre el único negocio disponible.
+    const { container } = render(
+      <Marketplace
+        negocios={[negocioConFoto]}
+        relaciones={{}}
+        nombreCliente="Martina Gómez"
+        esNuevo
+        onAbrirNegocio={vi.fn()}
+      />,
+    );
+    expect(container.querySelector('img[src="/portadas/cafe-de-prueba.jpg"]')).not.toBeNull();
   });
 
   it('sin héroe posible (sin negocios) no rompe la pantalla', () => {

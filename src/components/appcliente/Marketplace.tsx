@@ -14,6 +14,7 @@ import {
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import { formatPuntos } from '../../lib/club';
 import { heroeDelHome, type SenalHome, type TipoSenal } from '../../lib/home';
+import { gradienteCss } from '../../lib/temaNegocio';
 
 interface Props {
   negocios: Negocio[];
@@ -64,6 +65,12 @@ function Heroe({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void }) {
     senal.faltan != null && senal.recompensa
       ? Math.min(100, Math.round((senal.puntos / senal.recompensa.pts) * 100))
       : null;
+  // Tono "calmo" (al-dia / descubrir) son los estados más frecuentes —usuario satisfecho sin
+  // urgencias, o usuario nuevo— y los que menos necesitan gritar una alerta. Ahí usamos la
+  // foto real del negocio de fondo (mismo lenguaje que TarjetaExplorar/TabInicio) para que el
+  // Home no pierda la sensación de "red viva" que tenía el banner ilustrado retirado en 2.2,
+  // sin agregar una sección nueva ni copy genérico (ver AUDITORIA-REFERENCIAS-PASITO.md, G8).
+  const conFoto = tono === 'calmo' && !!senal.negocio.portadaUrl;
 
   return (
     <motion.button
@@ -72,33 +79,76 @@ function Heroe({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void }) {
       animate={{ opacity: 1, y: 0 }}
       whileTap={{ scale: 0.98 }}
       onClick={onAbrir}
-      className={`flex w-full flex-col gap-3 rounded-3xl border p-5 text-left ${clase.card}`}
+      className={`relative flex w-full flex-col gap-3 overflow-hidden rounded-3xl text-left ${
+        conFoto ? 'min-h-[180px] justify-end p-5 pt-16' : `border p-5 ${clase.card}`
+      }`}
     >
-      <div className="flex items-start gap-3">
-        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-card ${clase.icono}`}>
+      {conFoto && (
+        <>
+          <img
+            src={senal.negocio.portadaUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <span
+            aria-hidden
+            className="absolute inset-0 bg-gradient-to-t from-surface-dark/90 from-0% via-surface-dark/25 via-60% to-transparent to-100%"
+          />
+        </>
+      )}
+
+      <div className="relative flex items-start gap-3">
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
+            conFoto ? 'bg-white/15 text-white backdrop-blur-sm' : `bg-card ${clase.icono}`
+          }`}
+        >
           <Icono size={20} strokeWidth={2.3} />
         </span>
         <div className="min-w-0">
-          <p className="text-[15px] leading-tight font-extrabold text-texto">{senal.titulo}</p>
-          <p className="mt-1 text-[13px] leading-snug text-texto-muted">{senal.detalle}</p>
+          <p className={`text-[15px] leading-tight font-extrabold ${conFoto ? 'text-white' : 'text-texto'}`}>
+            {senal.titulo}
+          </p>
+          <p className={`mt-1 text-[13px] leading-snug ${conFoto ? 'text-white/75' : 'text-texto-muted'}`}>
+            {senal.detalle}
+          </p>
         </div>
       </div>
 
       {pct != null && (
-        <div className="h-2 overflow-hidden rounded-full bg-borde">
+        <div className={`relative h-2 overflow-hidden rounded-full ${conFoto ? 'bg-white/20' : 'bg-borde'}`}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
-            className="h-full rounded-full bg-acento"
+            className={`h-full rounded-full ${conFoto ? 'bg-white' : 'bg-acento'}`}
           />
         </div>
       )}
 
-      <span className={`flex items-center gap-1 text-sm font-bold ${clase.cta}`}>
+      <span className={`relative flex items-center gap-1 text-sm font-bold ${conFoto ? 'text-white' : clase.cta}`}>
         {senal.cta} <ChevronRight size={15} strokeWidth={2.6} />
       </span>
     </motion.button>
+  );
+}
+
+/** Foto real del negocio (o degradé por rubro + emoji si no cargó una) — mismo criterio que
+ *  `TarjetaExplorar`/`TabPerfilMarketplace`, nunca un placeholder "Foto pendiente" acá. */
+function FotoNegocio({ negocio }: { negocio: Negocio }) {
+  return (
+    <div className="h-[72px] w-full overflow-hidden rounded-t-2xl">
+      {negocio.portadaUrl ? (
+        <img src={negocio.portadaUrl} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <div
+          className="flex h-full w-full items-center justify-center text-2xl"
+          style={{ background: gradienteCss(negocio.rubro) }}
+        >
+          <span aria-hidden>{negocio.emoji}</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -180,11 +230,13 @@ export default function Marketplace({ negocios, relaciones, nombreCliente, esNue
                 key={negocio.id}
                 type="button"
                 onClick={() => onAbrirNegocio(negocio)}
-                className="flex w-[132px] shrink-0 flex-col gap-1.5 rounded-2xl border border-borde bg-card p-2.5 text-left"
+                className="flex w-[132px] shrink-0 flex-col overflow-hidden rounded-2xl border border-borde bg-card text-left"
               >
-                <LogoNegocio negocio={negocio} size="h-9 w-9" />
-                <span className="truncate text-xs font-bold text-texto">{negocio.nombre}</span>
-                <span className="text-[10px] text-texto-muted">{negocio.categoria} · nunca fuiste</span>
+                <FotoNegocio negocio={negocio} />
+                <div className="flex flex-col gap-0.5 px-2.5 py-2">
+                  <span className="truncate text-xs font-bold text-texto">{negocio.nombre}</span>
+                  <span className="text-[10px] text-texto-muted">{negocio.categoria} · nunca fuiste</span>
+                </div>
               </button>
             ))}
           </div>

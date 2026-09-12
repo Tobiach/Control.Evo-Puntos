@@ -172,6 +172,10 @@ mantienen activos a conciencia (decisión de Tobías 12/9, ver `docs/MUESTRAS-LO
   inventario completo, inconsistencias y fixes propuestos en
   [SISTEMA-IMAGENES.md](SISTEMA-IMAGENES.md). Incluye una pregunta abierta (`TarjetaMiLugar`)
   que necesita el OK de Tobías antes de tocarla.
+- [x] G8 · **Reconciliar el Home (2.2) con la auditoría**: el héroe en tono calmo (al-dia /
+  descubrir) usa la foto real del negocio de fondo si existe; "Nuevos para vos" pasó de logo
+  chico a card con foto real. Sin secciones nuevas, sin volver a "Los más elegidos"/"Premia
+  recomienda". Detalle en `AUDITORIA-REFERENCIAS-PASITO.md` §G8.
 
 ## Continuo — Foco
 

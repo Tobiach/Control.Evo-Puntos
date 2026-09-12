@@ -3,7 +3,9 @@
 > Complementa `docs/DIAGNOSTICO-PRODUCTO.md` y `docs/ROADMAP-PRODUCTO.md` — no repite lo ya
 > diagnosticado ahí (F1-F8, Fases 0-4). Esto son hallazgos **nuevos**, contra 10 capturas reales
 > de **Pasito** (app argentina de pasos caminados + canje en comercios) que Tobías pidió cruzar
-> contra Premia de cara al lanzamiento. Código de hallazgo: **G1-G6**.
+> contra Premia de cara al lanzamiento. Código de hallazgo: **G1-G8** (G7 sistema de imágenes
+> en `docs/SISTEMA-IMAGENES.md`, G8 más abajo — reconciliación puntual del Home con esta misma
+> auditoría, 12/9).
 
 ## Contexto de la referencia
 
@@ -58,6 +60,29 @@ historial de canjes, rachas, ranking. Útil como cruce aunque el motor de fondo 
 | P2 | G3 — cierre de racha + comparación a tu promedio | Mediano; el aviso solo se ve solo si el usuario abre la app ese día hasta que exista Fase 3 (push) |
 | P3 | G5 — misión "subí foto y ganá" | Mediano + **decisión de operación pendiente** (moderación/fraude) antes de construir |
 | P3 | G6 — grupos | Grande; depende de la investigación 4.1 (todavía no hecha) |
+| ~~P1~~ | ~~G8 — foto real en el héroe (tono calmo) + en "Nuevos para vos"~~ | **Hecho (12/9).** Chico, sin dependencias — ver detalle abajo |
+
+## G8 — reconciliar el Home (2.2) con esta misma auditoría
+
+Pedido puntual de Tobías: el banner ilustrado "Comunidad Premia" que 2.2 sacó del Home hacía
+sentir la red viva; sin él, ¿el Home quedó frío? Análisis:
+
+- **G1/G2/G4 no cubren esto** — viven en Explorar (`TabMapa`/`TarjetaExplorar`), no tocan el
+  Home en absoluto.
+- **El hueco real no era una sección faltante**: era que el héroe tiene un solo tratamiento
+  visual para sus 5 tipos de señal, y el más plano (`tono: calmo` — sin urgencia real) le toca
+  justo a los dos casos más frecuentes: usuario satisfecho y usuario nuevo. "Tus lugares"/
+  "Nuevos para vos" tampoco tenían ni una foto, solo logos de 36px.
+- **Qué NO se hizo**: no volvió "Los más elegidos" ni "Premia recomienda" como secciones (F7
+  sigue siendo válido sobre esas dos), no se puso un banner ilustrado fijo (una ilustración de
+  marca que se repite todos los días se vuelve papel tapiz — ese momento vive en
+  `OnboardingPremin`/`PortadaCliente` y, a futuro, en la identidad de red de Fase 4).
+- **Qué se hizo** (`Marketplace.tsx`): el héroe en tono `calmo` usa la foto real del negocio
+  (`portadaUrl`) de fondo si existe, mismo lenguaje visual que `TarjetaExplorar`/`TabInicio`
+  (degradé oscuro + texto blanco). "Nuevos para vos" pasó de logo de 36px a una card con foto
+  real arriba (`FotoNegocio`, mismo fallback de degradé por rubro que ya usa `TarjetaExplorar`
+  — nunca "Foto pendiente"). Mismo dato que ya cargan los dueños, cero copy nuevo, cero sección
+  nueva. Test: `Marketplace.test.tsx`.
 
 ---
 
