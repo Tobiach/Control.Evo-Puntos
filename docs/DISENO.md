@@ -44,7 +44,9 @@ cambian los VALORES hex dentro de las variables existentes, nunca los nombres.
 - Chips/pills de filtro: `rounded-full px-3.5 py-1.5 text-xs font-bold`, activo en
   `bg-acento text-on-acento`, inactivo en `border border-borde bg-card text-texto-muted`.
 - Logos de negocio: `object-contain` dentro de un contenedor con `bg-white` condicional (nunca
-  `object-cover`, recorta logos panorámicos) — con emoji de fallback si no hay `logoUrl`.
+  `object-cover`, recorta logos panorámicos) — con emoji de fallback si no hay `logoUrl`. Ver
+  [SISTEMA-IMAGENES.md](SISTEMA-IMAGENES.md) para el inventario de dónde se aplica hoy cada
+  regla (logo/portada/foto de carta) y las inconsistencias pendientes de prolijar.
 - Placeholders de foto pendiente (ej. "Premia recomienda" antes de tener fotos reales): fondo
   `bg-fondo-medio`, ícono de cámara, texto explícito "Foto pendiente" — nunca una imagen
   genérica de stock haciendo de relleno.

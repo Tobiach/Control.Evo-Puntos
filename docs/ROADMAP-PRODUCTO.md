@@ -168,6 +168,11 @@ Detalle completo, qué logra cada una y por qué importa:
 **Ya resuelto en la auditoría, sin acción nueva:** los 73 negocios sin consentimiento se
 mantienen activos a conciencia (decisión de Tobías 12/9, ver `docs/MUESTRAS-LOTE.md`).
 
+- [ ] G7 · Prolijar el sistema de imágenes (logo/portada/foto de carta) antes del lanzamiento —
+  inventario completo, inconsistencias y fixes propuestos en
+  [SISTEMA-IMAGENES.md](SISTEMA-IMAGENES.md). Incluye una pregunta abierta (`TarjetaMiLugar`)
+  que necesita el OK de Tobías antes de tocarla.
+
 ## Continuo — Foco
 
 - [ ] C.1 · Reducir `TabInicio` a: card de puntos + near-win + 1 acción + 1 oportunidad activa (F4)
