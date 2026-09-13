@@ -1,7 +1,12 @@
 import { motion } from 'motion/react';
 import { Camera, MapPin } from 'lucide-react';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
-import { colorBarraProgreso, formatPuntos, proximaRecompensa } from '../../lib/club';
+import {
+  colorBarraProgreso,
+  formatPuntos,
+  mejorRecompensaDisponible,
+  proximaRecompensa,
+} from '../../lib/club';
 import { formatDistancia } from '../../lib/geo';
 import { estadoAperturaAhora } from '../../lib/horarios';
 import { gradienteCss } from '../../lib/temaNegocio';
@@ -22,7 +27,9 @@ interface Props {
  */
 export default function TarjetaExplorar({ negocio, relacion, distanciaKm, activo, onAbrir }: Props) {
   const puntos = relacion?.puntos ?? 0;
+  const disponible = mejorRecompensaDisponible(negocio.recompensas, puntos);
   const proxima = proximaRecompensa(negocio.recompensas, puntos);
+  const premioDestacado = disponible ?? proxima;
   const pct =
     negocio.recompensas.length === 0 ? 0 : proxima ? Math.min(100, Math.round((puntos / proxima.pts) * 100)) : 100;
   const apertura = estadoAperturaAhora(negocio.horarioApertura);
@@ -79,6 +86,19 @@ export default function TarjetaExplorar({ negocio, relacion, distanciaKm, activo
             </>
           )}
         </p>
+
+        {premioDestacado && (
+          <p className="mt-1.5 truncate">
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                disponible ? 'bg-premio-suave text-premio' : 'bg-fondo-medio text-texto-muted'
+              }`}
+            >
+              {disponible ? '🎁 ' : ''}
+              {premioDestacado.descripcion}
+            </span>
+          </p>
+        )}
 
         <div className="mt-2 flex items-center justify-between text-[11px] font-semibold text-texto-muted">
           <span>Tus puntos</span>

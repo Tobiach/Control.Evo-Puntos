@@ -24,4 +24,17 @@ describe('TabMapa', () => {
     expect(screen.getByText('Café Nardo')).toBeInTheDocument();
     expect(screen.queryByText('Súper Charcas')).toBeNull();
   });
+
+  it('filtra por "Te alcanza": solo locales con puntos suficientes para alguna recompensa', async () => {
+    renderTabMapa();
+    await waitFor(() => expect(screen.getByText('Café Nardo')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /Te alcanza/ }));
+    // Café Nardo: 320 pts, ya alcanza la de 120 → se ve.
+    expect(screen.getByText('Café Nardo')).toBeInTheDocument();
+    // Rooftop Malabia: 95 pts, ninguna recompensa cuesta tan poco → no se ve.
+    expect(screen.queryByText('Rooftop Malabia')).toBeNull();
+    // Bar Aguirre: ni siquiera tiene relación (nunca fue) → no se ve.
+    expect(screen.queryByText('Bar Aguirre')).toBeNull();
+  });
 });

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { LocateFixed, Maximize2 } from 'lucide-react';
 import type { Rubro } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
+import { mejorRecompensaDisponible } from '../../lib/club';
 import { distanciaKm, type Coordenadas } from '../../lib/geo';
 import MapaNegocios from './MapaNegocios';
 import MapaCompleto from './MapaCompleto';
@@ -34,6 +35,7 @@ const FILTROS: { id: Filtro; label: string }[] = [
 /** Mapa como pestaña propia del marketplace — antes vivía escondido detrás del filtro "Cerca mío". */
 export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
+  const [soloAlcanza, setSoloAlcanza] = useState(false);
   const [geo, setGeo] = useState<EstadoGeo>({ estado: 'inactivo' });
   const [negocioActivoId, setNegocioActivoId] = useState<string | null>(null);
   const [mapaCompleto, setMapaCompleto] = useState(false);
@@ -76,15 +78,19 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
     // relanzar el pedido en cada render.
   }, []);
 
-  const visibles = useMemo(
-    () =>
+  const visibles = useMemo(() => {
+    const porRubro =
       filtro === 'todos'
         ? negocios
         : negocios.filter(
             (negocio) => negocio.rubro === filtro || negocio.rubrosSecundarios?.includes(filtro),
-          ),
-    [negocios, filtro],
-  );
+          );
+    if (!soloAlcanza) return porRubro;
+    return porRubro.filter((negocio) => {
+      const relacion = relaciones[negocio.id];
+      return !!relacion && mejorRecompensaDisponible(negocio.recompensas, relacion.puntos) !== null;
+    });
+  }, [negocios, filtro, soloAlcanza, relaciones]);
 
   const coords = geo.estado === 'ok' ? geo.coords : null;
   const cercanos = useMemo(
@@ -125,6 +131,16 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
                 </button>
               );
             })}
+            <span className="w-px shrink-0 self-stretch bg-borde" aria-hidden />
+            <button
+              type="button"
+              onClick={() => setSoloAlcanza((valor) => !valor)}
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                soloAlcanza ? 'bg-premio text-white' : 'border border-borde bg-card text-texto-muted'
+              }`}
+            >
+              🎁 Te alcanza
+            </button>
           </div>
         </div>
 
@@ -197,7 +213,9 @@ export default function TabMapa({ negocios, relaciones, onAbrirNegocio }: Props)
 
         {cercanos.length === 0 ? (
           <p className="rounded-2xl border border-borde bg-card px-4 py-6 text-center text-sm text-texto-muted">
-            No encontramos locales con ese filtro.
+            {soloAlcanza
+              ? 'Todavía no te alcanza en ningún local. Seguí sumando puntos.'
+              : 'No encontramos locales con ese filtro.'}
           </p>
         ) : (
           <div className="flex flex-col gap-3">

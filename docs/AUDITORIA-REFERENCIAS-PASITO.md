@@ -54,8 +54,8 @@ historial de canjes, rachas, ranking. Útil como cruce aunque el motor de fondo 
 | Prioridad | Qué | Tamaño / dependencia |
 |---|---|---|
 | ~~P0~~ | ~~Los 73 negocios sin consentimiento~~ | **Decisión de Tobías (12/9/2026): se mantienen activos y publicados.** Riesgo aceptado conscientemente — ver `docs/MUESTRAS-LOTE.md`. Sin acción pendiente. |
-| P1 | G2 — premio visible en card de Explorar | Chico, sin dependencias |
-| P1 | G1 — filtro "Te alcanza" | Chico, sin dependencias |
+| ~~P1~~ | ~~G2 — premio visible en card de Explorar~~ | **Hecho (12/9).** Pill con el nombre de la recompensa (alcanzable o próxima) en `TarjetaExplorar` |
+| ~~P1~~ | ~~G1 — filtro "Te alcanza"~~ | **Hecho (12/9).** Chip en `TabMapa`, filtra por `mejorRecompensaDisponible(...) !== null` |
 | P2 | G4 — "Abierto ahora" / Favoritos | Chico ("Abierto ahora" sin dato nuevo; "Favoritos" necesita guardar estado — local primero, Supabase después si vale la pena) |
 | P2 | G3 — cierre de racha + comparación a tu promedio | Mediano; el aviso solo se ve solo si el usuario abre la app ese día hasta que exista Fase 3 (push) |
 | P3 | G5 — misión "subí foto y ganá" | Mediano + **decisión de operación pendiente** (moderación/fraude) antes de construir |
