@@ -20,19 +20,18 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
-- **P0 — NINGÚN CLIENTE REAL PUEDE USAR LA APP EN PRODUCCIÓN (confirmado en vivo el
-  13/9/2026, peor de lo que se pensaba al principio).** `0021_canjes_verificables.sql` nunca
-  se aplicó: la tabla `canjes` real no tiene las columnas que `panelCliente.ts` YA usa en su
-  query de carga de perfil (`.select('...confirmado_at').eq('estado','confirmado')`). Como esa
-  query es parte del `Promise.all` de `cargarAppCliente` y cualquier error ahí tira `{ok:false}`
-  para TODO el perfil, **hoy ningún cliente real ve sus puntos, negocios ni actividad al
-  loguearse** — no es solo que no pueda canjear, no carga nada. **Arreglo:** pegar en el SQL
-  Editor, EN ESTE ORDEN, `0021_canjes_verificables.sql` → `0022_fix_confirmar_canje_pin.sql` →
-  `0023_rate_limiting_rpcs.sql` → `0024_consolidado_rate_limiting.sql` (los últimos 3 son
-  idempotentes, no rompen nada si se pegan de más). Backup antes de correr. Texto completo de
-  los 4 archivos, cómo se confirmó y una limpieza aparte pendiente (una fila de prueba en
-  `canjes`) en `docs/AUDITORIA-REFERENCIAS-PASITO.md`. La última migración del repo es `0024`;
-  **la próxima es `0025`**.
+- ~~P0 — ningún cliente real podía usar la app en producción~~: **RESUELTO (13/9/2026)**.
+  `0021`, `0022` y `0023` ya están aplicadas y **verificadas en vivo con un canje real de
+  punta a punta** (`iniciar_canje` → `confirmar_canje` con PIN → perfil del cliente carga
+  bien). `0024` NO hace falta pegarla completa — es un archivo de recuperación que reescribe
+  lo mismo que ya está andando por `0023`; su único cambio real (bono de referido a la 1ra
+  visita, no la 4ta) quedó aislado en `0025_referido_primera_visita.sql`. Detalle completo en
+  `docs/AUDITORIA-REFERENCIAS-PASITO.md`.
+- **Pendiente de pegar en el SQL Editor:** `0025_referido_primera_visita.sql` (baja
+  `v_necesarias` de 4 a 1 en `revisar_premio_referido` — decisión de producto ya tomada antes,
+  0023 la había dejado mal en 4 por arrastre) y una limpieza de datos:
+  `DELETE FROM canjes WHERE descripcion = 'TEST';` (fila de prueba, sin relación con ninguna
+  migración). La próxima migración nueva es **`0026`**.
 - ~~Rama `design/explorar-mis-premios-xp`~~: **RESUELTO** (6/9/2026) — ya estaba mergeada a
   `main` (`9d290c0`); el choque del número `0022` se resolvió absorbiendo
   `0022_referidos_una_visita.sql` en `0024_consolidado_rate_limiting.sql`. Nada pendiente.

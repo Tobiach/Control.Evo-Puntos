@@ -130,7 +130,7 @@ no el Home).
 
 ---
 
-## Hallazgo P0 fuera de alcance de esta auditoría — ningún cliente real puede usar la app (13/9)
+## Hallazgo P0 fuera de alcance de esta auditoría — ningún cliente real podía usar la app (13/9, RESUELTO)
 
 Descubierto sembrando datos de un cliente demo (`scripts/sembrar-cliente-demo-premia-latam.mjs`),
 no algo que esta auditoría buscara. **Confirmado en vivo, no es una hipótesis, y es más grave
@@ -156,22 +156,22 @@ Esto es más grave que lo que ya estaba anotado en `CLAUDE.md` (que solo marcaba
 como "sin confirmar") — la base (0021) tampoco está, y sin ella las siguientes tres tampoco
 pueden estar aplicadas.
 
-**Arreglo:** pegar en el SQL Editor de Supabase, en este orden exacto, sin saltear ninguna:
+**Arreglo — aplicado y verificado (13/9):** `0021_canjes_verificables.sql`,
+`0022_fix_confirmar_canje_pin.sql` y `0023_rate_limiting_rpcs.sql` ya están pegadas en
+producción. Verificado con una prueba real de punta a punta con la cuenta demo: `iniciar_canje`
+generó un código real, `confirmar_canje` lo validó contra un PIN de prueba y devolvió
+`{ok:true}`, y la query de perfil de `panelCliente.ts` ya no da error. **`0024` no hizo falta
+pegarla completa** — es un archivo de recuperación que reescribe lo mismo que ya dejó corriendo
+`0023` (falló al pegarla por un error de copiado, "CREATE TABLE" se cortó del principio, pero
+resultó irrelevante). Su único cambio real sobre `0023` — el bono de referido a la 1ra visita
+en vez de la 4ta, decisión de producto ya tomada antes — quedó aislado en
+`supabase/migrations/0025_referido_primera_visita.sql`, pendiente de pegar.
 
-1. `supabase/migrations/0021_canjes_verificables.sql`
-2. `supabase/migrations/0022_fix_confirmar_canje_pin.sql`
-3. `supabase/migrations/0023_rate_limiting_rpcs.sql`
-4. `supabase/migrations/0024_consolidado_rate_limiting.sql`
-
-Los 3 últimos usan `CREATE OR REPLACE` / `CREATE TABLE IF NOT EXISTS` — pegarlos de más no
-rompe nada aunque alguno ya se haya corrido a medias. Backup antes de correr, mismo criterio
-que indica cada archivo.
-
-**Limpieza aparte, sin relación con el bug:** al probar el insert directo de canjes quedó una
-fila de prueba cargada por error (`descripción = 'TEST'`, 10 pts, negocio `bavieca`, cliente
-demo de abajo) — el dueño de muestras no tiene permiso de DELETE sobre `canjes` (por diseño),
-así que no la pude borrar yo. Correr una vez en el SQL Editor: `DELETE FROM canjes WHERE
-descripcion = 'TEST';`
+**Limpieza de datos pendiente, sin relación con el bug:** al probar el insert directo de
+canjes quedó una fila de prueba cargada por error (`descripción = 'TEST'`, 10 pts, negocio
+`bavieca`, cliente demo de abajo) — el dueño de muestras no tiene permiso de DELETE sobre
+`canjes` (por diseño), así que no la pude borrar yo. Correr una vez en el SQL Editor:
+`DELETE FROM canjes WHERE descripcion = 'TEST';`
 
 **Hallazgo menor aparte, no confirmado como causante de nada:** la variable de entorno
 `VITE_SUPABASE_URL` del ambiente **Preview** en Vercel tiene un BOM (carácter invisible U+FEFF)
