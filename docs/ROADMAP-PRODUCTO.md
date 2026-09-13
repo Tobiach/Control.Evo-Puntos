@@ -41,6 +41,13 @@ Tobías pidió ejecutar sin depender de sus permisos a cada paso. Reglas:
 
 ## Checkpoints humanos (lo único que necesita a Tobías)
 
+0. **🚨 P0 — aplicar `0021`→`0022`→`0023`→`0024` en el SQL Editor, YA.** Confirmado en vivo
+   (13/9): sin `0021`, la tabla `canjes` no tiene las columnas que la app real ya usa —
+   **ningún cliente real puede cargar su perfil ni canjear nada hoy** (no es solo el canje, es
+   toda la carga de datos de `panelCliente.ts`, que falla entera si esa query da error). Texto
+   exacto de los 4 archivos en `AUDITORIA-REFERENCIAS-PASITO.md`. Bloquea todo lo demás de esta
+   lista en la práctica — sin esto, cualquier demo con datos reales se ve "vacía" aunque los
+   datos estén bien cargados.
 1. **Aplicar migraciones nuevas en el SQL Editor de Supabase** — no hay CLI conectado. Por cada
    migración nueva dejo el `.sql` en `supabase/migrations/` + aviso con el texto exacto a pegar.
    Bloquea: Fase 3 (tabla `push_subscriptions` + cron), y cualquier cambio de esquema de Fase 4.
@@ -158,8 +165,8 @@ Marcar acá el avance. `[~]` = en progreso.
 Detalle completo, qué logra cada una y por qué importa:
 [AUDITORIA-REFERENCIAS-PASITO.md](AUDITORIA-REFERENCIAS-PASITO.md). Prioridad P1→P3.
 
-- [ ] G2 · Premio visible (pill) en `TarjetaExplorar` — P1, sin dependencias
-- [ ] G1 · Filtro "Te alcanza" en `TabMapa` — P1, sin dependencias
+- [x] G2 · **Premio visible (pill) en `TarjetaExplorar` — hecho (12/9)**
+- [x] G1 · **Filtro "Te alcanza" en `TabMapa` — hecho (12/9)**
 - [ ] G4 · Filtros "Abierto ahora" + "Favoritos" en `TabMapa` — P2 ("Favoritos" arranca en localStorage)
 - [ ] G3 · Cierre de racha perdida + comparación a tu promedio (`TabActividad`) — P2, valor completo depende de Fase 3
 - [ ] G5 · Misión "subí foto y ganá" — P3, **necesita decisión de moderación/fraude antes de construir**
@@ -176,6 +183,18 @@ mantienen activos a conciencia (decisión de Tobías 12/9, ver `docs/MUESTRAS-LO
   descubrir) usa la foto real del negocio de fondo si existe; "Nuevos para vos" pasó de logo
   chico a card con foto real. Sin secciones nuevas, sin volver a "Los más elegidos"/"Premia
   recomienda". Detalle en `AUDITORIA-REFERENCIAS-PASITO.md` §G8.
+- [x] G9 · **"Tu semana" en el Home — hecho (13/9)**: racha de días seguidos (cruzando TODOS
+  los negocios) + mini-gráfico de puntos de los últimos 7 días, mismo lenguaje visual que
+  `TabActividad`. Responde al pedido de Tobías de que el Home no se sienta vacío vs. Pasito.
+  Se oculta si no hubo actividad en la semana. Ver `AUDITORIA-REFERENCIAS-PASITO.md` §"Home vs.
+  Pasito".
+- [ ] G10 · Segunda card de invitar amigos en el Home (reusa `SeccionReferidos`, no se promueve
+  hoy) — P2, chico
+- [ ] G11 · Ranking simple ("estás en el top X% de clientes frecuentes de {negocio}") — P3,
+  versión reducida de G6 sin esperar la investigación 4.1 completa
+- [ ] G12 · Fondo/paleta del héroe más saturada (a diferencia de G9, esto SÍ es una decisión de
+  marca — no construir sin mockup/OK explícito de Tobías sobre colores concretos, ver
+  `DISENO.md`)
 
 ## Continuo — Foco
 

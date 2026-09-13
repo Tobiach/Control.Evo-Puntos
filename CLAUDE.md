@@ -20,17 +20,19 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
-- **P0 — EL CANJE REAL ESTÁ ROTO EN PRODUCCIÓN (confirmado en vivo el 13/9/2026).**
-  `0021_canjes_verificables.sql` nunca se aplicó: la tabla `canjes` real no tiene las columnas
-  que la RPC `iniciar_canje()` (ya en uso por el frontend, `panelCliente.ts`) necesita para
-  insertar. Cualquier cliente real que intenta canjear una recompensa hoy recibe un error (sin
-  perder puntos, pero sin poder canjear). **Arreglo:** pegar en el SQL Editor, EN ESTE ORDEN,
-  `0021_canjes_verificables.sql` → `0022_fix_confirmar_canje_pin.sql` →
+- **P0 — NINGÚN CLIENTE REAL PUEDE USAR LA APP EN PRODUCCIÓN (confirmado en vivo el
+  13/9/2026, peor de lo que se pensaba al principio).** `0021_canjes_verificables.sql` nunca
+  se aplicó: la tabla `canjes` real no tiene las columnas que `panelCliente.ts` YA usa en su
+  query de carga de perfil (`.select('...confirmado_at').eq('estado','confirmado')`). Como esa
+  query es parte del `Promise.all` de `cargarAppCliente` y cualquier error ahí tira `{ok:false}`
+  para TODO el perfil, **hoy ningún cliente real ve sus puntos, negocios ni actividad al
+  loguearse** — no es solo que no pueda canjear, no carga nada. **Arreglo:** pegar en el SQL
+  Editor, EN ESTE ORDEN, `0021_canjes_verificables.sql` → `0022_fix_confirmar_canje_pin.sql` →
   `0023_rate_limiting_rpcs.sql` → `0024_consolidado_rate_limiting.sql` (los últimos 3 son
-  idempotentes, no rompen nada si se pegan de más). Backup antes de correr. Detalle completo,
-  cómo se confirmó y una limpieza aparte pendiente (una fila de prueba en `canjes`) en
-  `docs/AUDITORIA-REFERENCIAS-PASITO.md`. La última migración del repo es `0024`; **la próxima
-  es `0025`**.
+  idempotentes, no rompen nada si se pegan de más). Backup antes de correr. Texto completo de
+  los 4 archivos, cómo se confirmó y una limpieza aparte pendiente (una fila de prueba en
+  `canjes`) en `docs/AUDITORIA-REFERENCIAS-PASITO.md`. La última migración del repo es `0024`;
+  **la próxima es `0025`**.
 - ~~Rama `design/explorar-mis-premios-xp`~~: **RESUELTO** (6/9/2026) — ya estaba mergeada a
   `main` (`9d290c0`); el choque del número `0022` se resolvió absorbiendo
   `0022_referidos_una_visita.sql` en `0024_consolidado_rate_limiting.sql`. Nada pendiente.

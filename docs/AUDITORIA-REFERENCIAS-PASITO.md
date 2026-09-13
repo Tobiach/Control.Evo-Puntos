@@ -130,19 +130,27 @@ no el Home).
 
 ---
 
-## Hallazgo P0 fuera de alcance de esta auditoría — el canje real está roto en producción (13/9)
+## Hallazgo P0 fuera de alcance de esta auditoría — ningún cliente real puede usar la app (13/9)
 
 Descubierto sembrando datos de un cliente demo (`scripts/sembrar-cliente-demo-premia-latam.mjs`),
-no algo que esta auditoría buscara. **Confirmado en vivo, no es una hipótesis**: cualquier
-cliente real que intente canjear una recompensa hoy en producción recibe un error y el canje
-no se completa (los puntos no se pierden — la función hace rollback — pero nadie puede canjear).
+no algo que esta auditoría buscara. **Confirmado en vivo, no es una hipótesis, y es más grave
+de lo que parecía al principio**: no es solo que el canje falle — **ningún cliente real ve sus
+puntos, sus negocios ni su actividad al loguearse.**
 
 **Causa:** `supabase/migrations/0021_canjes_verificables.sql` nunca se aplicó en producción —
 la tabla `canjes` real solo tiene las columnas de `0017_canjes.sql` (sin `estado`,
-`codigo_verificacion`, `expira_at`, `confirmado_at`). El frontend real (`panelCliente.ts`) ya
-llama a la RPC `iniciar_canje()` de esa misma migración 0021, que intenta insertar en esas
-columnas inexistentes → `column "codigo_verificacion" does not exist`. Verificado ejecutando
-la RPC real contra el negocio "Baum Catrina" con el cliente demo recién creado.
+`codigo_verificacion`, `expira_at`, `confirmado_at`). Dos consecuencias, no una:
+
+1. **Canjear está roto**: el frontend (`panelCliente.ts`) llama a la RPC `iniciar_canje()` de
+   0021, que intenta insertar en esas columnas inexistentes → `column "codigo_verificacion"
+   does not exist`. Verificado ejecutando la RPC real contra "Baum Catrina" con el cliente demo.
+2. **Cargar el perfil está roto, para TODOS** (el hallazgo más grave, no obvio al principio):
+   `panelCliente.ts` (función que arma `DatosAppCliente`) hace un `Promise.all` con 7 queries,
+   una de ellas `.from('canjes').select('...,confirmado_at').eq('estado','confirmado')` — que
+   también falla con `column canjes.confirmado_at does not exist`. Como el código junta los 7
+   errores (`primerError = ... ?? canjesRes.error`) y devuelve `{ok:false}` si CUALQUIERA
+   falló, **este único error tumba la carga completa del perfil**, no solo la lista de premios
+   canjeados. Verificado reproduciendo exactamente esa query contra producción.
 
 Esto es más grave que lo que ya estaba anotado en `CLAUDE.md` (que solo marcaba 0022/0023/0024
 como "sin confirmar") — la base (0021) tampoco está, y sin ella las siguientes tres tampoco
@@ -165,13 +173,21 @@ demo de abajo) — el dueño de muestras no tiene permiso de DELETE sobre `canje
 así que no la pude borrar yo. Correr una vez en el SQL Editor: `DELETE FROM canjes WHERE
 descripcion = 'TEST';`
 
-## Cliente demo con datos reales — "Fran Ibarra" (13/9)
+**Hallazgo menor aparte, no confirmado como causante de nada:** la variable de entorno
+`VITE_SUPABASE_URL` del ambiente **Preview** en Vercel tiene un BOM (carácter invisible U+FEFF)
+pegado adelante de la URL (`vercel env pull` lo muestra). Se probó explícitamente si esto rompe
+algo real — no rompe: `supabase-js` hace `.trim()` internamente antes de usar la URL, que sí
+elimina un BOM. Queda anotado por prolijidad, no como explicación del problema de arriba (esa
+fue la migración 0021).
+
+## Cliente demo con datos reales — "Tobias" (13/9)
 
 Para mostrar la app del lado del cliente con actividad de verdad (no el estado "recién
 llegado" ni el mock de venta), se sembró un cliente real de Supabase con historial en 5
 negocios reales del marketplace (lote de 73, `es_muestra = false`):
 
-- **Login:** `premia.latam@gmail.com` / `premia.startup!` (entrar por `?club`).
+- **Login:** `premia.latam@gmail.com` / `premia.startup!` (entrar por `?club`). Nombre del
+  cliente: "Tobias" (así saluda el Home).
 - 39 visitas reales repartidas en los últimos ~65 días, 2 canjes ya hechos (Bavieca y Hoppe),
   saldos actuales que dejan 4 de los 5 negocios ya canjeables o a menos del 15% de la próxima
   recompensa (Bavieca 602/700, Baum Catrina 679/900, Dársena Bar 363/400, Hoppe 429/500,
@@ -190,7 +206,7 @@ Cruce pedido por Tobías entre una captura real del Home de Premia (usuario "Mar
 `heroeDelHome`) y una captura de Pasito con datos reales (69 pasos, racha de 2 días, gráfico de
 7 días, ranking). **No es una comparación pareja**: la de Premia es el estado vacío a propósito
 (2.3, "Arrancás la partida"), no el Home con actividad real — con el cliente demo de arriba
-("Fran Ibarra", 5 negocios activos) el Home ya muestra "Tus lugares" y señales con color, no la
+("Tobias", 5 negocios activos) el Home ya muestra "Tus lugares" y señales con color, no la
 pantalla en blanco de la captura. Igual quedan brechas reales, listadas abajo.
 
 | # | Qué tiene Pasito que Premia no | Es brecha real o ya está cubierto/decidido |
