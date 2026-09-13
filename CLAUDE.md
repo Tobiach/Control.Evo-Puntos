@@ -20,11 +20,17 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
-- **Confirmar en el SQL Editor de Supabase si `0022_fix_confirmar_canje_pin.sql`,
-  `0023_rate_limiting_rpcs.sql` y `0024_consolidado_rate_limiting.sql` ya corrieron en
-  producción.** Sin esto, no asumir que el rate limiting de las RPCs sensibles ni la
-  confirmación de canjes verificables funcionan en producción — ver `docs/SEGURIDAD.md` §5.1
-  y `docs/SUPABASE.md`. La última migración del repo es `0024`; **la próxima es `0025`**.
+- **P0 — EL CANJE REAL ESTÁ ROTO EN PRODUCCIÓN (confirmado en vivo el 13/9/2026).**
+  `0021_canjes_verificables.sql` nunca se aplicó: la tabla `canjes` real no tiene las columnas
+  que la RPC `iniciar_canje()` (ya en uso por el frontend, `panelCliente.ts`) necesita para
+  insertar. Cualquier cliente real que intenta canjear una recompensa hoy recibe un error (sin
+  perder puntos, pero sin poder canjear). **Arreglo:** pegar en el SQL Editor, EN ESTE ORDEN,
+  `0021_canjes_verificables.sql` → `0022_fix_confirmar_canje_pin.sql` →
+  `0023_rate_limiting_rpcs.sql` → `0024_consolidado_rate_limiting.sql` (los últimos 3 son
+  idempotentes, no rompen nada si se pegan de más). Backup antes de correr. Detalle completo,
+  cómo se confirmó y una limpieza aparte pendiente (una fila de prueba en `canjes`) en
+  `docs/AUDITORIA-REFERENCIAS-PASITO.md`. La última migración del repo es `0024`; **la próxima
+  es `0025`**.
 - ~~Rama `design/explorar-mis-premios-xp`~~: **RESUELTO** (6/9/2026) — ya estaba mergeada a
   `main` (`9d290c0`); el choque del número `0022` se resolvió absorbiendo
   `0022_referidos_una_visita.sql` en `0024_consolidado_rate_limiting.sql`. Nada pendiente.
