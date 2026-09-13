@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Recompensa, Visita } from '../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../data/negocios';
-import { heroeDelHome, senalesDelCliente } from './home';
+import { actividadGlobal, heroeDelHome, senalesDelCliente } from './home';
 
 const AHORA = new Date(2026, 8, 7, 16, 0); // 7-sep-2026 16:00 local
 
@@ -118,5 +118,29 @@ describe('senalesDelCliente / heroeDelHome', () => {
     const hero = heroeDelHome(negs, { a: rel(250, 3), b: rel(310, 3) }, AHORA);
     expect(hero?.tipo).toBe('near-win');
     expect(hero?.negocio.id).toBe('b');
+  });
+});
+
+describe('actividadGlobal', () => {
+  it('suma la racha y los puntos del día CRUZANDO negocios, no solo el más visitado', () => {
+    // Negocio A: visitó ayer y hoy. Negocio B: visitó anteayer. Racha real = 3 días seguidos,
+    // aunque ningún negocio por sí solo tenga esa racha.
+    const relaciones = {
+      a: rel(100, 0, [
+        { diasAtras: 0, monto: 1000, puntos: 10 },
+        { diasAtras: 1, monto: 2000, puntos: 20 },
+      ]),
+      b: rel(50, 2, [{ diasAtras: 2, monto: 500, puntos: 5 }]),
+    };
+    const { rachaDiasSeguidos, semana } = actividadGlobal(relaciones);
+    expect(rachaDiasSeguidos).toBe(3);
+    const hoy = semana.find((dia) => dia.esHoy);
+    expect(hoy?.puntos).toBe(10);
+  });
+
+  it('sin ninguna visita, racha 0 y los 7 días en cero', () => {
+    const { rachaDiasSeguidos, semana } = actividadGlobal({ a: rel(50, 10, []) });
+    expect(rachaDiasSeguidos).toBe(0);
+    expect(semana.every((dia) => dia.puntos === 0)).toBe(true);
   });
 });

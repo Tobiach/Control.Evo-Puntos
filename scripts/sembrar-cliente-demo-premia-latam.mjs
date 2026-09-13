@@ -50,7 +50,7 @@ const PASSWORD_DUENO_LOTE = 'ControlEvo2026!';
 
 const EMAIL_CLIENTE = 'premia.latam@gmail.com';
 const PASSWORD_CLIENTE = 'premia.startup!';
-const NOMBRE_CLIENTE = 'Fran Ibarra';
+const NOMBRE_CLIENTE = 'Tobias';
 const TELEFONO_CLIENTE = '11 9999-0001';
 
 const MS_DIA = 86_400_000;

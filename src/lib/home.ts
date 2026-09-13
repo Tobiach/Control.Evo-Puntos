@@ -1,6 +1,14 @@
 import type { Recompensa } from '../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../data/negocios';
-import { DIAS_VENCIMIENTO, formatPuntos, mejorRecompensaDisponible, proximaRecompensa } from './club';
+import {
+  DIAS_VENCIMIENTO,
+  type DiaRacha,
+  formatPuntos,
+  mejorRecompensaDisponible,
+  proximaRecompensa,
+  rachaDias,
+  ultimos7Dias,
+} from './club';
 import { horarioValleActivoAhora, rachaSemanal } from './misiones';
 
 // Motor de relevancia del Home (F1 del diagnóstico). Recorre TODAS las relaciones del cliente,
@@ -203,4 +211,19 @@ export function heroeDelHome(
   ahora: Date = new Date(),
 ): SenalHome | null {
   return senalesDelCliente(negocios, relaciones, ahora)[0] ?? null;
+}
+
+/**
+ * Actividad reciente CRUZANDO todos los negocios (a diferencia de `rachaDias`/`ultimos7Dias`
+ * de club.ts, que son por-negocio para TabInicio/TabActividad). El "momento hábito" de Premia
+ * es abrir la app en CUALQUIER mostrador — la racha y el gráfico del Home tienen que sumar
+ * across negocios, no mostrar solo el más visitado. Mismo dato ya cargado (`historial` de
+ * cada relación), sin queries nuevas.
+ */
+export function actividadGlobal(relaciones: Record<string, RelacionNegocio>): {
+  rachaDiasSeguidos: number;
+  semana: DiaRacha[];
+} {
+  const visitas = Object.values(relaciones).flatMap((relacion) => relacion.historial);
+  return { rachaDiasSeguidos: rachaDias(visitas), semana: ultimos7Dias(visitas) };
 }

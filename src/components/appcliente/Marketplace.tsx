@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import { formatPuntos } from '../../lib/club';
-import { heroeDelHome, type SenalHome, type TipoSenal } from '../../lib/home';
+import { actividadGlobal, heroeDelHome, type SenalHome, type TipoSenal } from '../../lib/home';
 import { gradienteCss } from '../../lib/temaNegocio';
 
 interface Props {
@@ -133,6 +133,55 @@ function Heroe({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void }) {
   );
 }
 
+/**
+ * Racha (días seguidos con actividad, en CUALQUIER negocio) + mini-gráfico de los últimos 7
+ * días. Mismos datos y mismo lenguaje visual que ya usa `TabActividad` (barras `bg-acento`),
+ * cruzando todos los negocios en vez de uno solo — es la pieza de "esto está vivo" que hoy
+ * solo existe adentro de cada negocio, nunca en el Home (ver AUDITORIA-REFERENCIAS-PASITO.md,
+ * sección "Home vs. Pasito"). Se oculta entero si no hay ninguna actividad en los últimos 7
+ * días — no tiene sentido mostrar un gráfico en cero.
+ */
+function TuSemana({ relaciones }: { relaciones: Record<string, RelacionNegocio> }) {
+  const { rachaDiasSeguidos, semana } = useMemo(() => actividadGlobal(relaciones), [relaciones]);
+  const huboActividad = semana.some((dia) => dia.puntos > 0);
+  if (!huboActividad) return null;
+
+  const maxPuntos = Math.max(1, ...semana.map((dia) => dia.puntos));
+
+  return (
+    <div className="flex items-center gap-4 rounded-3xl border border-borde bg-card p-4">
+      {rachaDiasSeguidos >= 2 && (
+        <div className="flex shrink-0 flex-col items-center gap-0.5 border-r border-borde pr-4">
+          <span className="flex items-center gap-1 text-lg font-extrabold text-premio">
+            <Flame size={17} className="fill-premio" /> {rachaDiasSeguidos}
+          </span>
+          <span className="text-[9px] font-bold tracking-wide text-texto-muted uppercase">
+            {rachaDiasSeguidos === 1 ? 'día' : 'días'}
+          </span>
+        </div>
+      )}
+      <div className="flex flex-1 items-end justify-between gap-1.5">
+        {semana.map((dia, indice) => (
+          <div key={indice} className="flex flex-1 flex-col items-center gap-1">
+            <div className="flex h-9 w-full items-end">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${(dia.puntos / maxPuntos) * 100}%` }}
+                transition={{ delay: indice * 0.04, duration: 0.4, ease: 'easeOut' }}
+                className={`w-full rounded-t-md ${dia.puntos > 0 ? 'bg-acento' : 'bg-borde'}`}
+                style={{ minHeight: dia.puntos > 0 ? '15%' : '3px' }}
+              />
+            </div>
+            <span className={`text-[9px] font-bold ${dia.esHoy ? 'text-acento' : 'text-texto-disabled'}`}>
+              {dia.etiqueta}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** Foto real del negocio (o degradé por rubro + emoji si no cargó una) — mismo criterio que
  *  `TarjetaExplorar`/`TabPerfilMarketplace`, nunca un placeholder "Foto pendiente" acá. */
 function FotoNegocio({ negocio }: { negocio: Negocio }) {
@@ -188,6 +237,8 @@ export default function Marketplace({ negocios, relaciones, nombreCliente, esNue
       </header>
 
       {heroe && <Heroe senal={heroe} onAbrir={() => onAbrirNegocio(heroe.negocio)} />}
+
+      <TuSemana relaciones={relaciones} />
 
       {misLugares.length > 0 && (
         <section className="flex flex-col gap-2">
