@@ -38,9 +38,9 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
   `dueno.muestras-premia.demo@gmail.com`). Decisión de Tobías del 6/9/2026 — los dueños no
   dieron consentimiento y las cartas/recompensas son **genéricas por rubro** (placeholder).
   **Reafirmada el 12/9/2026**: se mantienen activos a conciencia (riesgo aceptado, no
-  olvidado) — ver `docs/AUDITORIA-REFERENCIAS-PASITO.md`. **Pendiente técnico sin resolver:
-  deployar** para que los invitados vean el cambio en `src/data/` (un push a `main` no
-  despliega). Cómo revertir y todo el detalle en
+  olvidado) — ver `docs/AUDITORIA-REFERENCIAS-PASITO.md`. **Deployado a producción el
+  12/9/2026** (todo lo acumulado del roadmap de experiencia hasta `7c68a70`, incluido esto).
+  Cómo revertir y todo el detalle en
   [docs/MUESTRAS-LOTE.md](docs/MUESTRAS-LOTE.md).
 
 ## Convención de trabajo entre sesiones/PCs
