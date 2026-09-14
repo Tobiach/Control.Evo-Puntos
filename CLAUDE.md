@@ -20,18 +20,14 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
-- ~~P0 — ningún cliente real podía usar la app en producción~~: **RESUELTO (13/9/2026)**.
-  `0021`, `0022` y `0023` ya están aplicadas y **verificadas en vivo con un canje real de
-  punta a punta** (`iniciar_canje` → `confirmar_canje` con PIN → perfil del cliente carga
-  bien). `0024` NO hace falta pegarla completa — es un archivo de recuperación que reescribe
-  lo mismo que ya está andando por `0023`; su único cambio real (bono de referido a la 1ra
-  visita, no la 4ta) quedó aislado en `0025_referido_primera_visita.sql`. Detalle completo en
+- ~~P0 — ningún cliente real podía usar la app en producción~~: **RESUELTO (13-14/9/2026),
+  todo verificado en vivo, nada pendiente.** `0021`→`0025` aplicadas (`0024` no hizo falta
+  completa, era redundante con `0023`). Probado de punta a punta: canje real
+  (`iniciar_canje`→`confirmar_canje` con PIN), perfil del cliente carga sin error, y el bono de
+  referido ya dispara a la 1ra visita (`revisar_premio_referido` devuelve
+  `visitas_necesarias: 1`, probado con un referido real de prueba y limpiado después). Fila
+  `TEST` en `canjes` borrada. La próxima migración nueva es **`0026`**. Detalle completo en
   `docs/AUDITORIA-REFERENCIAS-PASITO.md`.
-- **Pendiente de pegar en el SQL Editor:** `0025_referido_primera_visita.sql` (baja
-  `v_necesarias` de 4 a 1 en `revisar_premio_referido` — decisión de producto ya tomada antes,
-  0023 la había dejado mal en 4 por arrastre) y una limpieza de datos:
-  `DELETE FROM canjes WHERE descripcion = 'TEST';` (fila de prueba, sin relación con ninguna
-  migración). La próxima migración nueva es **`0026`**.
 - ~~Rama `design/explorar-mis-premios-xp`~~: **RESUELTO** (6/9/2026) — ya estaba mergeada a
   `main` (`9d290c0`); el choque del número `0022` se resolvió absorbiendo
   `0022_referidos_una_visita.sql` en `0024_consolidado_rate_limiting.sql`. Nada pendiente.

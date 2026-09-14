@@ -41,10 +41,8 @@ Tobías pidió ejecutar sin depender de sus permisos a cada paso. Reglas:
 
 ## Checkpoints humanos (lo único que necesita a Tobías)
 
-0. ~~🚨 P0 — aplicar `0021`→`0022`→`0023`→`0024`~~: **RESUELTO (13/9)**. `0021`/`0022`/`0023`
-   aplicadas y verificadas con un canje real de punta a punta. `0024` no hizo falta completa
-   (era redundante con `0023`); su único cambio real quedó en `0025_referido_primera_visita.sql`
-   — pendiente de pegar, más una limpieza (`DELETE FROM canjes WHERE descripcion = 'TEST';`).
+0. ~~🚨 P0 — aplicar `0021`→`0025`~~: **RESUELTO (13-14/9), nada pendiente.** Verificado en
+   vivo de punta a punta: canje real, perfil del cliente, y el bono de referido a la 1ra visita.
    Detalle en `AUDITORIA-REFERENCIAS-PASITO.md`.
 1. **Aplicar migraciones nuevas en el SQL Editor de Supabase** — no hay CLI conectado. Por cada
    migración nueva dejo el `.sql` en `supabase/migrations/` + aviso con el texto exacto a pegar.
