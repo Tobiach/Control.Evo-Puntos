@@ -33,7 +33,7 @@ Tobías pidió ejecutar sin depender de sus permisos a cada paso. Reglas:
 | Tema | Estado | Qué se hace |
 |---|---|---|
 | **F0** — negocios de ejemplo con saldo para usuarios reales | **Decidido por Tobías** | Un usuario autenticado real arranca sin relaciones de ejemplo (solo lo de Supabase). Los saldos demo solo se siembran para invitado/demo. Nota agregada en `ARQUITECTURA.md`: "para ver la experiencia con datos, entrar con un usuario de demostración". **✅ hecho** (`MarketplaceApp.tsx`). |
-| **Rama `design/explorar-mis-premios-xp`** | **Resuelto (era info vieja)** | Ya está mergeada a `main` (`9d290c0`). El choque de `0022` se resolvió absorbiéndolo en `0024_consolidado_rate_limiting.sql`. Nada que reconciliar. Próxima migración = **`0025`**. |
+| **Rama `design/explorar-mis-premios-xp`** | **Resuelto (era info vieja)** | Ya está mergeada a `main` (`9d290c0`). El choque de `0022` se resolvió absorbiéndolo en `0024_consolidado_rate_limiting.sql`. Nada que reconciliar. Próxima migración = **`0026`**. |
 | **Analítica de producto** | **Default asumido** | NO se instala PostHog ahora (≈0 usuarios reales). Se crea `docs/METRICAS.sql` con 4-5 queries sobre tablas existentes (`visitas`, `canjes`, `relaciones_negocio`) para correr a mano semanalmente. PostHog recién con ~50 usuarios activos/semana. |
 | **Canal de reenganche (Fase 3)** | **Default asumido** | Web Push (ServiceWorker + VAPID): gratis, sin cuenta externa, la PWA ya existe. WhatsApp saliente queda como capa aditiva futura, no bloquea. |
 | **Qué desbloquea el XP global (Fase 4)** | **Default asumido, marcar para revisión** | Reconocimiento visible (estatus que se ve/comparte) + acceso anticipado a comercios nuevos de la red. **No toca la economía de puntos.** Si Tobías quiere que desbloquee beneficios reales, es cambio posterior. |
@@ -47,13 +47,13 @@ Tobías pidió ejecutar sin depender de sus permisos a cada paso. Reglas:
 1. **Aplicar migraciones nuevas en el SQL Editor de Supabase** — no hay CLI conectado. Por cada
    migración nueva dejo el `.sql` en `supabase/migrations/` + aviso con el texto exacto a pegar.
    Bloquea: Fase 3 (tabla `push_subscriptions` + cron), y cualquier cambio de esquema de Fase 4.
-2. **Deploy a producción** (`npx vercel --yes --prod` desde PC B, ver `docs/DEPLOY.md`). Dejo cada
-   fase verificada y con el aviso "listo para deploy"; el comando lo corre Tobías (o lo autoriza
-   explícito). Un push a `main` no despliega nada solo.
-3. **Confirmar en el SQL Editor si `0022` / `0023` / `0024` ya corrieron en producción**
-   (pendiente viejo, ver `docs/SUPABASE.md` y `SEGURIDAD.md` §5.1). No bloquea el front.
-4. **(Opcional)** Hacer el CI obligatorio para mergear a `main` (branch protection en GitHub).
-5. **Assets de Premín**: las 5 formas están **aprobadas** (hoja del 8/9). Falta el corte fino:
+2. **🟡 Deploy a producción — hay código verificado esperando desde el 12/9.** G1, G2 y G9 (Tu
+   Semana en el Home) están en `main`, probados, pero producción (`premia-ar.vercel.app`) sigue
+   sirviendo el build del `319bcd1` (12/9) — lo confirmé comparando el bundle real de prod vs.
+   el preview. `npx vercel --yes --prod` desde PC B; lo corre Tobías o lo autoriza explícito. Un
+   push a `main` no despliega nada solo.
+3. **(Opcional)** Hacer el CI obligatorio para mergear a `main` (branch protection en GitHub).
+4. **Assets de Premín**: las 5 formas están **aprobadas** (hoja del 8/9). Falta el corte fino:
    5 PNG transparentes por nivel (`public/premin/1..5.png`) + 5 siluetas + subir la hoja a
    `docs/assets/`. Los produce el diseñador. Sin esto, `TrackEvolucion` y `CardNivelXp` funcionan
    igual con `/premin.png`; el momento "evolucionó" (2.6b) se puede construir en paralelo.
@@ -138,7 +138,9 @@ Marcar acá el avance. `[~]` = en progreso.
 
 ## Fase 3 — Canal de reenganche (F2) · Web Push
 
-- [ ] 3.1 · Migración `0025_push_subscriptions.sql` (tabla + RLS) → **checkpoint humano** (aplicar en SQL Editor)
+- [ ] 3.1 · Migración `0026_push_subscriptions.sql` (tabla + RLS) → **checkpoint humano**
+  (aplicar en SQL Editor). Renumerada de `0025` a `0026`: ese número ya lo usó
+  `0025_referido_primera_visita.sql` (13/9).
 - [ ] 3.2 · ServiceWorker + suscripción VAPID; permiso pedido post-primer-canje, nunca en frío
 - [ ] 3.3 · Función/cron server-side que evalúa disparadores 1×/día y encola envíos —
   **empezar solo por "puntos vencen en ≤7 días"**
