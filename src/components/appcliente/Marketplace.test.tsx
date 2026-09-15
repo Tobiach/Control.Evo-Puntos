@@ -1,13 +1,23 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import type { Cliente } from '../../data/mockClientes';
 import { NEGOCIOS, RELACIONES_INICIALES, type Negocio } from '../../data/negocios';
 import Marketplace from './Marketplace';
+
+const CLIENTE_TEST: Cliente = {
+  id: 'cliente-test',
+  nombre: 'Martina Gómez',
+  telefono: '11 5555-0000',
+  puntos: 0,
+  ultimaVisitaDias: 0,
+};
 
 const renderMarketplace = () =>
   render(
     <Marketplace
       negocios={NEGOCIOS}
       relaciones={RELACIONES_INICIALES}
+      cliente={CLIENTE_TEST}
       nombreCliente="Martina Gómez"
       esNuevo={false}
       onAbrirNegocio={vi.fn()}
@@ -24,8 +34,28 @@ describe('Marketplace', () => {
 
   it('"Tus lugares" lista los negocios donde el cliente ya tiene relación', () => {
     renderMarketplace();
-    expect(screen.getByText('Tus lugares')).toBeInTheDocument();
-    expect(screen.getByText('Café Nardo')).toBeInTheDocument();
+    const titulo = screen.getByText('Tus lugares');
+    // scoped a la sección: "Café Nardo" también puede aparecer en "Tu próximo premio" si
+    // es el negocio destacado — acá solo nos importa que "Tus lugares" lo liste.
+    const seccion = titulo.closest('section');
+    expect(seccion).not.toBeNull();
+    expect(within(seccion as HTMLElement).getByText('Café Nardo')).toBeInTheDocument();
+  });
+
+  it('muestra el nivel/XP global (CardNivelXp) cuando el cliente ya tiene actividad', () => {
+    renderMarketplace();
+    // RELACIONES_INICIALES suma 320+720+160+95 = 1295 XP → nivel "Habitué" (1000-3000).
+    expect(screen.getByText('Habitué')).toBeInTheDocument();
+  });
+
+  it('"Tu próximo premio" destaca el mejor premio al alcance, cruzando negocios', () => {
+    renderMarketplace();
+    expect(screen.getByText('Tu próximo premio')).toBeInTheDocument();
+  });
+
+  it('ofrece invitar a un amigo cuando el cliente ya tiene un negocio ancla', () => {
+    renderMarketplace();
+    expect(screen.getByText('Invitá a un amigo')).toBeInTheDocument();
   });
 
   it('"Nuevos para vos" muestra, por clientesActivos, negocios sin relación real', () => {
@@ -58,6 +88,7 @@ describe('Marketplace', () => {
       <Marketplace
         negocios={[negocioConFoto]}
         relaciones={{}}
+        cliente={CLIENTE_TEST}
         nombreCliente="Martina Gómez"
         esNuevo
         onAbrirNegocio={vi.fn()}
@@ -71,6 +102,7 @@ describe('Marketplace', () => {
       <Marketplace
         negocios={[]}
         relaciones={{}}
+        cliente={CLIENTE_TEST}
         nombreCliente="Martina Gómez"
         esNuevo
         onAbrirNegocio={vi.fn()}

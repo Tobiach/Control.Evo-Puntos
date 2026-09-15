@@ -1,24 +1,47 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
+  Check,
   ChevronRight,
   Clock,
   Compass,
   Flame,
   Gift,
+  Share2,
+  Sparkles,
   Target,
   TrendingUp,
+  Users,
   Zap,
   type LucideIcon,
 } from 'lucide-react';
+import type { Cliente } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
-import { formatPuntos } from '../../lib/club';
-import { actividadGlobal, heroeDelHome, type SenalHome, type TipoSenal } from '../../lib/home';
+import { calcularXpTotal, codigoReferido, formatPuntos, negocioAncla } from '../../lib/club';
+import {
+  actividadGlobal,
+  heroeDelHome,
+  proximoPremioDestacado,
+  type SenalHome,
+  type TipoSenal,
+} from '../../lib/home';
+import { esInvitado } from '../../lib/invitado';
+import { compartir } from '../../lib/compartir';
+import {
+  armarLinkInvitacion,
+  formatVisitas,
+  obtenerCodigoReferido,
+  PUNTOS_BONUS_REFERIDO,
+  VISITAS_PARA_PREMIO,
+} from '../../lib/referidos';
+import { supabaseEnabled } from '../../lib/supabase';
 import { gradienteCss } from '../../lib/temaNegocio';
+import CardNivelXp from './CardNivelXp';
 
 interface Props {
   negocios: Negocio[];
   relaciones: Record<string, RelacionNegocio>;
+  cliente: Cliente;
   nombreCliente: string;
   /** Todavía no tiene relación con ningún negocio real: recién se sumó al club. */
   esNuevo: boolean;
@@ -182,6 +205,143 @@ function TuSemana({ relaciones }: { relaciones: Record<string, RelacionNegocio> 
   );
 }
 
+/**
+ * "Tu próximo premio": a diferencia del héroe (la señal más URGENTE, puede ser una alerta de
+ * vencimiento), esta card siempre muestra el mejor premio real al alcance del cliente —
+ * cruzando todos los negocios, mismo criterio de prioridad que ya usa `TabMisLocales`
+ * (canjeable > casi > acumulando, ver `proximoPremioDestacado` en lib/home.ts). Se oculta si
+ * el cliente todavía no tiene ninguna relación real (nada que priorizar).
+ */
+function ProximoPremio({
+  premio,
+  onAbrir,
+}: {
+  premio: NonNullable<ReturnType<typeof proximoPremioDestacado>>;
+  onAbrir: () => void;
+}) {
+  const { negocio, recompensa, puntos, pct, estado } = premio;
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onAbrir}
+      className="relative flex min-h-[168px] w-full flex-col justify-end overflow-hidden rounded-3xl p-5 pt-16 text-left"
+    >
+      {negocio.portadaUrl ? (
+        <img src={negocio.portadaUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <div className="absolute inset-0" style={{ background: gradienteCss(negocio.rubro) }} />
+      )}
+      <span
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-t from-surface-dark/90 from-0% via-surface-dark/30 via-55% to-transparent to-100%"
+      />
+      <span className="relative mb-1 text-[10px] font-bold tracking-widest text-white/70 uppercase">
+        Tu próximo premio
+      </span>
+      <p className="relative text-xl leading-tight font-extrabold text-white">{recompensa.descripcion}</p>
+      <p className="relative mt-1 text-[13px] text-white/75">{negocio.nombre}</p>
+      <div className="relative mt-3 h-2 overflow-hidden rounded-full bg-white/20">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="h-full rounded-full bg-white"
+        />
+      </div>
+      <span className="relative mt-2 flex items-center gap-1 text-sm font-bold text-white">
+        {estado === 'canjeable'
+          ? 'Ya te alcanza — mostralo en el mostrador'
+          : `Te faltan ${formatPuntos(recompensa.pts - puntos)} pts`}
+        <ChevronRight size={15} strokeWidth={2.6} />
+      </span>
+    </motion.button>
+  );
+}
+
+/**
+ * Invitá a un amigo, a nivel Home: mismo bloque/lógica que ya vive en
+ * `TabPerfilMarketplace.tsx` (07 — Invitá a un amigo) — elige el negocio ancla con
+ * `negocioAncla`, resuelve el código de referido real en segundo plano
+ * (`obtenerCodigoReferido`, con `codigoReferido(cliente)` como fallback sincrónico si el
+ * click llega antes de que resuelva) y arma el link con `armarLinkInvitacion`. Se repite acá
+ * en vez de importar el componente de Perfil porque ese vive mezclado con el resto de esa
+ * pantalla (stats, canjes, ajustes) — la lógica de fondo es la misma, no se reescribe.
+ */
+function InvitarAmigo({
+  negocios,
+  relaciones,
+  cliente,
+}: {
+  negocios: Negocio[];
+  relaciones: Record<string, RelacionNegocio>;
+  cliente: Cliente;
+}) {
+  const invitado = esInvitado(cliente);
+  const [codigoRef, setCodigoRef] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState(false);
+
+  useEffect(() => {
+    if (!supabaseEnabled || invitado) return;
+    let activo = true;
+    obtenerCodigoReferido().then((cod) => {
+      if (activo) setCodigoRef(cod);
+    });
+    return () => {
+      activo = false;
+    };
+  }, [invitado]);
+
+  const ancla = useMemo(() => negocioAncla(negocios, relaciones), [negocios, relaciones]);
+  if (!ancla || invitado) return null;
+
+  const invitar = async () => {
+    const codigo = codigoRef ?? codigoReferido(cliente);
+    const link = armarLinkInvitacion(window.location.origin, codigo, ancla.id);
+    const texto =
+      `¡Sumate a Premia.ar! Con mi invitación, cuando vayas ${formatVisitas(VISITAS_PARA_PREMIO)} a ` +
+      `${ancla.nombre}, ganamos ${PUNTOS_BONUS_REFERIDO} pts cada uno. ${link}`;
+    const copio = await compartir(texto, link);
+    if (copio) {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-3 rounded-3xl bg-premio-suave px-4 py-4">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-card text-acento">
+        <Users size={20} strokeWidth={2.2} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-texto">Invitá a un amigo</p>
+        <p className="mt-0.5 text-xs leading-snug text-texto-muted">
+          Cuando vaya {formatVisitas(VISITAS_PARA_PREMIO)} a {ancla.nombre}, ganan {PUNTOS_BONUS_REFERIDO} pts
+          los dos.
+        </p>
+      </div>
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.96 }}
+        onClick={invitar}
+        className="flex shrink-0 items-center gap-1.5 rounded-full bg-acento px-4 py-2.5 text-xs font-bold text-on-acento active:bg-acento-hover"
+      >
+        {copiado ? (
+          <>
+            <Check size={14} /> Copiado
+          </>
+        ) : (
+          <>
+            Invitar <Share2 size={13} />
+          </>
+        )}
+      </motion.button>
+    </div>
+  );
+}
+
 /** Foto real del negocio (o degradé por rubro + emoji si no cargó una) — mismo criterio que
  *  `TarjetaExplorar`/`TabPerfilMarketplace`, nunca un placeholder "Foto pendiente" acá. */
 function FotoNegocio({ negocio }: { negocio: Negocio }) {
@@ -206,8 +366,20 @@ function FotoNegocio({ negocio }: { negocio: Negocio }) {
  * navegan TODOS los locales — acá solo el héroe (la señal más urgente), tus lugares y un
  * descubrimiento curado. Ver docs/SPEC-HOME.md.
  */
-export default function Marketplace({ negocios, relaciones, nombreCliente, esNuevo, onAbrirNegocio }: Props) {
+export default function Marketplace({
+  negocios,
+  relaciones,
+  cliente,
+  nombreCliente,
+  esNuevo,
+  onAbrirNegocio,
+}: Props) {
   const heroe = useMemo(() => heroeDelHome(negocios, relaciones), [negocios, relaciones]);
+  const xpTotal = useMemo(() => calcularXpTotal(relaciones), [relaciones]);
+  const premioDestacado = useMemo(
+    () => proximoPremioDestacado(negocios, relaciones),
+    [negocios, relaciones],
+  );
 
   const misLugares = useMemo(
     () => negocios.filter((negocio) => relaciones[negocio.id]),
@@ -228,7 +400,10 @@ export default function Marketplace({ negocios, relaciones, nombreCliente, esNue
     <div className="flex flex-col gap-5 px-5 pt-6 pb-10">
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-texto-muted">Hola, {nombreCliente.split(' ')[0]} 👋</p>
+          <p className="flex items-center gap-1 text-[10px] font-bold tracking-widest text-acento uppercase">
+            <Sparkles size={11} strokeWidth={2.5} /> premia.ar
+          </p>
+          <p className="mt-1.5 text-xs font-semibold text-texto-muted">Hola, {nombreCliente.split(' ')[0]} 👋</p>
           <h1 className="mt-1 text-[26px] leading-[1.1] font-extrabold tracking-tight text-texto">
             {esNuevo ? 'Arrancás la partida' : 'Tu barrio, hoy'}
           </h1>
@@ -237,6 +412,12 @@ export default function Marketplace({ negocios, relaciones, nombreCliente, esNue
       </header>
 
       {heroe && <Heroe senal={heroe} onAbrir={() => onAbrirNegocio(heroe.negocio)} />}
+
+      {!esNuevo && <CardNivelXp xpTotal={xpTotal} />}
+
+      {premioDestacado && (
+        <ProximoPremio premio={premioDestacado} onAbrir={() => onAbrirNegocio(premioDestacado.negocio)} />
+      )}
 
       <TuSemana relaciones={relaciones} />
 
@@ -293,6 +474,8 @@ export default function Marketplace({ negocios, relaciones, nombreCliente, esNue
           </div>
         </section>
       )}
+
+      {!esNuevo && <InvitarAmigo negocios={negocios} relaciones={relaciones} cliente={cliente} />}
     </div>
   );
 }

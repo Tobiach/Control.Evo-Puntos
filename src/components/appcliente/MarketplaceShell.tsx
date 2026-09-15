@@ -100,6 +100,7 @@ export default function MarketplaceShell({
               <Marketplace
                 negocios={negocios}
                 relaciones={relaciones}
+                cliente={cliente}
                 nombreCliente={nombreCliente}
                 esNuevo={esNuevo}
                 onAbrirNegocio={onAbrirNegocio}
