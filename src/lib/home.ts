@@ -228,52 +228,17 @@ export function actividadGlobal(relaciones: Record<string, RelacionNegocio>): {
   return { rachaDiasSeguidos: rachaDias(visitas), semana: ultimos7Dias(visitas) };
 }
 
-export type EstadoPremio = 'canjeable' | 'casi' | 'acumulando';
+/** Los 7 tipos de señal se agrupan en 2 tratamientos visuales del Home — nunca se mezclan
+ *  (ver docs/AUDITORIA-... corrección 13/9): un premio LISTO/urgente no es lo mismo que un
+ *  premio en el que todavía falta progresar. */
+export type GrupoSenal = 'listo' | 'proximo';
 
-export interface PremioDestacado {
-  negocio: Negocio;
-  recompensa: Recompensa;
-  puntos: number;
-  /** % de progreso hacia `recompensa` (100 si ya es canjeable). */
-  pct: number;
-  estado: EstadoPremio;
-}
-
-const PRIORIDAD_PREMIO: Record<EstadoPremio, number> = { canjeable: 0, casi: 1, acumulando: 2 };
-
-/**
- * El mejor premio real al alcance del cliente CRUZANDO todos los negocios — mismo criterio de
- * `estadoDe`/`recompensaDestacada` que ya usa `TabMisLocales.tsx` (canjeable > casi > acumulando,
- * "casi" = 80%+ de progreso), aplicado a la red entera en vez de un negocio a la vez. A
- * diferencia del héroe (`heroeDelHome`, la señal más URGENTE — puede ser una alerta de
- * vencimiento), esto siempre apunta al premio con más chance real de conseguirse, sea o no
- * urgente. `null` si el cliente todavía no tiene ninguna relación real.
- */
-export function proximoPremioDestacado(
-  negocios: Negocio[],
-  relaciones: Record<string, RelacionNegocio>,
-): PremioDestacado | null {
-  const candidatos: PremioDestacado[] = [];
-
-  for (const negocio of negocios) {
-    const relacion = relaciones[negocio.id];
-    if (!relacion || negocio.recompensas.length === 0) continue;
-    const puntos = relacion.puntos;
-
-    const disponible = mejorRecompensaDisponible(negocio.recompensas, puntos);
-    if (disponible) {
-      candidatos.push({ negocio, recompensa: disponible, puntos, pct: 100, estado: 'canjeable' });
-      continue;
-    }
-
-    const proxima = proximaRecompensa(negocio.recompensas, puntos);
-    if (!proxima) continue;
-    const pct = Math.min(100, Math.round((puntos / proxima.pts) * 100));
-    candidatos.push({ negocio, recompensa: proxima, puntos, pct, estado: pct >= 80 ? 'casi' : 'acumulando' });
-  }
-
-  if (candidatos.length === 0) return null;
-  return candidatos.sort(
-    (a, b) => PRIORIDAD_PREMIO[a.estado] - PRIORIDAD_PREMIO[b.estado] || b.pct - a.pct,
-  )[0];
-}
+export const GRUPO_SENAL: Record<TipoSenal, GrupoSenal> = {
+  vencimiento: 'listo',
+  'racha-riesgo': 'listo',
+  'recompensa-lista': 'listo',
+  'x2-ahora': 'listo',
+  'near-win': 'proximo',
+  'al-dia': 'proximo',
+  descubrir: 'proximo',
+};

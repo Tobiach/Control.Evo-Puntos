@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Recompensa, Visita } from '../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../data/negocios';
-import { actividadGlobal, heroeDelHome, proximoPremioDestacado, senalesDelCliente } from './home';
+import { actividadGlobal, GRUPO_SENAL, heroeDelHome, senalesDelCliente, type TipoSenal } from './home';
 
 const AHORA = new Date(2026, 8, 7, 16, 0); // 7-sep-2026 16:00 local
 
@@ -145,36 +145,21 @@ describe('actividadGlobal', () => {
   });
 });
 
-describe('proximoPremioDestacado', () => {
-  it('un premio ya canjeable en cualquier negocio le gana a uno "casi" en otro', () => {
-    const negs = [
-      negocio({ id: 'a', nombre: 'Casi', recompensas: [rec(100, 'Café')] }),
-      negocio({ id: 'b', nombre: 'Canjeable', recompensas: [rec(100, 'Trago')] }),
+describe('GRUPO_SENAL', () => {
+  it('agrupa "premio listo" vs. "próximo premio" sin dejar ningún tipo afuera', () => {
+    const tipos: TipoSenal[] = [
+      'vencimiento',
+      'recompensa-lista',
+      'x2-ahora',
+      'near-win',
+      'racha-riesgo',
+      'al-dia',
+      'descubrir',
     ];
-    const relaciones = { a: rel(85, 3), b: rel(150, 3) }; // a: 85% de progreso, b: ya alcanza
-    const premio = proximoPremioDestacado(negs, relaciones);
-    expect(premio?.negocio.id).toBe('b');
-    expect(premio?.estado).toBe('canjeable');
-  });
-
-  it('entre dos "casi", gana el de mayor porcentaje de progreso', () => {
-    const negs = [
-      negocio({ id: 'a', nombre: 'Menos cerca', recompensas: [rec(200, 'P')] }),
-      negocio({ id: 'b', nombre: 'Más cerca', recompensas: [rec(200, 'P')] }),
-    ];
-    const relaciones = { a: rel(160, 3), b: rel(190, 3) }; // 80% vs 95%
-    const premio = proximoPremioDestacado(negs, relaciones);
-    expect(premio?.negocio.id).toBe('b');
-    expect(premio?.estado).toBe('casi');
-  });
-
-  it('sin ninguna relación real, no hay premio destacado', () => {
-    const negs = [negocio({ id: 'a', nombre: 'Sin relación', recompensas: [rec(100, 'Café')] })];
-    expect(proximoPremioDestacado(negs, {})).toBeNull();
-  });
-
-  it('ignora negocios sin recompensas cargadas', () => {
-    const negs = [negocio({ id: 'a', nombre: 'Sin premios', recompensas: [] })];
-    expect(proximoPremioDestacado(negs, { a: rel(500, 3) })).toBeNull();
+    for (const tipo of tipos) {
+      expect(['listo', 'proximo']).toContain(GRUPO_SENAL[tipo]);
+    }
+    expect(GRUPO_SENAL['recompensa-lista']).toBe('listo');
+    expect(GRUPO_SENAL['near-win']).toBe('proximo');
   });
 });

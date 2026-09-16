@@ -1,23 +1,24 @@
 import { lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { Gift, Home, Loader2, Map, User, type LucideIcon } from 'lucide-react';
+import { Gift, Home, Loader2, Map, Sparkles, User, type LucideIcon } from 'lucide-react';
 import type { Cliente } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
 import type { CanjeConfirmado } from '../../lib/panelCliente';
 import type { PermisoNotif } from '../../lib/notificaciones';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import Marketplace from './Marketplace';
+import TabMisionesProximamente from './TabMisionesProximamente';
 import TabMisLocales from './TabMisLocales';
 import TabPerfilMarketplace from './TabPerfilMarketplace';
 
 // Leaflet/react-leaflet (mapa "Explorar") es la dependencia más pesada de todo el marketplace
-// y solo la usa esta pestaña — separada así nadie que se quede en Inicio/Mis premios/Perfil
+// y solo la usa esta pestaña — separada así nadie que se quede en Inicio/Premios/Perfil
 // la descarga.
 const TabMapa = lazy(() => import('./TabMapa'));
 
-type Tab = 'inicio' | 'mapa' | 'mis-locales' | 'perfil';
-const TABS_VALIDAS: readonly Tab[] = ['inicio', 'mapa', 'mis-locales', 'perfil'];
+type Tab = 'inicio' | 'mapa' | 'mis-locales' | 'misiones' | 'perfil';
+const TABS_VALIDAS: readonly Tab[] = ['inicio', 'mapa', 'mis-locales', 'misiones', 'perfil'];
 function parseTab(valor: string | null): Tab {
   return TABS_VALIDAS.includes(valor as Tab) ? (valor as Tab) : 'inicio';
 }
@@ -36,12 +37,15 @@ interface Props {
   onCrearCuenta: () => void;
 }
 
-/** Los ids internos quedan igual (mapa/mis-locales); solo cambia la etiqueta visible
- *  ("Explorar"/"Mis premios") para que suene a consumidor, no a gestión de negocios. */
+/** Los ids internos quedan igual (mapa/mis-locales); solo cambia la etiqueta visible para que
+ *  suene a consumidor, no a gestión de negocios. Nav de 5 destinos (corrección 15/9):
+ *  Inicio/Explorar/Premios/Misiones/Perfil — "Premios" reemplaza a "Mis premios" (más corto,
+ *  misma pestaña `mis-locales`). */
 const TABS: { id: Tab; label: string; icono: LucideIcon }[] = [
   { id: 'inicio', label: 'Inicio', icono: Home },
   { id: 'mapa', label: 'Explorar', icono: Map },
-  { id: 'mis-locales', label: 'Mis premios', icono: Gift },
+  { id: 'mis-locales', label: 'Premios', icono: Gift },
+  { id: 'misiones', label: 'Misiones', icono: Sparkles },
   { id: 'perfil', label: 'Perfil', icono: User },
 ];
 
@@ -104,6 +108,7 @@ export default function MarketplaceShell({
                 nombreCliente={nombreCliente}
                 esNuevo={esNuevo}
                 onAbrirNegocio={onAbrirNegocio}
+                onVerProgreso={() => setTab('perfil')}
               />
             )}
             {tab === 'mapa' && (
@@ -120,6 +125,7 @@ export default function MarketplaceShell({
             {tab === 'mis-locales' && (
               <TabMisLocales negocios={negocios} relaciones={relaciones} onAbrirNegocio={onAbrirNegocio} />
             )}
+            {tab === 'misiones' && <TabMisionesProximamente onIrAExplorar={() => setTab('mapa')} />}
             {tab === 'perfil' && (
               <TabPerfilMarketplace
                 cliente={cliente}

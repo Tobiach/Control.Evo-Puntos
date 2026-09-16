@@ -25,18 +25,27 @@ const renderMarketplace = () =>
   );
 
 describe('Marketplace', () => {
-  it('muestra un héroe con la señal más urgente entre todos los locales', () => {
+  it('el titular fijo no cambia según el estado del cliente (se eliminó "Arrancás la partida")', () => {
     renderMarketplace();
-    // RELACIONES_INICIALES: Rooftop Malabia tiene 95 pts y última visita hace 47 días
-    // → los puntos vencen en 13 días, es la señal de mayor prioridad.
+    expect(screen.getByText('Cada visita te acerca a tu próximo premio.')).toBeInTheDocument();
+  });
+
+  it('muestra la señal más urgente entre todos los locales, agrupada como "Premio listo"', () => {
+    renderMarketplace();
+    // RELACIONES_INICIALES: Rooftop Malabia tiene 95 pts y última visita hace 47 días → los
+    // puntos vencen en 13 días, es la señal de mayor prioridad. "vencimiento" agrupa como
+    // "listo" (no como "próximo premio") — no se mezclan los dos estados.
     expect(screen.getByText(/Rooftop Malabia vencen/)).toBeInTheDocument();
+    // "Premio listo" también puede aparecer como pill en "Tus lugares" para otros negocios
+    // canjeables — acá solo nos importa que la insignia del estado exista al menos una vez.
+    expect(screen.getAllByText('Premio listo').length).toBeGreaterThan(0);
   });
 
   it('"Tus lugares" lista los negocios donde el cliente ya tiene relación', () => {
     renderMarketplace();
     const titulo = screen.getByText('Tus lugares');
-    // scoped a la sección: "Café Nardo" también puede aparecer en "Tu próximo premio" si
-    // es el negocio destacado — acá solo nos importa que "Tus lugares" lo liste.
+    // scoped a la sección: "Café Nardo" también puede aparecer en la card de estado si es el
+    // negocio destacado — acá solo nos importa que "Tus lugares" lo liste.
     const seccion = titulo.closest('section');
     expect(seccion).not.toBeNull();
     expect(within(seccion as HTMLElement).getByText('Café Nardo')).toBeInTheDocument();
@@ -48,19 +57,14 @@ describe('Marketplace', () => {
     expect(screen.getByText('Habitué')).toBeInTheDocument();
   });
 
-  it('"Tu próximo premio" destaca el mejor premio al alcance, cruzando negocios', () => {
-    renderMarketplace();
-    expect(screen.getByText('Tu próximo premio')).toBeInTheDocument();
-  });
-
   it('ofrece invitar a un amigo cuando el cliente ya tiene un negocio ancla', () => {
     renderMarketplace();
     expect(screen.getByText('Invitá a un amigo')).toBeInTheDocument();
   });
 
-  it('"Nuevos para vos" muestra, por clientesActivos, negocios sin relación real', () => {
+  it('"Descubrí nuevos lugares" muestra, por clientesActivos, negocios sin relación real', () => {
     renderMarketplace();
-    expect(screen.getByText('Nuevos para vos')).toBeInTheDocument();
+    expect(screen.getByText('Descubrí nuevos lugares')).toBeInTheDocument();
     // Mismo criterio que el componente: el de más clientesActivos entre los que el
     // cliente nunca visitó. No se hardcodea el nombre — se deriva de los datos reales.
     const esperado = [...NEGOCIOS]
@@ -69,7 +73,7 @@ describe('Marketplace', () => {
     expect(screen.getByText(esperado.nombre)).toBeInTheDocument();
   });
 
-  it('el héroe en tono calmo usa la foto real del negocio como fondo (G8)', () => {
+  it('sin ninguna relación real, agrupa como "Tu próximo premio" y usa la foto real del negocio (G8)', () => {
     const negocioConFoto: Negocio = {
       id: 'con-foto',
       nombre: 'Café De Prueba',
@@ -83,7 +87,8 @@ describe('Marketplace', () => {
       recompensas: [{ pts: 100000, descripcion: 'Lejano', categoria: 'Bebidas' }],
       portadaUrl: '/portadas/cafe-de-prueba.jpg',
     };
-    // Sin relaciones → fallback "descubrir" (tono calmo) sobre el único negocio disponible.
+    // Sin relaciones → fallback "descubrir" (grupo "próximo premio") sobre el único negocio
+    // disponible.
     const { container } = render(
       <Marketplace
         negocios={[negocioConFoto]}
@@ -94,6 +99,7 @@ describe('Marketplace', () => {
         onAbrirNegocio={vi.fn()}
       />,
     );
+    expect(screen.getByText('Tu próximo premio')).toBeInTheDocument();
     expect(container.querySelector('img[src="/portadas/cafe-de-prueba.jpg"]')).not.toBeNull();
   });
 
@@ -108,6 +114,6 @@ describe('Marketplace', () => {
         onAbrirNegocio={vi.fn()}
       />,
     );
-    expect(screen.getByText('Arrancás la partida')).toBeInTheDocument();
+    expect(screen.getByText('Cada visita te acerca a tu próximo premio.')).toBeInTheDocument();
   });
 });
