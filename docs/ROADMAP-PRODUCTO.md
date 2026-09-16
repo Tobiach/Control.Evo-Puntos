@@ -176,23 +176,42 @@ mantienen activos a conciencia (decisión de Tobías 12/9, ver `docs/MUESTRAS-LO
 - [ ] G7 · Prolijar el sistema de imágenes (logo/portada/foto de carta) antes del lanzamiento —
   inventario completo, inconsistencias y fixes propuestos en
   [SISTEMA-IMAGENES.md](SISTEMA-IMAGENES.md). Incluye una pregunta abierta (`TarjetaMiLugar`)
-  que necesita el OK de Tobías antes de tocarla.
+  que necesita el OK de Tobías antes de tocarla. **Hallazgo nuevo (15/9), sube la prioridad de
+  esto**: verificado contra la base real, **79 de 80 negocios reales (73 del lote + el resto)
+  no tienen NINGUNA imagen cargada** (ni logo ni portada) — solo Victoria Café tiene logo. Ver
+  [CHECKLIST-IMAGENES.md](CHECKLIST-IMAGENES.md) para qué preparar y en qué orden.
 - [x] G8 · **Reconciliar el Home (2.2) con la auditoría**: el héroe en tono calmo (al-dia /
   descubrir) usa la foto real del negocio de fondo si existe; "Nuevos para vos" pasó de logo
   chico a card con foto real. Sin secciones nuevas, sin volver a "Los más elegidos"/"Premia
   recomienda". Detalle en `AUDITORIA-REFERENCIAS-PASITO.md` §G8.
-- [x] G9 · **"Tu semana" en el Home — hecho (13/9)**: racha de días seguidos (cruzando TODOS
-  los negocios) + mini-gráfico de puntos de los últimos 7 días, mismo lenguaje visual que
-  `TabActividad`. Responde al pedido de Tobías de que el Home no se sienta vacío vs. Pasito.
-  Se oculta si no hubo actividad en la semana. Ver `AUDITORIA-REFERENCIAS-PASITO.md` §"Home vs.
-  Pasito".
-- [ ] G10 · Segunda card de invitar amigos en el Home (reusa `SeccionReferidos`, no se promueve
-  hoy) — P2, chico
+- [x] G9 · **"Tu semana" en el Home**: racha + gráfico real de 7 días cruzando todos los
+  negocios. Pasó por una simplificación a puntitos (14/9) y volvió al gráfico de barras a
+  pedido de Tobías (15/9) — el detalle día por día importaba más que la simplicidad acá.
+- [x] G10 · **Segunda card de invitar amigos en el Home — hecha (15/9)**, junto con el
+  rediseño completo del Home (una sola card de estado en vez de héroe+"próximo premio"
+  separados, sin "Arrancás la partida", nav a 5 tabs). Detalle abajo en "Home v2".
 - [ ] G11 · Ranking simple ("estás en el top X% de clientes frecuentes de {negocio}") — P3,
   versión reducida de G6 sin esperar la investigación 4.1 completa
-- [ ] G12 · Fondo/paleta del héroe más saturada (a diferencia de G9, esto SÍ es una decisión de
-  marca — no construir sin mockup/OK explícito de Tobías sobre colores concretos, ver
-  `DISENO.md`)
+- [x] G12 · **Fondo del héroe/card de estado con foto real + movimiento — hecho (15/9)**: no
+  es la paleta saturada tipo Pasito (esa sigue siendo una decisión de marca sin resolver), pero
+  sí foto real del negocio de fondo (tenue, con zoom lento) en vez del degradé plano. Responde
+  parcialmente al pedido de "más fondos/imagen/movimiento" — el resto depende de que haya
+  fotos reales cargadas (ver el hallazgo de G7 arriba).
+
+### Home v2 — corrección de jerarquía (15/9, fuera de la numeración G, mismo backlog)
+
+`Marketplace.tsx` tuvo una vuelta completa de corrección tras el primer armado: se fusionó
+héroe + "próximo premio" en una sola card de estado (2 tratamientos: "premio listo" sin barra
+vs. "tu próximo premio" con barra — nunca mezclados), se eliminó "Arrancás la partida" del
+copy principal, nav pasó a 5 tabs (se agregó "Misiones", placeholder honesto sin feature real
+todavía — ver [MISIONES-IDEAS.md](MISIONES-IDEAS.md) para el brainstorm de qué podría ir ahí),
+truncamiento de nombres corregido en las 2 secciones de cards. Detalle completo en el commit
+`ad11e5f` y siguientes.
+
+**Bug real encontrado en el camino (P0-bis, ya resuelto)**: los 73 negocios del lote también
+estaban en el set usado para decidir si un cliente era "nuevo" y si un canje debía ir a
+Supabase o quedarse local — un cliente real con puntos en esos negocios veía canjes que nunca
+llegaban a la base, y nunca dejaba de verse como "recién llegado". Detalle en `CLAUDE.md`.
 
 ## Continuo — Foco
 
