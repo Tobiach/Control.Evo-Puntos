@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Check, ChevronRight, Compass, Flame, Gift, Share2, Star, Users } from 'lucide-react';
 import type { Cliente } from '../../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../../data/negocios';
@@ -46,24 +46,6 @@ function LogoNegocio({ negocio, size }: { negocio: Negocio; size: string }) {
   );
 }
 
-/** Miniatura cuadrada (foto real o degradé por rubro + emoji) para la card de estado. */
-function MiniFoto({ negocio }: { negocio: Negocio }) {
-  return (
-    <span className="h-[60px] w-[60px] shrink-0 overflow-hidden rounded-2xl">
-      {negocio.portadaUrl ? (
-        <img src={negocio.portadaUrl} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <span
-          className="flex h-full w-full items-center justify-center text-2xl"
-          style={{ background: gradienteCss(negocio.rubro) }}
-        >
-          <span aria-hidden>{negocio.emoji}</span>
-        </span>
-      )}
-    </span>
-  );
-}
-
 /**
  * Card de estado — UNA sola, no dos. Antes había un héroe adaptativo Y una card separada de
  * "próximo premio" que podían mostrar la misma idea con selección distinta (confuso). Ahora
@@ -71,8 +53,15 @@ function MiniFoto({ negocio }: { negocio: Negocio }) {
  * near-win/racha-riesgo/al-dia/descubrir) alimenta una sola card con 2 tratamientos, nunca
  * mezclados: "premio listo" (algo para canjear YA, sin barra de progreso) o "tu próximo
  * premio" (en camino, con barra + "te faltan X pts"). Ver corrección del 15/9.
+ *
+ * La foto real del negocio (si hay) va de fondo, tenue, con un respiro lento (zoom sutil) en
+ * vez de una miniatura chica en la esquina — Tobías pidió más "fondos/imagen/movimiento";
+ * esto le da textura sin volver al problema original ("se siente como una card cualquiera"):
+ * el degradé oscuro deja el texto/badge/CTA dominando igual. Respeta
+ * `prefers-reduced-motion` (`useReducedMotion`).
  */
 function CardEstado({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void }) {
+  const reducirMovimiento = useReducedMotion();
   const listo = GRUPO_SENAL[senal.tipo] === 'listo';
   const pct =
     !listo && senal.faltan != null && senal.recompensa
@@ -84,6 +73,7 @@ function CardEstado({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void 
     : senal.faltan != null
       ? `Te faltan ${formatPuntos(senal.faltan)} pts`
       : senal.cta;
+  const conFoto = !!senal.negocio.portadaUrl;
 
   return (
     <motion.button
@@ -92,9 +82,26 @@ function CardEstado({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void 
       animate={{ opacity: 1, y: 0 }}
       whileTap={{ scale: 0.98 }}
       onClick={onAbrir}
-      className="flex w-full flex-col gap-4 rounded-3xl bg-surface-dark p-5 text-left"
+      className="relative flex w-full flex-col gap-4 overflow-hidden rounded-3xl bg-surface-dark p-5 text-left"
     >
-      <div className="flex items-start justify-between gap-3">
+      {conFoto && (
+        <motion.img
+          src={senal.negocio.portadaUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          initial={{ scale: reducirMovimiento ? 1 : 1.08 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 14, repeat: reducirMovimiento ? 0 : Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+        />
+      )}
+      {conFoto && (
+        <span
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-t from-surface-dark from-10% via-surface-dark/85 via-55% to-surface-dark/40"
+        />
+      )}
+
+      <div className="relative flex items-start justify-between gap-3">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold tracking-wide uppercase ${
             listo ? 'bg-premio text-white' : 'bg-acento text-on-acento'
@@ -103,16 +110,15 @@ function CardEstado({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void 
           {listo ? <Gift size={12} strokeWidth={2.5} /> : <Star size={12} strokeWidth={2.5} />}
           {listo ? 'Premio listo' : 'Tu próximo premio'}
         </span>
-        <MiniFoto negocio={senal.negocio} />
       </div>
 
-      <div>
+      <div className="relative">
         <p className="text-xl leading-tight font-extrabold text-white">{titulo}</p>
         <p className="mt-1 text-[13px] text-white/70">{senal.negocio.nombre}</p>
       </div>
 
       {pct != null && (
-        <div className="h-2 overflow-hidden rounded-full bg-white/15">
+        <div className="relative h-2 overflow-hidden rounded-full bg-white/15">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
@@ -122,7 +128,7 @@ function CardEstado({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void 
         </div>
       )}
 
-      <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-surface-dark">
+      <span className="relative inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-surface-dark">
         {ctaTexto} <ChevronRight size={13} strokeWidth={2.8} />
       </span>
     </motion.button>
@@ -130,27 +136,42 @@ function CardEstado({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void 
 }
 
 /**
- * Racha compacta: días seguidos con actividad en CUALQUIER negocio, cruzando la red (mismo
- * dato que antes, `actividadGlobal`). Antes era un gráfico de 7 barras que "se sentía como
- * calendario" — ahora es solo el número + una fila de puntos (● llenos = adentro de la racha
- * actual, ○ vacíos el resto), pensado como micro-incentivo, no como la pieza dominante del
- * Home. Comparte fila con `InvitarAmigo` (mitad de ancho cada una).
+ * Racha + gráfico de puntos de los últimos 7 días, cruzando TODOS los negocios (mismo dato de
+ * siempre, `actividadGlobal` en lib/home.ts). Tobías pidió de vuelta el gráfico de barras real
+ * por usuario (no un resumen de puntitos) — cada barra es la actividad real de ESE día, no una
+ * aproximación. Se oculta entero si no hubo ninguna actividad en la semana.
  */
-function RachaChip({ relaciones }: { relaciones: Record<string, RelacionNegocio> }) {
-  const { rachaDiasSeguidos } = useMemo(() => actividadGlobal(relaciones), [relaciones]);
-  if (rachaDiasSeguidos < 2) return null;
-  const llenos = Math.min(rachaDiasSeguidos, 7);
+function TuSemana({ relaciones }: { relaciones: Record<string, RelacionNegocio> }) {
+  const { rachaDiasSeguidos, semana } = useMemo(() => actividadGlobal(relaciones), [relaciones]);
+  const huboActividad = semana.some((dia) => dia.puntos > 0);
+  if (!huboActividad) return null;
+  const maxPuntos = Math.max(1, ...semana.map((dia) => dia.puntos));
 
   return (
-    <div className="flex flex-1 flex-col gap-1.5 rounded-3xl border border-borde bg-card px-4 py-3.5">
-      <span className="flex items-center gap-1.5 text-sm font-extrabold text-premio">
-        <Flame size={16} className="fill-premio" strokeWidth={2} /> Racha de {rachaDiasSeguidos}{' '}
-        {rachaDiasSeguidos === 1 ? 'día' : 'días'}
-      </span>
-      <span className="text-[11px] font-semibold text-texto-muted">¡Seguís sumando!</span>
-      <div className="mt-0.5 flex gap-1.5">
-        {Array.from({ length: 7 }, (_, indice) => (
-          <span key={indice} className={`h-2 w-2 rounded-full ${indice < llenos ? 'bg-premio' : 'bg-borde'}`} />
+    <div className="rounded-3xl border border-borde bg-card p-4">
+      {rachaDiasSeguidos >= 2 && (
+        <p className="mb-3 flex items-center gap-1.5 text-sm font-extrabold text-premio">
+          <Flame size={16} className="fill-premio" strokeWidth={2} /> Racha de {rachaDiasSeguidos}{' '}
+          {rachaDiasSeguidos === 1 ? 'día' : 'días'}
+          <span className="font-semibold text-texto-muted">· ¡Seguís sumando!</span>
+        </p>
+      )}
+      <div className="flex items-end justify-between gap-1.5">
+        {semana.map((dia, indice) => (
+          <div key={indice} className="flex flex-1 flex-col items-center gap-1">
+            <div className="flex h-14 w-full items-end">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${(dia.puntos / maxPuntos) * 100}%` }}
+                transition={{ delay: indice * 0.04, duration: 0.4, ease: 'easeOut' }}
+                className={`w-full rounded-t-md ${dia.puntos > 0 ? 'bg-acento' : 'bg-borde'}`}
+                style={{ minHeight: dia.puntos > 0 ? '15%' : '3px' }}
+              />
+            </div>
+            <span className={`text-[9px] font-bold ${dia.esHoy ? 'text-acento' : 'text-texto-disabled'}`}>
+              {dia.etiqueta}
+            </span>
+          </div>
         ))}
       </div>
     </div>
@@ -165,8 +186,7 @@ function RachaChip({ relaciones }: { relaciones: Record<string, RelacionNegocio>
  * click llega antes de que resuelva) y arma el link con `armarLinkInvitacion`. Se repite acá
  * en vez de importar el componente de Perfil porque ese vive mezclado con el resto de esa
  * pantalla (stats, canjes, ajustes) — la lógica de fondo es la misma, no se reescribe.
- * Comparte fila con `RachaChip` como microacción secundaria, nunca compite con la card de
- * estado ni con descubrimiento.
+ * Microacción secundaria (nunca compite con la card de estado ni con descubrimiento).
  */
 function InvitarAmigo({
   negocios,
@@ -209,26 +229,30 @@ function InvitarAmigo({
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-1.5 rounded-3xl bg-premio-suave px-4 py-3.5">
-      <span className="flex items-center gap-1.5 text-sm font-extrabold text-texto">
-        <Users size={16} className="text-acento" strokeWidth={2.3} /> Invitá a un amigo
+    <div className="flex items-center gap-3 rounded-3xl bg-premio-suave px-4 py-4">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-card text-acento">
+        <Users size={20} strokeWidth={2.2} />
       </span>
-      <span className="text-[11px] font-semibold text-texto-muted">
-        Ganás {PUNTOS_BONUS_REFERIDO} pts los dos
-      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-texto">Invitá a un amigo</p>
+        <p className="mt-0.5 text-xs leading-snug text-texto-muted">
+          Cuando vaya {formatVisitas(VISITAS_PARA_PREMIO)} a {ancla.nombre}, ganan {PUNTOS_BONUS_REFERIDO} pts
+          los dos.
+        </p>
+      </div>
       <motion.button
         type="button"
         whileTap={{ scale: 0.96 }}
         onClick={invitar}
-        className="mt-0.5 flex w-fit items-center gap-1.5 rounded-full bg-acento px-3.5 py-1.5 text-[11px] font-bold text-on-acento active:bg-acento-hover"
+        className="flex shrink-0 items-center gap-1.5 rounded-full bg-acento px-4 py-2.5 text-xs font-bold text-on-acento active:bg-acento-hover"
       >
         {copiado ? (
           <>
-            <Check size={13} /> Copiado
+            <Check size={14} /> Copiado
           </>
         ) : (
           <>
-            Invitar <Share2 size={12} />
+            Invitar <Share2 size={13} />
           </>
         )}
       </motion.button>
@@ -263,11 +287,11 @@ function FotoNegocio({ negocio, alto = 'h-[72px]' }: { negocio: Negocio; alto?: 
  * lugares. Ver docs/SPEC-HOME.md.
  *
  * Jerarquía fija (corrección 15/9, no cosmética): identidad → promesa fija → nivel/progreso →
- * estado (premio listo / próximo premio, una sola card) → descubrimiento → microacciones
- * (racha + invitar) → tus lugares. La promesa ("Cada visita te acerca a tu próximo premio")
- * ya NO cambia según `esNuevo` — Premia no se presenta como un juego ("Arrancás la partida"
- * se eliminó del todo); lo que sí varía con `esNuevo` es qué bloques tienen sentido mostrar
- * (nivel/invitar necesitan que ya exista alguna relación real).
+ * estado (premio listo / próximo premio, una sola card) → descubrimiento → racha (gráfico real
+ * de 7 días) → invitar a un amigo → tus lugares. La promesa ("Cada visita te acerca a tu
+ * próximo premio") ya NO cambia según `esNuevo` — Premia no se presenta como un juego
+ * ("Arrancás la partida" se eliminó del todo); lo que sí varía con `esNuevo` es qué bloques
+ * tienen sentido mostrar (nivel/invitar necesitan que ya exista alguna relación real).
  */
 export default function Marketplace({
   negocios,
@@ -366,12 +390,9 @@ export default function Marketplace({
         </section>
       )}
 
-      {!esNuevo && (
-        <div className="flex gap-3">
-          <RachaChip relaciones={relaciones} />
-          <InvitarAmigo negocios={negocios} relaciones={relaciones} cliente={cliente} />
-        </div>
-      )}
+      <TuSemana relaciones={relaciones} />
+
+      {!esNuevo && <InvitarAmigo negocios={negocios} relaciones={relaciones} cliente={cliente} />}
 
       {misLugares.length > 0 && (
         <section className="flex flex-col gap-2.5">
