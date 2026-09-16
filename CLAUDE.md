@@ -28,6 +28,21 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
   `visitas_necesarias: 1`, probado con un referido real de prueba y limpiado después). Fila
   `TEST` en `canjes` borrada. La próxima migración nueva es **`0026`**. Detalle completo en
   `docs/AUDITORIA-REFERENCIAS-PASITO.md`.
+- ~~P0-bis — canje falso/local para clientes reales de los 73 negocios del lote~~:
+  **RESUELTO (15/9/2026).** Causa: esos 73 negocios se agregaron a `src/data/negocios.ts`
+  (mock) para que un invitado los navegue sin cuenta — pero eso hizo que sus ids TAMBIÉN
+  quedaran en `idsEjemplo` (`MarketplaceApp.tsx`), y ese set se usaba (mal) para decidir si un
+  canje de un cliente REAL autenticado iba al servidor o al camino local/demo. Un cliente real
+  canjeando en Bavieca/Hoppe/Baum Catrina/etc. entraba al camino local: el saldo bajaba solo
+  en memoria (nunca en Supabase) y el código de 6 caracteres que se le mostraba para el
+  mostrador no existía en la tabla `canjes` — roto en silencio, sin ningún error visible.
+  Encontrado auditando por qué `CardNivelXp` no aparecía en el Home real de Tobías (mismo
+  `idsEjemplo` también rompía el cálculo de `esNuevo`, dejándolo en `true` para siempre para
+  cualquier cliente real de estos 73 negocios). Fix: `esNuevo` ahora mira si `relaciones` está
+  vacío (no ids), el canje ahora solo usa el camino local si `!usarReal` (sin mirar
+  `idsEjemplo`), y el merge de negocios ahora prioriza el dato real de Supabase por sobre el
+  mock cuando colisiona un id. `idsEjemplo` sigue existiendo solo para completar el catálogo
+  con relleno mock donde falta un negocio real.
 - ~~Rama `design/explorar-mis-premios-xp`~~: **RESUELTO** (6/9/2026) — ya estaba mergeada a
   `main` (`9d290c0`); el choque del número `0022` se resolvió absorbiendo
   `0022_referidos_una_visita.sql` en `0024_consolidado_rate_limiting.sql`. Nada pendiente.

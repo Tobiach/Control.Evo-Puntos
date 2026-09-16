@@ -157,8 +157,16 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
   // nunca en frío al montar (ver notificaciones.ts).
   const [permisoNotif, pedirPermisoNotif] = usePermisoNotificaciones();
 
-  // IDs de los locales de ejemplo (ficticios): el canje de estos nunca toca Supabase,
-  // así nunca puede romperse con un error de servidor por un negocio que no existe ahí.
+  // IDs de TODOS los locales de `NEGOCIOS` (mock) — incluye tanto los puramente ficticios
+  // (café-nardo, etc., sin fila en Supabase) COMO los 73 reales del lote de CABA que también
+  // se agregaron a este archivo para que un invitado sin cuenta pueda navegarlos (ver
+  // docs/MUESTRAS-LOTE.md). Ese solapamiento importa: un id estar acá NO significa que el
+  // negocio sea ficticio para un usuario real autenticado — bavieca/hoppe/etc. SÍ existen en
+  // Supabase y un cliente real puede tener una relación real con ellos. Por eso `idsEjemplo`
+  // solo se usa más abajo para decidir qué mock de relleno mostrar cuando FALTA un negocio
+  // real (línea ~174) — nunca para decidir si un canje o el estado "recién llegado" de un
+  // usuario real es de verdad (eso se decide mirando `relaciones`, que para `usarReal` viene
+  // 100% de Supabase, nunca se mezcla con datos de ejemplo).
   const idsEjemplo = useState(() => new Set(NEGOCIOS.map((n) => n.id)))[0];
 
   const userId = sesion?.user.id;
@@ -170,9 +178,13 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
       if (!activo) return;
       if (res.ok) {
         // El marketplace real se completa con los locales de ejemplo mientras se suman
-        // negocios reales — sin duplicar si algún día colisiona un id real con uno de ejemplo.
-        const reales = res.valor.negocios.filter((n) => !idsEjemplo.has(n.id));
-        setNegocios([...reales, ...NEGOCIOS]);
+        // negocios reales — pero si un id colisiona (73 negocios del lote real, agregados
+        // también a NEGOCIOS para invitados), gana el real: es el que tiene datos vivos
+        // (recompensas/logo/portada que el dueño puede editar), el mock es solo relleno
+        // mientras no hay negocio real para ese lugar. Antes era al revés (se descartaba el
+        // real), fix 15/9.
+        const idsReales = new Set(res.valor.negocios.map((n) => n.id));
+        setNegocios([...res.valor.negocios, ...NEGOCIOS.filter((n) => !idsReales.has(n.id))]);
         // Solo lo que devuelve Supabase: un usuario real nunca hereda las relaciones de ejemplo.
         setRelaciones({ ...res.valor.relaciones });
         setClienteReal(res.valor.cliente);
@@ -313,11 +325,22 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
       return { ok: false, error: 'No tenés puntos suficientes para este premio.' };
     }
 
-    if (!usarReal || idsEjemplo.has(negocio.id)) {
+    if (!usarReal) {
       // Local ficticio: no hay servidor real contra el que confirmar un código, generamos
       // uno con la misma pinta (6 caracteres) para que la demo se vea completa. Si el código
       // vence sin usarse en esta sesión, el saldo demo queda descontado hasta reiniciar la
       // demo — límite aceptado, no hay persistencia real que "recargar" acá.
+      // IMPORTANTE (fix 15/9): antes este bloque también se activaba con
+      // `idsEjemplo.has(negocio.id)`, pensado para negocios puramente ficticios sin fila en
+      // Supabase. Pero los 73 negocios reales del lote de CABA se agregaron TAMBIÉN a
+      // `NEGOCIOS` (para que un invitado los navegue sin cuenta) — así que su id quedó en
+      // `idsEjemplo` igual. Resultado: un cliente REAL autenticado que canjeaba en cualquiera
+      // de esos 73 negocios entraba acá (camino local/demo) en vez de llamar a `iniciarCanje`
+      // — el saldo bajaba solo en memoria, nunca en Supabase, y el código que se le mostraba
+      // para el mostrador no existía en la tabla `canjes`. Roto en silencio, sin error visible.
+      // `usarReal` ya alcanza: para una sesión real, `relaciones` viene 100% de Supabase (el
+      // F0 del roadmap sacó el seed de relaciones de ejemplo para usuarios reales), así que
+      // cualquier negocio con una relación real es, por definición, real.
       setRelaciones((previas) => ({
         ...previas,
         [negocio.id]: { ...actual, puntos: actual.puntos - recompensa.pts },
@@ -406,7 +429,14 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
             canjesConfirmados={canjesConfirmados}
             nombreCliente={clienteEfectivo.nombre}
             cliente={clienteEfectivo}
-            esNuevo={usarReal && !Object.keys(relaciones).some((id) => !idsEjemplo.has(id))}
+            // Fix 15/9: antes chequeaba "todas las relaciones son de negocios en idsEjemplo",
+            // que dejó de servir el día que los 73 negocios reales del lote se agregaron
+            // TAMBIÉN a `NEGOCIOS` (ver comentario de `idsEjemplo` arriba) — un cliente real
+            // con puntos en esos negocios quedaba marcado `esNuevo` para siempre, ocultando
+            // CardNivelXp/InvitarAmigo. `relaciones` de un usuario real es 100% Supabase
+            // (nunca se mezcla con datos de ejemplo, F0 del roadmap) — que esté vacía ya
+            // significa "recién llegado", sin necesidad de mirar ids.
+            esNuevo={usarReal && Object.keys(relaciones).length === 0}
             permisoNotif={permisoNotif}
             onPedirPermisoNotif={pedirPermisoNotif}
             onAbrirNegocio={(elegido) =>
