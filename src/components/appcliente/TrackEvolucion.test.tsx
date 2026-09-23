@@ -6,7 +6,7 @@ describe('TrackEvolucion', () => {
   it('muestra las 5 formas y cuánto falta para la próxima evolución', () => {
     render(<TrackEvolucion xpTotal={0} />);
     expect(screen.getByText('Recién Llegado')).toBeInTheDocument();
-    expect(screen.getByText('Prócer del Barrio')).toBeInTheDocument();
+    expect(screen.getByText('Leyenda del Barrio')).toBeInTheDocument();
     expect(
       screen.getByText(/Faltan 200 XP para que Premín evolucione a Cliente Fijo/),
     ).toBeInTheDocument();
@@ -29,6 +29,6 @@ describe('TrackEvolucion', () => {
     render(<TrackEvolucion xpTotal={9000} />);
     expect(screen.getByText(/forma final/)).toBeInTheDocument();
     expect(screen.queryByText(/Faltan/)).toBeNull();
-    expect(screen.getByAltText('Premín — Prócer del Barrio')).toBeInTheDocument();
+    expect(screen.getByAltText('Premín — Leyenda del Barrio')).toBeInTheDocument();
   });
 });

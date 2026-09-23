@@ -127,10 +127,11 @@ export interface NivelXp {
 // nivel es la forma de Premín, no un emoji — por eso los nombres van "pelados".
 export const NIVELES_XP_GLOBAL: NivelXp[] = [
   { nombre: 'Recién Llegado', min: 0 },
-  { nombre: 'Cliente Fijo', min: 200 },
-  { nombre: 'Habitué', min: 1000 },
-  { nombre: 'Cráneo del Barrio', min: 3000 },
-  { nombre: 'Prócer del Barrio', min: 8000 },
+  { nombre: 'Cliente Fijo', min: 200, premin: '/premin/2.png' },
+  { nombre: 'Habitué', min: 1000, premin: '/premin/3.png' },
+  { nombre: 'Cráneo del Barrio', min: 3000, premin: '/premin/4.png' },
+  // Renombrado de "Prócer del Barrio" a "Leyenda del Barrio" (hoja de assets aprobada, 23/9/2026).
+  { nombre: 'Leyenda del Barrio', min: 8000, premin: '/premin/5.png' },
 ];
 
 export function calcularXpTotal(relaciones: Record<string, RelacionNegocio>): number {

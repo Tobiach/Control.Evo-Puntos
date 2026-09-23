@@ -47,24 +47,32 @@ Distinto del **rango por local** (`vipDesdePuntos` → "Nuevo → VIP de ESE com
 `beneficiosVip` que configura el dueño): eso es "tu estatus en {local}". La evolución de Premín
 es tu identidad global en toda la Red.
 
-## 3. Evolución de Premín — las 5 formas (APROBADAS 8/9/2026)
+## 3. Evolución de Premín — las 5 formas ✅ (assets reales cargados 23/9/2026)
 
 5 formas, una por nivel, sobre el Premín real (copa dorada, "P", brújula, zapatillas coral).
-La hoja de referencia aprobada la tiene Tobías — **falta subirla al repo** como
-`docs/assets/premin-evolucion.png` (fuente de verdad para el diseñador).
+Nombre del nivel 5 confirmado en la hoja final de códigos: **"Leyenda del Barrio"** (no
+"Prócer del Barrio", nombre de un borrador anterior — ya actualizado en `club.ts` y sus tests).
 
-| Nivel | Forma (como quedó en la hoja aprobada) |
-|---|---|
-| Recién Llegado | Premín base, tal cual `/premin.png`. Brújula de esfera coral. |
-| Cliente Fijo | + **vincha/cinta coral** en la cabeza (señal de "siempre vuelve"). Parado, calmo. Brújula coral. |
-| Habitué | + **bufanda tejida coral/crema** entre las asas, **tacita de café humeante** en una mano, brújula dorada en la otra. La forma más relajada, "como en su casa". |
-| Cráneo del Barrio | + **capa corta verde oscuro**, **bandolera verde con "P"**, 3–4 esferitas orbitando (red). Brújula dorada ornamentada. Sonrisa canchera. |
-| Prócer del Barrio | Forma final: **capa larga coral al viento**, **corona dorada con gema**, **halo dorado**, destellos, brújula dorada tipo sol. |
+| Nivel | Forma | Asset |
+|---|---|---|
+| Recién Llegado | Premín base, tal cual `/premin.png`. Sin accesorios. | `/premin.png` (sin cambios) |
+| Cliente Fijo | **Gorra roja** con "P", postura simple. | `/premin/2.png` |
+| Habitué | **Bufanda tejida coral/crema**, **taza de café** en una mano. | `/premin/3.png` |
+| Cráneo del Barrio | **Gorra verde + lentes de sol + campera**, **mapa en mano**. | `/premin/4.png` |
+| Leyenda del Barrio | **Corona dorada**, **capa corta coral**, **medalla "P"**, destellos alrededor. | `/premin/5.png` |
 
-Requisitos técnicos: PNG con fondo transparente, canvas cuadrado, personaje centrado y parado,
-**misma altura visual en las 5** (que el `<img>` no salte al evolucionar), nombres
-`public/premin/1.png` … `public/premin/5.png`. Además: **silueta plana** de cada una (relleno
-oscuro sobre transparente) para los estados bloqueados de la Pokédex.
+Los 4 PNG (niveles 2-5) salieron de las fotos reales aprobadas por Tobías (Drive, 23/9/2026):
+fondo quitado con la integración de Canva (`remove-background`), recortados y reencuadrados
+sobre un canvas transparente de 400×400 con altura visual consistente entre los 4 (el nivel
+"Cliente Fijo" queda algo más chico porque esa pose tiene los brazos muy abiertos y no entraba
+más grande sin recortarse). Resolución fuente ≈200px de ancho — de sobra para los usos actuales
+(`CardNivelXp` y `TrackEvolucion` muestran ≤72px, la celebración `PreminEvoluciono` usa 128px),
+pero si en el futuro se necesita un uso más grande (ej. una pieza de marketing a tamaño real),
+pedirle al diseñador el recorte en alta resolución en vez de reescalar estos.
+
+No se generaron las siluetas planas separadas mencionadas en una versión anterior de este doc:
+`TrackEvolucion.tsx` ya deriva la silueta de las formas bloqueadas al vuelo con un filtro CSS
+(`brightness-0 opacity-30`) sobre el mismo PNG transparente — no hace falta un archivo aparte.
 
 ### Wiring (ya en el código)
 

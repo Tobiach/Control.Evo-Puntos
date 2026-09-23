@@ -131,8 +131,12 @@ Marcar acá el avance. `[~]` = en progreso.
 - [x] 2.6b · **Momento "Premín evolucionó"**: `PreminEvoluciono.tsx` + wiring en `MarketplaceApp`
   (detecta el salto de nivel de XP global, gate para no dispararlo en el arranque). Hoja centrada
   con la forma nueva, confetti + `sonidoEvolucion` + vibración. 3 tests. Degrada a `/premin.png`.
-- [ ] 2.6c · Assets: 5 PNG por nivel (`public/premin/1..5.png`) + 5 siluetas + subir la hoja
-  aprobada a `docs/assets/`. → **checkpoint humano** (los produce el diseñador).
+- [x] 2.6c · **Assets reales cargados (23/9/2026)**: 4 PNG (`public/premin/2..5.png`, nivel 1
+  sigue usando `/premin.png`) recortados con fondo transparente real desde las fotos aprobadas
+  por Tobías, vía la integración de Canva (`remove-background`). Nivel 5 renombrado a "Leyenda
+  del Barrio" (nombre final de la hoja de códigos, no "Prócer del Barrio"). Sin siluetas
+  separadas — innecesarias, `TrackEvolucion` ya deriva el estado bloqueado por CSS. Detalle en
+  `docs/NIVELES-Y-PREMIN.md`.
 - [ ] 2.7 · Tests + verificación en navegador
 - [ ] 2.8 · Aviso "listo para deploy" → **checkpoint humano**
 
