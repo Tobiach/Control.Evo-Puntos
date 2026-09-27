@@ -20,6 +20,16 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
+- **🟡 EN CURSO (27/9) — ruleta/rascar con persistencia real + rediseño de `TabInicio.tsx` +
+  2 toques de juego en el Home.** Plan aprobado, a mitad de camino, cortado a pedido de Tobías
+  para no perder contexto. Plan completo en
+  `C:\Users\estudiante\.claude\plans\dynamic-sauteeing-pizza.md` (fuera del repo, en la
+  máquina de esa sesión). Único artefacto ya escrito:
+  `supabase/migrations/0026_juego_ruleta_sorpresa.sql` (tabla `tiradas_juego` + RPCs
+  `girar_ruleta`/`usar_sorpresa`/`confirmar_premio_juego`/`expirar_mis_tiradas`, mismo patrón
+  que `iniciar_canje`/`confirmar_canje` de 0021) — **todavía sin commitear, sin probar contra
+  Supabase, sin wiring en el frontend**. Si otra sesión retoma esto antes que la original,
+  releer el archivo de plan primero.
 - ~~P0 — ningún cliente real podía usar la app en producción~~: **RESUELTO (13-14/9/2026),
   todo verificado en vivo, nada pendiente.** `0021`→`0025` aplicadas (`0024` no hizo falta
   completa, era redundante con `0023`). Probado de punta a punta: canje real
