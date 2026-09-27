@@ -145,6 +145,57 @@ export async function confirmarCanje(
 }
 
 /**
+ * Confirma en el mostrador CUALQUIER código de 6 caracteres que el cliente pueda mostrar:
+ * un canje (`confirmar_canje`, 0021) o un premio de ruleta/sorpresa (`confirmar_premio_juego`,
+ * 0026). El cajero escribe un solo código sin saber de qué tabla viene — se prueba primero
+ * como canje (el caso más común) y, solo si ese código no existe ahí, se prueba como premio
+ * de juego. Mismo PIN para ambos, mismos mensajes de error (`ERRORES_CANJE`).
+ */
+export async function confirmarPremioMostrador(
+  negocioId: string,
+  pin: string,
+  codigo: string,
+): Promise<ResultadoCajero<CanjeConfirmado>> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+
+  const { data, error } = await supabase.rpc('confirmar_canje', {
+    p_negocio_id: negocioId,
+    p_pin: pin,
+    p_codigo: codigo,
+  });
+  if (error) return { ok: false, error: error.message };
+  const fila = (data?.[0] ?? null) as
+    | { ok: boolean; mensaje: string; descripcion: string | null; cliente_nombre: string | null }
+    | null;
+  if (fila?.ok) {
+    return {
+      ok: true,
+      valor: { descripcion: fila.descripcion ?? '', clienteNombre: fila.cliente_nombre ?? 'Cliente' },
+    };
+  }
+  if (fila?.mensaje !== 'codigo_inexistente') {
+    return { ok: false, error: ERRORES_CANJE[fila?.mensaje ?? ''] ?? 'No pudimos confirmar el código.' };
+  }
+
+  const juego = await supabase.rpc('confirmar_premio_juego', {
+    p_negocio_id: negocioId,
+    p_pin: pin,
+    p_codigo: codigo,
+  });
+  if (juego.error) return { ok: false, error: juego.error.message };
+  const filaJuego = (juego.data?.[0] ?? null) as
+    | { ok: boolean; mensaje: string; premio_label: string | null; cliente_nombre: string | null }
+    | null;
+  if (!filaJuego || !filaJuego.ok) {
+    return { ok: false, error: ERRORES_CANJE[filaJuego?.mensaje ?? ''] ?? 'No pudimos confirmar el código.' };
+  }
+  return {
+    ok: true,
+    valor: { descripcion: filaJuego.premio_label ?? '', clienteNombre: filaJuego.cliente_nombre ?? 'Cliente' },
+  };
+}
+
+/**
  * Un cobro completo del lado del servidor: valida el PIN, da de alta cliente/relación si
  * es la primera visita, inserta la visita y acredita los puntos según `monto_por_punto`.
  */

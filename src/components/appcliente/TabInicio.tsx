@@ -47,6 +47,7 @@ import {
   textoHorarioValle,
 } from '../../lib/misiones';
 import type { Aviso, PermisoNotif } from '../../lib/notificaciones';
+import type { ResultadoSorpresa, ResultadoTirada } from '../../lib/panelCliente';
 import { lanzarConfetti } from '../../lib/confetti';
 import { useConteoAnimado } from '../../hooks/useConteoAnimado';
 import { supabaseEnabled } from '../../lib/supabase';
@@ -66,7 +67,10 @@ interface Props {
   permisoNotif: PermisoNotif;
   /** Timestamp de la última tirada de ruleta en este negocio (cooldown de 7 días). */
   ultimaRuletaTs?: number;
-  onGirarRuleta: () => void;
+  onGirarRuleta: () => Promise<ResultadoTirada>;
+  /** Sorpresas ya reveladas en este negocio (conteo real, sobrevive un cambio de pestaña). */
+  sorpresasUsadas: number;
+  onUsarSorpresa: () => Promise<ResultadoSorpresa>;
   onVerRecompensas: () => void;
   /** "Sumá puntos": catálogo de la carta real con cuánto da cada producto. */
   onVerCarta: () => void;
@@ -146,6 +150,8 @@ export default function TabInicio({
   permisoNotif,
   ultimaRuletaTs,
   onGirarRuleta,
+  sorpresasUsadas,
+  onUsarSorpresa,
   onVerRecompensas,
   onVerCarta,
   onVerInfo,
@@ -179,7 +185,8 @@ export default function TabInicio({
   const favorito = sugerenciaFavorita(data.recompensas, historial, cliente.puntos);
 
   // Recompensa sorpresa: se habilita cada 200 pts acumulados desde la última usada.
-  const [sorpresasUsadas, setSorpresasUsadas] = useState(0);
+  // `sorpresasUsadas` llega por prop (conteo real, migración 0026) — ya no es estado local acá:
+  // vivía en un useState que se reseteaba cada vez que se cambiaba de pestaña y se volvía.
   const sorpresasDisponibles = Math.floor(cliente.puntos / PTS_POR_SORPRESA);
   const sorpresaDisponible = sorpresasUsadas < sorpresasDisponibles;
   const faltanSorpresa = Math.max(
@@ -529,8 +536,8 @@ export default function TabInicio({
         </div>
       )}
 
-      {/* F5: ruleta y recompensa sorpresa no persisten server-side (se resetean al recargar).
-          Ocultas hasta tener backend real — flag en src/lib/flags.ts. */}
+      {/* Ruleta y recompensa sorpresa: código verificable server-side (migración 0026).
+          Detrás de un flag hasta terminar de probarlas en vivo — src/lib/flags.ts. */}
       {MOSTRAR_RULETA_Y_SORPRESA && (
         <>
           <RuletaSemanal ultimaTiradaTs={ultimaRuletaTs} onGirar={onGirarRuleta} premios={data.premiosRuleta} />
@@ -539,7 +546,7 @@ export default function TabInicio({
             key={sorpresasUsadas}
             disponible={sorpresaDisponible}
             faltan={faltanSorpresa}
-            onUsar={() => setSorpresasUsadas((valor) => valor + 1)}
+            onUsar={onUsarSorpresa}
           />
         </>
       )}

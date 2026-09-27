@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { BadgeCheck, KeyRound, Loader2 } from 'lucide-react';
-import { confirmarCanje } from '../../lib/panelCajero';
+import { confirmarPremioMostrador } from '../../lib/panelCajero';
 
 interface Props {
   negocioId: string;
@@ -12,7 +12,8 @@ const LARGO_CODIGO = 6;
 
 /**
  * Confirmación en el mostrador del código de 6 caracteres que el cliente muestra en su
- * teléfono (migración 0021). El cajero tiene un cliente esperando: foco automático, sin
+ * teléfono — de un canje (0021) o de un premio de ruleta/sorpresa (0026), el cajero no
+ * necesita saber cuál es cuál. El cajero tiene un cliente esperando: foco automático, sin
  * clicks previos para poder escribir, y el input no se limpia en un error para que pueda
  * corregir y reintentar sin volver a tipear todo.
  */
@@ -41,7 +42,7 @@ export default function ConfirmarCanje({ negocioId, pin }: Props) {
     if (enviando || codigo.length !== LARGO_CODIGO) return;
     setError(null);
     setEnviando(true);
-    const respuesta = await confirmarCanje(negocioId, pin, codigo);
+    const respuesta = await confirmarPremioMostrador(negocioId, pin, codigo);
     setEnviando(false);
     if (!respuesta.ok) {
       setError(respuesta.error);
@@ -115,7 +116,7 @@ export default function ConfirmarCanje({ negocioId, pin }: Props) {
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-acento py-4 text-base font-bold text-on-acento active:bg-acento-hover disabled:opacity-40"
       >
         {enviando && <Loader2 size={18} className="animate-spin" />}
-        Confirmar canje
+        Confirmar premio
       </motion.button>
     </div>
   );

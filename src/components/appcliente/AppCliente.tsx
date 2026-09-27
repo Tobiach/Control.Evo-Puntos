@@ -10,7 +10,7 @@ import {
   type PermisoNotif,
 } from '../../lib/notificaciones';
 import type { ResultadoCanje } from '../../lib/club';
-import type { CanjeConfirmado } from '../../lib/panelCliente';
+import type { CanjeConfirmado, ResultadoSorpresa, ResultadoTirada } from '../../lib/panelCliente';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import TabInicio from './TabInicio';
 import TabRecompensas from './TabRecompensas';
@@ -41,7 +41,10 @@ interface Props {
   onPedirPermisoNotif: () => Promise<void>;
   /** Timestamp de la última tirada de ruleta en este negocio (cooldown de 7 días). */
   ultimaRuletaTs?: number;
-  onGirarRuleta: () => void;
+  onGirarRuleta: () => Promise<ResultadoTirada>;
+  /** Sorpresas ya reveladas en este negocio (conteo real, migración 0026). */
+  sorpresasUsadas: number;
+  onUsarSorpresa: () => Promise<ResultadoSorpresa>;
   onCanjear: (recompensa: Recompensa) => Promise<ResultadoCanje>;
   onSalir: () => void;
   /** Si está presente, muestra el botón "← Volver al marketplace" arriba de todo. */
@@ -72,6 +75,8 @@ export default function AppCliente({
   onPedirPermisoNotif,
   ultimaRuletaTs,
   onGirarRuleta,
+  sorpresasUsadas,
+  onUsarSorpresa,
   onCanjear,
   onSalir,
   onVolverMarketplace,
@@ -155,6 +160,8 @@ export default function AppCliente({
                 permisoNotif={permisoNotif}
                 ultimaRuletaTs={ultimaRuletaTs}
                 onGirarRuleta={onGirarRuleta}
+                sorpresasUsadas={sorpresasUsadas}
+                onUsarSorpresa={onUsarSorpresa}
                 onVerRecompensas={() => setTab('recompensas')}
                 onVerCarta={() => setTab('carta')}
                 onVerInfo={() => setTab('perfil')}

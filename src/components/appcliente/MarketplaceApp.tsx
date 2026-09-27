@@ -29,10 +29,15 @@ import { supabase, supabaseEnabled } from '../../lib/supabase';
 import { useSesion } from '../../hooks/useSesion';
 import {
   cargarAppCliente,
+  girarRuletaReal,
   iniciarCanje,
+  usarSorpresaReal,
   type CanjeConfirmado,
   type ClienteApp,
+  type ResultadoSorpresa,
+  type ResultadoTirada,
 } from '../../lib/panelCliente';
+import { elegirPremio, elegirSorpresa, PREMIOS_RULETA } from '../../lib/ruleta';
 import { procesarReferidoPendiente } from '../../lib/referidos';
 import AppCliente from './AppCliente';
 import MarketplaceShell from './MarketplaceShell';
@@ -100,8 +105,11 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
   const [relaciones, setRelaciones] = useState<Record<string, RelacionNegocio>>({});
   const [clienteReal, setClienteReal] = useState<ClienteApp | null>(null);
   const [canjesConfirmados, setCanjesConfirmados] = useState<CanjeConfirmado[]>([]);
-  // Última tirada de la ruleta semanal por negocio (mismo patrón in-memory que `relaciones`).
+  // Última tirada de la ruleta semanal por negocio (mismo patrón in-memory que `relaciones`;
+  // con sesión real se puebla desde `tiradas_juego`, migración 0026).
   const [tiradasRuleta, setTiradasRuleta] = useState<Record<string, number>>({});
+  // Sorpresas ya reveladas por negocio — mismo criterio, real o local según `usarReal`.
+  const [sorpresasUsadas, setSorpresasUsadas] = useState<Record<string, number>>({});
   // Crédito de puntos recién acreditado por el cajero (F3) — lo celebra CreditoEnVivo.
   const [creditoReciente, setCreditoReciente] = useState<CreditoReciente | null>(null);
   // Premín cruzó un umbral de XP global y evolucionó (2.6b) — lo celebra PreminEvoluciono.
@@ -189,6 +197,8 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         setRelaciones({ ...res.valor.relaciones });
         setClienteReal(res.valor.cliente);
         setCanjesConfirmados(res.valor.canjesConfirmados);
+        setTiradasRuleta({ ...res.valor.ultimaTiradaRuleta });
+        setSorpresasUsadas({ ...res.valor.sorpresasUsadas });
         // A partir de acá el snapshot real está en memoria: recién ahora un evento de realtime
         // con más puntos es un crédito de verdad (antes, el "anterior" sería 0 y el delta falso).
         cargaListaRef.current = true;
@@ -364,9 +374,35 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
     return resultado;
   };
 
-  const girarRuleta = () => {
-    if (!negocio) return;
-    setTiradasRuleta((previas) => ({ ...previas, [negocio.id]: Date.now() }));
+  const girarRuleta = async (): Promise<ResultadoTirada> => {
+    if (!negocio) return { ok: false, error: 'Elegí un negocio primero.' };
+    if (!usarReal) {
+      // Local ficticio: mismo pool que se muestra en la rueda, elegido acá porque no hay
+      // servidor real que lo haga (ver `canjear` arriba para el mismo criterio con canjes).
+      const pool = negocio.premiosRuleta && negocio.premiosRuleta.length > 0 ? negocio.premiosRuleta : PREMIOS_RULETA;
+      const { premio } = elegirPremio(pool);
+      setTiradasRuleta((previas) => ({ ...previas, [negocio.id]: Date.now() }));
+      return { ok: true, codigo: generarCodigoDemo(), expiraAt: new Date(Date.now() + 10 * 60_000).toISOString(), premio };
+    }
+    const resultado = await girarRuletaReal(negocio.id);
+    if (resultado.ok) {
+      setTiradasRuleta((previas) => ({ ...previas, [negocio.id]: Date.now() }));
+    }
+    return resultado;
+  };
+
+  const usarSorpresa = async (): Promise<ResultadoSorpresa> => {
+    if (!negocio) return { ok: false, error: 'Elegí un negocio primero.' };
+    if (!usarReal) {
+      const premio = elegirSorpresa();
+      setSorpresasUsadas((previas) => ({ ...previas, [negocio.id]: (previas[negocio.id] ?? 0) + 1 }));
+      return { ok: true, codigo: generarCodigoDemo(), expiraAt: new Date(Date.now() + 10 * 60_000).toISOString(), premio };
+    }
+    const resultado = await usarSorpresaReal(negocio.id);
+    if (resultado.ok) {
+      setSorpresasUsadas((previas) => ({ ...previas, [negocio.id]: (previas[negocio.id] ?? 0) + 1 }));
+    }
+    return resultado;
   };
 
   if (cargando) {
@@ -403,6 +439,8 @@ export default function MarketplaceApp({ data, cliente, onSalir, onCrearCuenta }
         onPedirPermisoNotif={pedirPermisoNotif}
         ultimaRuletaTs={tiradasRuleta[negocio.id]}
         onGirarRuleta={girarRuleta}
+        sorpresasUsadas={sorpresasUsadas[negocio.id] ?? 0}
+        onUsarSorpresa={usarSorpresa}
         onCanjear={canjear}
         onSalir={volverAlMarketplace}
         onVolverMarketplace={volverAlMarketplace}

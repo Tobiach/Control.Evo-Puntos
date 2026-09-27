@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   COOLDOWN_RULETA_DIAS,
   elegirPremio,
+  elegirSorpresa,
   estadoCooldown,
   PREMIOS_RULETA,
+  PREMIOS_SORPRESA,
 } from './ruleta';
 
 const DIA_MS = 86_400_000;
@@ -57,5 +59,20 @@ describe('elegirPremio', () => {
     for (const otro of PREMIOS_RULETA) {
       if (otro.id !== 'mayor') expect(otro.peso).toBeGreaterThan(mayor.peso);
     }
+  });
+});
+
+describe('elegirSorpresa', () => {
+  it('con aleatorio 0 cae en el primero', () => {
+    expect(elegirSorpresa(PREMIOS_SORPRESA, 0).id).toBe(PREMIOS_SORPRESA[0].id);
+  });
+
+  it('con aleatorio cercano a 1 cae en el último', () => {
+    expect(elegirSorpresa(PREMIOS_SORPRESA, 0.999).id).toBe(PREMIOS_SORPRESA[PREMIOS_SORPRESA.length - 1].id);
+  });
+
+  it('reparte uniforme: cada premio ocupa 1/6 del rango', () => {
+    // 6 premios → tramos de 1/6 ≈ 0.1667. 0.3 cae en el 2do tramo (índice 1).
+    expect(elegirSorpresa(PREMIOS_SORPRESA, 0.3).id).toBe(PREMIOS_SORPRESA[1].id);
   });
 });

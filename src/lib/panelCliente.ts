@@ -9,7 +9,7 @@ import type {
 } from '../data/mockClientes';
 import { parseRubro } from '../data/mockClientes';
 import type { Negocio, RelacionNegocio } from '../data/negocios';
-import type { PremioRuleta } from './ruleta';
+import type { PremioRuleta, PremioSorpresa } from './ruleta';
 import type { ResultadoCanje } from './club';
 
 // Capa de datos de la APP DEL CLIENTE (socio del club logueado por email). Espeja el estilo
@@ -50,6 +50,10 @@ export interface DatosAppCliente {
   negocios: Negocio[];
   relaciones: Record<string, RelacionNegocio>;
   canjesConfirmados: CanjeConfirmado[];
+  /** Timestamp (ms) de la última tirada de ruleta por negocio — cooldown real (migración 0026). */
+  ultimaTiradaRuleta: Record<string, number>;
+  /** Cuántas "recompensa sorpresa" ya se revelaron por negocio — mismo conteo que valida el server. */
+  sorpresasUsadas: Record<string, number>;
 }
 
 // ── Formas crudas de las filas de Supabase (el cliente no está tipado con el schema) ──
@@ -123,6 +127,30 @@ interface FilaCanjeConfirmado {
   descripcion: string;
   pts: number | null;
   confirmado_at: string | null;
+}
+
+interface FilaTirada {
+  negocio_id: string;
+  tipo: 'ruleta' | 'sorpresa';
+  created_at: string | null;
+}
+
+/** Última tirada de ruleta y cantidad de sorpresas reveladas, por negocio (migración 0026). */
+export function construirTiradas(filas: FilaTirada[]): {
+  ultimaTiradaRuleta: Record<string, number>;
+  sorpresasUsadas: Record<string, number>;
+} {
+  const ultimaTiradaRuleta: Record<string, number> = {};
+  const sorpresasUsadas: Record<string, number> = {};
+  for (const fila of filas) {
+    if (fila.tipo === 'ruleta') {
+      const ts = fila.created_at ? new Date(fila.created_at).getTime() : 0;
+      if (ts > (ultimaTiradaRuleta[fila.negocio_id] ?? 0)) ultimaTiradaRuleta[fila.negocio_id] = ts;
+    } else {
+      sorpresasUsadas[fila.negocio_id] = (sorpresasUsadas[fila.negocio_id] ?? 0) + 1;
+    }
+  }
+  return { ultimaTiradaRuleta, sorpresasUsadas };
 }
 
 const CATEGORIAS_VALIDAS: readonly CategoriaRecompensa[] = ['Bebidas', 'Comida', 'Descuentos', 'Regalos'];
@@ -299,11 +327,20 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
   // Best-effort: devuelve los puntos de cualquier canje propio que haya vencido sin que el
   // cajero llegara a confirmarlo (migración 0021). Si falla, seguimos cargando igual — no es
   // el camino crítico, y el cajero también recupera esos puntos si intenta confirmar un
-  // código ya vencido.
-  await supabase.rpc('expirar_mis_canjes');
+  // código ya vencido. `expirar_mis_tiradas` (0026) es el mismo criterio para ruleta/sorpresa,
+  // aunque ahí no hay puntos que reintegrar (girar/revelar nunca descuenta).
+  await Promise.all([supabase.rpc('expirar_mis_canjes'), supabase.rpc('expirar_mis_tiradas')]);
 
-  const [negociosRes, recompensasRes, eventosRes, premiosRes, relacionesRes, visitasRes, canjesRes] =
-    await Promise.all([
+  const [
+    negociosRes,
+    recompensasRes,
+    eventosRes,
+    premiosRes,
+    relacionesRes,
+    visitasRes,
+    canjesRes,
+    tiradasRes,
+  ] = await Promise.all([
       supabase
         .from('negocios')
         .select(
@@ -330,6 +367,10 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
         .eq('cliente_id', clienteId)
         .eq('estado', 'confirmado')
         .order('confirmado_at', { ascending: false }),
+      // Todas las tiradas propias (cualquier estado): el cooldown de ruleta y el conteo de
+      // sorpresas reveladas se calculan sobre el historial completo, mismo criterio que
+      // `girar_ruleta`/`usar_sorpresa` del lado del servidor (migración 0026).
+      supabase.from('tiradas_juego').select('negocio_id, tipo, created_at').eq('cliente_id', clienteId),
     ]);
 
   const primerError =
@@ -339,7 +380,8 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
     premiosRes.error ??
     relacionesRes.error ??
     visitasRes.error ??
-    canjesRes.error;
+    canjesRes.error ??
+    tiradasRes.error;
   if (primerError) return { ok: false, error: primerError.message };
 
   const ahora = Date.now();
@@ -360,6 +402,7 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
     pts: fila.pts ?? 0,
     confirmadoAt: fila.confirmado_at ?? '',
   }));
+  const { ultimaTiradaRuleta, sorpresasUsadas } = construirTiradas((tiradasRes.data ?? []) as FilaTirada[]);
 
   return {
     ok: true,
@@ -368,6 +411,8 @@ export async function cargarAppCliente(userId: string): Promise<ResultadoPanel<D
       negocios,
       relaciones,
       canjesConfirmados,
+      ultimaTiradaRuleta,
+      sorpresasUsadas,
     },
   };
 }
@@ -410,6 +455,88 @@ export async function iniciarCanje(negocioId: string, pts: number): Promise<Resu
 export async function expirarMisCanjes(): Promise<void> {
   if (!supabase) return;
   await supabase.rpc('expirar_mis_canjes');
+}
+
+// ── Ruleta semanal y recompensa sorpresa (código verificable, migración 0026) ──────
+
+/** El premio que devolvió el server para esta tirada — mismo `id` que `PremioRuleta.id`. */
+export interface PremioGanado {
+  id: string;
+  label: string;
+  emoji: string;
+  bueno: boolean;
+}
+
+export type ResultadoTirada =
+  | { ok: true; codigo: string; expiraAt: string; premio: PremioGanado }
+  | { ok: false; error: string };
+
+export type ResultadoSorpresa =
+  | { ok: true; codigo: string; expiraAt: string; premio: PremioSorpresa }
+  | { ok: false; error: string };
+
+const ERRORES_JUEGO: Record<string, string> = {
+  no_autenticado: 'Iniciá sesión para jugar.',
+  cliente_no_vinculado: 'Tu cuenta no está vinculada a ningún cliente.',
+  sin_relacion: 'Todavía no sos socio de este negocio.',
+  cooldown_activo: 'Ya giraste esta semana.',
+  sin_premios_configurados: 'Este negocio todavía no configuró premios de ruleta.',
+  sin_sorpresa_disponible: 'Todavía no desbloqueaste una sorpresa nueva.',
+  no_se_pudo_generar_codigo: 'No pudimos generar el código. Intentá de nuevo.',
+  rate_limit_excedido: 'Muchos intentos seguidos. Esperá un momento y volvé a intentar.',
+};
+
+/**
+ * Gira la ruleta semanal del lado del servidor (RPC `girar_ruleta`, migración 0026): valida
+ * el cooldown real de 7 días, elige el premio pesado y devuelve un código de mostrador con
+ * vencimiento a 10 minutos — mismo molde que `iniciarCanje`.
+ */
+export async function girarRuletaReal(negocioId: string): Promise<ResultadoTirada> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase.rpc('girar_ruleta', { p_negocio_id: negocioId });
+  if (error) {
+    return { ok: false, error: ERRORES_JUEGO[error.message] ?? 'No pudimos girar la ruleta. Intentá de nuevo.' };
+  }
+  const fila = (data?.[0] ?? null) as
+    | {
+        codigo: string;
+        premio_id: string;
+        premio_label: string;
+        premio_emoji: string;
+        bueno: boolean;
+        expira_at: string;
+      }
+    | null;
+  if (!fila) return { ok: false, error: 'No pudimos girar la ruleta. Intentá de nuevo.' };
+  return {
+    ok: true,
+    codigo: fila.codigo,
+    expiraAt: fila.expira_at,
+    premio: { id: fila.premio_id, label: fila.premio_label, emoji: fila.premio_emoji, bueno: fila.bueno },
+  };
+}
+
+/**
+ * Revela una "recompensa sorpresa" del lado del servidor (RPC `usar_sorpresa`, migración
+ * 0026): valida que ya haya puntos suficientes para una sorpresa nueva (cada 200 pts) contra
+ * el conteo real de sorpresas ya reveladas, no contra un estado que se resetea al navegar.
+ */
+export async function usarSorpresaReal(negocioId: string): Promise<ResultadoSorpresa> {
+  if (!supabase) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase.rpc('usar_sorpresa', { p_negocio_id: negocioId });
+  if (error) {
+    return { ok: false, error: ERRORES_JUEGO[error.message] ?? 'No pudimos revelar tu sorpresa. Intentá de nuevo.' };
+  }
+  const fila = (data?.[0] ?? null) as
+    | { codigo: string; premio_label: string; premio_emoji: string; expira_at: string }
+    | null;
+  if (!fila) return { ok: false, error: 'No pudimos revelar tu sorpresa. Intentá de nuevo.' };
+  return {
+    ok: true,
+    codigo: fila.codigo,
+    expiraAt: fila.expira_at,
+    premio: { id: 'sorpresa', label: fila.premio_label, emoji: fila.premio_emoji },
+  };
 }
 
 const ERRORES_REGALO: Record<string, string> = {

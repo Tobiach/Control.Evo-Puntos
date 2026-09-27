@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { RotateCw } from 'lucide-react';
+import { Clock, RotateCw } from 'lucide-react';
+import { formatCuentaRegresiva } from '../../lib/club';
 import { lanzarConfetti } from '../../lib/confetti';
 import { sonidoRuletaGirando } from '../../lib/sonidos';
-import { elegirPremio, estadoCooldown, PREMIOS_RULETA, type PremioRuleta } from '../../lib/ruleta';
+import { estadoCooldown, PREMIOS_RULETA, type PremioRuleta } from '../../lib/ruleta';
+import type { PremioGanado, ResultadoTirada } from '../../lib/panelCliente';
 
 interface Props {
   /** Timestamp de la última tirada en ESTE negocio (para el cooldown de 7 días). */
   ultimaTiradaTs?: number;
-  /** Registra la tirada en el estado del padre (cliente-negocio). */
-  onGirar: () => void;
+  /**
+   * Gira: el padre decide si es local (demo, sin backend) o real (RPC `girar_ruleta`, 0026) y
+   * devuelve el premio que efectivamente salió + el código para el mostrador. El componente
+   * nunca elige el premio, solo anima la rueda hasta la porción que ya ganó.
+   */
+  onGirar: () => Promise<ResultadoTirada>;
   /** Pool de premios del negocio (ver `premios_ruleta`). Vacío/undefined = pool global genérico. */
   premios?: PremioRuleta[];
 }
@@ -23,7 +29,10 @@ const COLORES = ['#C9973A', '#8B5CF6', '#EC4899', '#0EA5E9', '#F97316', '#10B981
 export default function RuletaSemanal({ ultimaTiradaTs, onGirar, premios }: Props) {
   const [rotacion, setRotacion] = useState(0);
   const [girando, setGirando] = useState(false);
-  const [premio, setPremio] = useState<PremioRuleta | null>(null);
+  const [premio, setPremio] = useState<PremioGanado | null>(null);
+  const [codigo, setCodigo] = useState<{ valor: string; expiraAtMs: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [ahora, setAhora] = useState(() => Date.now());
   const ruedaRef = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -39,24 +48,41 @@ export default function RuletaSemanal({ ultimaTiradaTs, onGirar, premios }: Prop
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
+  // Cuenta regresiva en vivo mientras el código sigue esperando al cajero.
+  useEffect(() => {
+    if (!codigo) return;
+    const id = setInterval(() => setAhora(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [codigo]);
+
   const estado = estadoCooldown(ultimaTiradaTs);
   const enCooldown = !girando && !premio && !estado.puedeGirar;
 
-  const girar = () => {
+  const girar = async () => {
     if (girando || premio || !estado.puedeGirar) return;
-    const { premio: elegido, indice } = elegirPremio(pool);
+    setError(null);
     setGirando(true);
-    onGirar();
-    sonidoRuletaGirando(DURACION_MS);
+    const resultado = await onGirar();
+    if (!resultado.ok) {
+      setGirando(false);
+      setError(resultado.error);
+      return;
+    }
 
-    // Alinea el centro de la porción ganadora bajo el puntero de arriba, + 5 vueltas enteras.
+    sonidoRuletaGirando(DURACION_MS);
+    // Alinea el centro de la porción ganadora (la que devolvió el server) bajo el puntero de
+    // arriba, + 5 vueltas enteras. Si el id no está en el pool local (no debería pasar: el
+    // server usa exactamente este mismo pool), cae en la porción 0 en vez de romper.
+    const indice = Math.max(0, pool.findIndex((p) => p.id === resultado.premio.id));
     const destino = 360 - (indice * gradosPorPorcion + gradosPorPorcion / 2);
     setRotacion((previa) => previa - (previa % 360) + 360 * 5 + destino);
 
     timer.current = setTimeout(() => {
       setGirando(false);
-      setPremio(elegido);
-      if (elegido.bueno) {
+      setPremio(resultado.premio);
+      setCodigo({ valor: resultado.codigo, expiraAtMs: new Date(resultado.expiraAt).getTime() });
+      setAhora(Date.now());
+      if (resultado.premio.bueno) {
         const caja = ruedaRef.current?.getBoundingClientRect();
         if (caja) {
           lanzarConfetti({
@@ -108,13 +134,21 @@ export default function RuletaSemanal({ ultimaTiradaTs, onGirar, premios }: Prop
           <div className="absolute top-1/2 left-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-card bg-acento" />
         </div>
 
-        {premio ? (
-          <div className="text-center">
+        {premio && codigo ? (
+          <div className="w-full text-center">
             <span className="text-3xl">{premio.emoji}</span>
             <p className="text-lg font-bold text-acento">{premio.label}</p>
-            <p className="mt-1 text-[11px] font-semibold text-texto-muted">
-              ¡Mostralo en la caja para reclamarlo! Volvé en {estado.diasRestantes}{' '}
-              {estado.diasRestantes === 1 ? 'día' : 'días'} para girar de nuevo.
+            <p className="mt-2 text-[11px] font-semibold text-texto-muted">
+              Mostrá este código en la caja
+            </p>
+            <p className="font-titulo mt-1 text-3xl leading-none font-black tracking-[0.15em] text-texto">
+              {codigo.valor}
+            </p>
+            <p className="mt-1.5 flex items-center justify-center gap-1 text-xs font-bold text-texto-muted">
+              <Clock size={12} /> {formatCuentaRegresiva(Math.max(0, codigo.expiraAtMs - ahora))}
+            </p>
+            <p className="mt-2 text-[11px] font-semibold text-texto-muted">
+              Volvé en {estado.diasRestantes} {estado.diasRestantes === 1 ? 'día' : 'días'} para girar de nuevo.
             </p>
           </div>
         ) : enCooldown ? (
@@ -127,6 +161,7 @@ export default function RuletaSemanal({ ultimaTiradaTs, onGirar, premios }: Prop
           </p>
         ) : (
           <>
+            {error && <p className="text-center text-xs font-semibold text-rojo">{error}</p>}
             <p className="text-center text-xs text-texto-muted">
               Girás gratis una vez por semana. Hay desde puntos de regalo hasta el premio mayor.
             </p>

@@ -48,6 +48,31 @@ export function elegirPremio(
   return { premio: premios[ultimo], indice: ultimo };
 }
 
+export interface PremioSorpresa {
+  id: string;
+  label: string;
+  emoji: string;
+}
+
+/** Mismo pool fijo que usa `usar_sorpresa` (migración 0026) — elegido uniforme, sin pesos. */
+export const PREMIOS_SORPRESA: PremioSorpresa[] = [
+  { id: 'pts-50', label: '+50 pts de regalo', emoji: '⭐' },
+  { id: 'postre', label: 'Postre gratis', emoji: '🍰' },
+  { id: '2x1', label: '2x1 en tu próxima visita', emoji: '🍹' },
+  { id: 'pts-20', label: '+20 pts de regalo', emoji: '✨' },
+  { id: 'off-10', label: '10% off hoy', emoji: '🏷️' },
+  { id: 'cafe', label: 'Café de la casa', emoji: '☕' },
+];
+
+/** Elige un premio de sorpresa uniforme (sin pesos). Mismo `aleatorio` inyectable que `elegirPremio`. */
+export function elegirSorpresa(
+  premios: PremioSorpresa[] = PREMIOS_SORPRESA,
+  aleatorio: number = Math.random(),
+): PremioSorpresa {
+  const indice = Math.min(premios.length - 1, Math.floor(aleatorio * premios.length));
+  return premios[indice];
+}
+
 export interface EstadoRuleta {
   puedeGirar: boolean;
   /** Días que faltan para volver a girar (0 si ya está disponible). */

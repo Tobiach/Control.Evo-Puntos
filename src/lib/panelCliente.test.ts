@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   construirNegocios,
   construirRelaciones,
+  construirTiradas,
   diasDesde,
   filaANegocioMarket,
   filaARecompensaMarket,
@@ -98,6 +99,26 @@ describe('construirRelaciones', () => {
       AHORA,
     );
     expect(rel.cafe.ultimaVisitaDias).toBe(4);
+  });
+});
+
+describe('construirTiradas', () => {
+  it('se queda con la última tirada de ruleta por negocio y cuenta las sorpresas', () => {
+    const { ultimaTiradaRuleta, sorpresasUsadas } = construirTiradas([
+      { negocio_id: 'cafe', tipo: 'ruleta', created_at: haceDias(5) },
+      { negocio_id: 'cafe', tipo: 'ruleta', created_at: haceDias(1) },
+      { negocio_id: 'cafe', tipo: 'sorpresa', created_at: haceDias(3) },
+      { negocio_id: 'bar', tipo: 'sorpresa', created_at: haceDias(0) },
+      { negocio_id: 'cafe', tipo: 'sorpresa', created_at: haceDias(2) },
+    ]);
+    expect(ultimaTiradaRuleta.cafe).toBe(new Date(haceDias(1)).getTime());
+    expect(ultimaTiradaRuleta.bar).toBeUndefined();
+    expect(sorpresasUsadas.cafe).toBe(2);
+    expect(sorpresasUsadas.bar).toBe(1);
+  });
+
+  it('sin tiradas devuelve ambos records vacíos', () => {
+    expect(construirTiradas([])).toEqual({ ultimaTiradaRuleta: {}, sorpresasUsadas: {} });
   });
 });
 

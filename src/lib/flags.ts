@@ -4,9 +4,11 @@
 
 /**
  * Ruleta semanal y recompensa sorpresa en la pantalla de un negocio (`TabInicio`).
- * Apagadas hasta que la tirada / el uso persistan server-side: hoy son `useState` en memoria
- * (`tiradasRuleta` en `MarketplaceApp`, `sorpresasUsadas` en `TabInicio`), así que se resetean
- * al recargar y prometen una recompensa que el mostrador no puede validar.
+ * Ya tienen persistencia real y código verificable en el mostrador (RPC `girar_ruleta`/
+ * `usar_sorpresa`/`confirmar_premio_juego`, migración `0026_juego_ruleta_sorpresa.sql`).
+ * Apagadas todavía porque esa migración no se corrió contra producción — recién probarlas en
+ * vivo (girar de verdad, confirmar con PIN, cooldown sobreviviendo un refresh) y pasar esto a
+ * `true`.
  */
 export const MOSTRAR_RULETA_Y_SORPRESA = false;
 
