@@ -198,13 +198,18 @@ export default function TabInicio({
   const avisosFallback = avisos.filter((aviso) => !aviso.yaVisibleEnInicio);
   const mostrarPanelAvisos = permisoNotif !== 'granted' && avisosFallback.length > 0;
 
+  // "Pasa ahora": todo lo temporal/urgente agrupado en una sola sección (antes salpicado sin
+  // conexión visual entre medio de secciones estáticas) — mismo criterio de jerarquía que el
+  // Home v2 (Marketplace.tsx, commit ad11e5f): agrupar por relevancia, no por tipo de dato.
+  const hayAlgoUrgente = !!evento || semanal.conseguida || !!data.horarioValle || !!data.comboFinde || venc.dias < 15;
+
   useEffect(() => {
     if (temporada.completa) lanzarConfetti();
   }, [temporada.completa]);
 
   return (
     <div className="flex flex-col pt-6">
-      <div className="relative -mt-6 h-44 w-full">
+      <div className="relative -mt-6 h-56 w-full">
         {data.portadaUrl ? (
           <img src={data.portadaUrl} alt="" className="h-full w-full object-cover" />
         ) : (
@@ -215,7 +220,12 @@ export default function TabInicio({
             <span aria-hidden>{data.emoji ?? '🏪'}</span>
           </div>
         )}
-        <span className="absolute inset-0 bg-linear-to-t from-surface-dark/70 from-0% to-surface-dark/0 to-60%" />
+        {/* Mismo lenguaje que CardEstado del Home: nombre/categoría escritos encima de la foto
+            con un degradé oscuro, no en una card flotante aparte. */}
+        <span
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-t from-surface-dark from-5% via-surface-dark/50 via-45% to-transparent"
+        />
         <button
           type="button"
           onClick={onSalir}
@@ -232,324 +242,338 @@ export default function TabInicio({
         >
           {compartido ? <Check size={18} /> : <Share2 size={18} />}
         </button>
-      </div>
 
-      <div className="relative z-10 mx-5 -mt-10 flex flex-col items-center rounded-3xl border border-borde bg-card px-4 pt-9 pb-4 text-center shadow-lg">
-        <span className="absolute -top-8 flex h-16 w-16 items-center justify-center rounded-full border-4 border-card bg-premio-suave text-3xl shadow">
-          <span aria-hidden>{data.emoji ?? '🏪'}</span>
-        </span>
-        <p className="text-[11px] font-semibold text-texto-muted">Hola, {primerNombre} 👋</p>
-        <h1 className="mt-1 truncate text-lg leading-tight font-extrabold text-texto">
-          {data.nombreNegocio}
-        </h1>
-        <p className="mt-0.5 truncate text-xs text-texto-muted">
-          {data.categoria ? `${data.categoria} · Palermo` : 'Palermo, Buenos Aires'}
-        </p>
+        <div className="absolute inset-x-5 bottom-4">
+          <p className="text-[11px] font-semibold text-white/70">Hola, {primerNombre} 👋</p>
+          <h1 className="mt-0.5 truncate text-2xl leading-tight font-extrabold text-white">
+            {data.nombreNegocio}
+          </h1>
+          <p className="mt-0.5 truncate text-xs text-white/70">
+            {data.categoria ? `${data.categoria} · Palermo` : 'Palermo, Buenos Aires'}
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-5 px-5 pt-5">
-      {esNuevo && (
-        <div className="flex items-start gap-3 rounded-2xl bg-premio-suave px-4 py-3.5">
-          <Sparkles size={18} className="mt-0.5 shrink-0 text-acento" strokeWidth={2.4} />
-          <p className="text-sm leading-snug">
-            <span className="font-bold text-acento">Todavía no sumaste acá.</span>{' '}
-            <span className="text-texto-muted">Tu próxima visita ya cuenta para tus puntos.</span>
-          </p>
-        </div>
-      )}
-
-      <div className="rounded-3xl border border-borde bg-card p-5 shadow-lg">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold text-texto-muted">Tus puntos en este comercio</p>
-            <p className="font-titulo text-5xl leading-none font-extrabold tracking-tighter text-premio">
-              {formatPuntos(puntosMostrados)}
+        {esNuevo && (
+          <div className="flex items-start gap-3 rounded-2xl bg-premio-suave px-4 py-3.5">
+            <Sparkles size={18} className="mt-0.5 shrink-0 text-acento" strokeWidth={2.4} />
+            <p className="text-sm leading-snug">
+              <span className="font-bold text-acento">Todavía no sumaste acá.</span>{' '}
+              <span className="text-texto-muted">Tu próxima visita ya cuenta para tus puntos.</span>
             </p>
           </div>
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-premio-suave text-acento">
-            <Star size={20} strokeWidth={2.2} fill="currentColor" />
-          </span>
-        </div>
+        )}
 
-        <div className="mt-5">
-          <div className="mb-1.5 flex items-center justify-between text-xs">
-            <span className="font-semibold text-texto-muted">Nivel {actual.nombre}</span>
-            {siguiente ? (
-              <span className="font-bold text-acento">
-                {formatPuntos(siguiente.min - cliente.puntos)} pts para {siguiente.nombre}
-              </span>
-            ) : (
-              <span className="font-bold text-premio">Nivel máximo</span>
-            )}
+        {/* Tu progreso acá: puntos + nivel + racha fusionados en una sola card oscura — antes
+            eran 2 cards livianas separadas, mismo peso visual que todo lo demás. */}
+        <div className="rounded-3xl bg-surface-dark p-5">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-white/60">Tus puntos en este comercio</p>
+              <p className="font-titulo text-5xl leading-none font-extrabold tracking-tighter text-premio">
+                {formatPuntos(puntosMostrados)}
+              </p>
+            </div>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-premio">
+              <Star size={20} strokeWidth={2.2} fill="currentColor" />
+            </span>
           </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-borde">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.7, ease: 'easeOut' }}
-              className="h-full rounded-full bg-acento"
-            />
+
+          <div className="mt-5">
+            <div className="mb-1.5 flex items-center justify-between text-xs">
+              <span className="font-semibold text-white/60">Nivel {actual.nombre}</span>
+              {siguiente ? (
+                <span className="font-bold text-acento">
+                  {formatPuntos(siguiente.min - cliente.puntos)} pts para {siguiente.nombre}
+                </span>
+              ) : (
+                <span className="font-bold text-premio">Nivel máximo</span>
+              )}
+            </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-white/15">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.7, ease: 'easeOut' }}
+                className="h-full rounded-full bg-acento"
+              />
+            </div>
           </div>
+
+          {racha > 0 && (
+            <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3">
+              <Flame size={16} className="shrink-0 text-premio" strokeWidth={2.5} />
+              <p className="text-sm font-bold text-white">
+                {racha} {racha === 1 ? 'semana seguida' : 'semanas seguidas'} · ¡Racha activa!
+                {rachaDia >= 2 && ` · ${rachaDia} días seguidos`}
+              </p>
+            </div>
+          )}
         </div>
-      </div>
 
-      {racha > 0 && (
-        <div className="flex items-center justify-center gap-2 rounded-2xl bg-premio-suave px-4 py-3">
-          <Flame size={16} className="shrink-0 text-premio" strokeWidth={2.5} />
-          <p className="text-sm font-bold text-acento">
-            {racha} {racha === 1 ? 'semana seguida' : 'semanas seguidas'} · ¡Racha activa!
-            {rachaDia >= 2 && ` · ${rachaDia} días seguidos`}
-          </p>
-        </div>
-      )}
-
-      <motion.button
-        type="button"
-        whileTap={{ scale: 0.97 }}
-        onClick={onVerCarta}
-        className="flex w-full items-center justify-center gap-2 rounded-3xl bg-acento py-4 text-base font-bold text-on-acento active:bg-acento-hover"
-      >
-        <Target size={19} strokeWidth={2.4} /> Sumá puntos
-      </motion.button>
-
-      {premiosListos > 0 && (
         <motion.button
           type="button"
           whileTap={{ scale: 0.97 }}
-          onClick={onVerRecompensas}
-          className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-premio py-3 text-sm font-bold text-premio"
+          onClick={onVerCarta}
+          className="flex w-full items-center justify-center gap-2 rounded-3xl bg-acento py-4 text-base font-bold text-on-acento active:bg-acento-hover"
         >
-          <Gift size={16} strokeWidth={2.4} /> Tenés {premiosListos}{' '}
-          {premiosListos === 1 ? 'premio listo' : 'premios listos'} para canjear →
+          <Target size={19} strokeWidth={2.4} /> Sumá puntos
         </motion.button>
-      )}
 
-      <button
-        type="button"
-        onClick={onVerInfo}
-        className="flex items-center justify-center gap-1 py-1 text-xs font-bold text-texto-muted"
-      >
-        Ver información del comercio <ChevronRight size={13} strokeWidth={2.5} />
-      </button>
+        {/* Pasa ahora: todo lo temporal/urgente junto, no salpicado entre secciones estáticas. */}
+        {hayAlgoUrgente && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">Pasa ahora</p>
 
-      {esNuevo && (
-        <InvitarDesdeInicio negocioId={negocioId} nombreNegocio={data.nombreNegocio} cliente={cliente} />
-      )}
-
-      {mostrarPanelAvisos && (
-        <div className="flex flex-col gap-2">
-          {avisosFallback.map((aviso) => (
-            <motion.div
-              key={aviso.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-start gap-3 rounded-2xl border border-borde bg-card px-4 py-3"
-            >
-              <span className="mt-0.5 text-lg">{aviso.emoji}</span>
-              <div>
-                <p className="text-sm font-bold text-texto">{aviso.titulo}</p>
-                <p className="text-xs leading-snug text-texto-muted">{aviso.cuerpo}</p>
+            {evento && (
+              <div className="flex items-start gap-3 rounded-2xl border border-borde bg-premio-suave px-4 py-3">
+                <span className="mt-0.5 text-acento">
+                  <CalendarHeart size={18} strokeWidth={2.4} />
+                </span>
+                <p className="text-sm leading-snug">
+                  <span className="font-bold text-acento">{evento.nombre}</span> — visitá durante el
+                  evento y ganás <span className="font-bold text-texto">{evento.recompensaExtra}</span>.
+                </p>
               </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
+            )}
 
-      {permisoNotif === 'granted' && (
-        <div className="flex items-center gap-2 rounded-2xl border border-borde bg-card px-4 py-2.5 text-xs">
-          <BellRing size={15} className="shrink-0 text-acento" />
-          <span className="font-semibold text-texto-muted">
-            Notificaciones activadas — te avisamos por vencimientos, rachas y sorpresas.
-          </span>
-        </div>
-      )}
+            {semanal.conseguida && (
+              <div className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-premio-suave text-acento">
+                  <Sparkles size={17} strokeWidth={2.4} />
+                </span>
+                <p className="text-sm leading-snug">
+                  <span className="font-bold text-acento">¡Racha semanal!</span> Desbloqueaste{' '}
+                  <span className="font-bold text-texto">{semanal.recompensa}</span>.
+                </p>
+              </div>
+            )}
 
-      {evento && (
-        <div className="flex items-start gap-3 rounded-2xl border border-borde bg-premio-suave px-4 py-3">
-          <span className="mt-0.5 text-acento">
-            <CalendarHeart size={18} strokeWidth={2.4} />
-          </span>
-          <p className="text-sm leading-snug">
-            <span className="font-bold text-acento">{evento.nombre}</span> — visitá durante el
-            evento y ganás <span className="font-bold text-texto">{evento.recompensaExtra}</span>.
-          </p>
-        </div>
-      )}
+            {data.horarioValle && (
+              <div className="flex items-center gap-2.5 rounded-2xl bg-premio-suave px-4 py-3 text-sm">
+                <Zap size={17} className="shrink-0 text-acento" strokeWidth={2.4} />
+                <p className="leading-snug">
+                  <span className="font-bold text-acento">
+                    {textoHorarioValle(data.horarioValle)}
+                  </span>{' '}
+                  acá.
+                </p>
+              </div>
+            )}
 
-      <div className="rounded-3xl border border-borde bg-card p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
-              Temporada de {nombreMesActual()}
-            </p>
-            <p className="mt-1 text-sm font-bold">
-              {temporada.completa
-                ? '¡Completaste todas las misiones!'
-                : `${temporada.completadas} de ${temporada.total} misiones completadas`}
-            </p>
-          </div>
-          <span className="font-titulo text-2xl font-bold text-premio">{temporada.pct}%</span>
-        </div>
-        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-borde">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${temporada.pct}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="h-full rounded-full bg-premio"
-          />
-        </div>
-        {temporada.completa ? (
-          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-premio-suave px-3.5 py-2.5 text-sm">
-            <PartyPopper size={16} className="shrink-0 text-acento" />
-            <span className="font-bold text-acento">{temporada.recompensa} desbloqueada</span>
-          </div>
-        ) : (
-          <p className="mt-2.5 text-xs text-texto-muted">
-            Completá todas y ganás una <span className="font-bold text-texto">recompensa grande</span>.
-          </p>
-        )}
-      </div>
+            {data.comboFinde && (
+              <div className="rounded-3xl border border-borde bg-premio-suave p-4">
+                <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-acento uppercase">
+                  <Flame size={13} strokeWidth={2.5} /> Combo de asado del finde
+                </p>
+                <p className="mt-2 text-sm font-bold leading-snug text-texto">{data.comboFinde.descripcion}</p>
+                <div className="mt-1.5 flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold text-texto-muted">
+                    {textoComboFinde(data.comboFinde)}
+                  </span>
+                  {data.comboFinde.precio != null && (
+                    <span className="shrink-0 font-titulo text-sm font-bold text-premio">
+                      {formatMonto(data, data.comboFinde.precio)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
-      {semanal.conseguida && (
-        <div className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-premio-suave text-acento">
-            <Sparkles size={17} strokeWidth={2.4} />
-          </span>
-          <p className="text-sm leading-snug">
-            <span className="font-bold text-acento">¡Racha semanal!</span> Desbloqueaste{' '}
-            <span className="font-bold text-texto">{semanal.recompensa}</span>.
-          </p>
-        </div>
-      )}
-
-      {data.horarioValle && (
-        <div className="flex items-center gap-2.5 rounded-2xl bg-premio-suave px-4 py-3 text-sm">
-          <Zap size={17} className="shrink-0 text-acento" strokeWidth={2.4} />
-          <p className="leading-snug">
-            <span className="font-bold text-acento">
-              {textoHorarioValle(data.horarioValle)}
-            </span>{' '}
-            acá.
-          </p>
-        </div>
-      )}
-
-      {data.comboFinde && (
-        <div className="rounded-3xl border border-borde bg-premio-suave p-4">
-          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-acento uppercase">
-            <Flame size={13} strokeWidth={2.5} /> Combo de asado del finde
-          </p>
-          <p className="mt-2 text-sm font-bold leading-snug text-texto">{data.comboFinde.descripcion}</p>
-          <div className="mt-1.5 flex items-center justify-between gap-3">
-            <span className="text-xs font-semibold text-texto-muted">
-              {textoComboFinde(data.comboFinde)}
-            </span>
-            {data.comboFinde.precio != null && (
-              <span className="shrink-0 font-titulo text-sm font-bold text-premio">
-                {formatMonto(data, data.comboFinde.precio)}
-              </span>
+            {venc.dias < 15 && (
+              <div className="flex items-center gap-2.5 rounded-2xl bg-premio-suave px-4 py-3 text-sm">
+                <span className="text-base">⏳</span>
+                <p className="leading-snug">
+                  <span className="font-bold text-acento">{formatPuntos(cliente.puntos)} pts</span> vencen
+                  en {venc.dias} {venc.dias === 1 ? 'día' : 'días'}. Pasá a canjear.
+                </p>
+              </div>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {data.promos && data.promos.length > 0 && (
-        <div className="rounded-3xl border border-borde bg-card p-4">
-          <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
-            Promos del local
-          </p>
-          <div className="mt-2.5 flex flex-col gap-2.5">
-            {data.promos.map((promo) => {
-              const meta = META_PROMO[promo.tipo];
-              const Icono = meta.icono;
-              return (
-                <div key={promo.titulo} className="flex items-start gap-2.5">
-                  <span
-                    className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-                    style={{ background: `${meta.color}1A`, color: meta.color }}
-                  >
-                    <Icono size={15} strokeWidth={2.5} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold leading-tight text-texto">{promo.titulo}</p>
-                    {promo.detalle && (
-                      <p className="mt-0.5 text-xs text-texto-muted">{promo.detalle}</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+        {/* Jugá acá: ruleta + sorpresa, código verificable server-side (migración 0026).
+            Detrás de un flag hasta terminar de probarlas en vivo — src/lib/flags.ts. */}
+        {MOSTRAR_RULETA_Y_SORPRESA && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">Jugá acá</p>
+            <RuletaSemanal ultimaTiradaTs={ultimaRuletaTs} onGirar={onGirarRuleta} premios={data.premiosRuleta} />
+            <RecompensaSorpresa
+              key={sorpresasUsadas}
+              disponible={sorpresaDisponible}
+              faltan={faltanSorpresa}
+              onUsar={onUsarSorpresa}
+            />
           </div>
+        )}
+
+        <div className="rounded-3xl border border-borde bg-card p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
+                Temporada de {nombreMesActual()}
+              </p>
+              <p className="mt-1 text-sm font-bold">
+                {temporada.completa
+                  ? '¡Completaste todas las misiones!'
+                  : `${temporada.completadas} de ${temporada.total} misiones completadas`}
+              </p>
+            </div>
+            <span className="font-titulo text-2xl font-bold text-premio">{temporada.pct}%</span>
+          </div>
+          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-borde">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${temporada.pct}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              className="h-full rounded-full bg-premio"
+            />
+          </div>
+          {temporada.completa ? (
+            <div className="mt-3 flex items-center gap-2 rounded-2xl bg-premio-suave px-3.5 py-2.5 text-sm">
+              <PartyPopper size={16} className="shrink-0 text-acento" />
+              <span className="font-bold text-acento">{temporada.recompensa} desbloqueada</span>
+            </div>
+          ) : (
+            <p className="mt-2.5 text-xs text-texto-muted">
+              Completá todas y ganás una <span className="font-bold text-texto">recompensa grande</span>.
+            </p>
+          )}
         </div>
-      )}
 
-      {venc.dias < 15 && (
-        <div className="flex items-center gap-2.5 rounded-2xl bg-premio-suave px-4 py-3 text-sm">
-          <span className="text-base">⏳</span>
-          <p className="leading-snug">
-            <span className="font-bold text-acento">{formatPuntos(cliente.puntos)} pts</span> vencen
-            en {venc.dias} {venc.dias === 1 ? 'día' : 'días'}. Pasá a canjear.
-          </p>
+        {/* Tus recompensas: premios listos + próxima recompensa + favoritos, antes 3 cards
+            sueltas sin conexión visual — agrupadas bajo el mismo CTA final. */}
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">Tus recompensas</p>
+
+          {premiosListos > 0 && (
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.97 }}
+              onClick={onVerRecompensas}
+              className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-premio py-3 text-sm font-bold text-premio"
+            >
+              <Gift size={16} strokeWidth={2.4} /> Tenés {premiosListos}{' '}
+              {premiosListos === 1 ? 'premio listo' : 'premios listos'} para canjear →
+            </motion.button>
+          )}
+
+          {recompensa && (
+            <div className="rounded-3xl border border-borde bg-card p-4">
+              <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
+                Tu próxima recompensa
+              </p>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-sm font-bold">{recompensa.descripcion}</p>
+                <span className="shrink-0 font-titulo text-sm font-bold text-premio">
+                  {formatPuntos(recompensa.pts)} pts
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-texto-muted">
+                Te faltan {formatPuntos(recompensa.pts - cliente.puntos)} pts
+              </p>
+            </div>
+          )}
+
+          {favorito && (
+            <div className="rounded-3xl border border-borde bg-card p-4">
+              <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
+                <Heart size={13} className="text-acento" /> Tus favoritos
+              </p>
+              <p className="mt-2 text-sm leading-snug">
+                Lo tuyo es <span className="font-bold text-acento">{favorito.categoria}</span>. Te
+                sugerimos: <span className="font-bold text-texto">{favorito.recompensa.descripcion}</span>
+              </p>
+              <p className="mt-1 text-xs text-texto-muted">
+                {favorito.alcanzable
+                  ? '¡Ya lo podés canjear!'
+                  : `Te faltan ${formatPuntos(favorito.faltan)} pts`}
+              </p>
+            </div>
+          )}
+
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.97 }}
+            onClick={onVerRecompensas}
+            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-acento py-4 text-base font-bold text-on-acento active:bg-acento-hover"
+          >
+            <Gift size={20} strokeWidth={2.4} /> Ver mis recompensas
+          </motion.button>
         </div>
-      )}
 
-      <motion.button
-        type="button"
-        whileTap={{ scale: 0.97 }}
-        onClick={onVerRecompensas}
-        className="flex w-full items-center justify-center gap-2 rounded-3xl bg-acento py-4 text-base font-bold text-on-acento active:bg-acento-hover"
-      >
-        <Gift size={20} strokeWidth={2.4} /> Ver mis recompensas
-      </motion.button>
+        {/* Contenido secundario: info del local, invitar, promos, avisos — sin cambios de
+            lógica, solo al final. */}
+        <button
+          type="button"
+          onClick={onVerInfo}
+          className="flex items-center justify-center gap-1 py-1 text-xs font-bold text-texto-muted"
+        >
+          Ver información del comercio <ChevronRight size={13} strokeWidth={2.5} />
+        </button>
 
-      {recompensa && (
-        <div className="rounded-3xl border border-borde bg-card p-4">
-          <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
-            Tu próxima recompensa
-          </p>
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <p className="text-sm font-bold">{recompensa.descripcion}</p>
-            <span className="shrink-0 font-titulo text-sm font-bold text-premio">
-              {formatPuntos(recompensa.pts)} pts
+        {esNuevo && (
+          <InvitarDesdeInicio negocioId={negocioId} nombreNegocio={data.nombreNegocio} cliente={cliente} />
+        )}
+
+        {data.promos && data.promos.length > 0 && (
+          <div className="rounded-3xl border border-borde bg-card p-4">
+            <p className="text-xs font-semibold tracking-widest text-texto-muted uppercase">
+              Promos del local
+            </p>
+            <div className="mt-2.5 flex flex-col gap-2.5">
+              {data.promos.map((promo) => {
+                const meta = META_PROMO[promo.tipo];
+                const Icono = meta.icono;
+                return (
+                  <div key={promo.titulo} className="flex items-start gap-2.5">
+                    <span
+                      className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                      style={{ background: `${meta.color}1A`, color: meta.color }}
+                    >
+                      <Icono size={15} strokeWidth={2.5} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold leading-tight text-texto">{promo.titulo}</p>
+                      {promo.detalle && (
+                        <p className="mt-0.5 text-xs text-texto-muted">{promo.detalle}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {mostrarPanelAvisos && (
+          <div className="flex flex-col gap-2">
+            {avisosFallback.map((aviso) => (
+              <motion.div
+                key={aviso.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-3 rounded-2xl border border-borde bg-card px-4 py-3"
+              >
+                <span className="mt-0.5 text-lg">{aviso.emoji}</span>
+                <div>
+                  <p className="text-sm font-bold text-texto">{aviso.titulo}</p>
+                  <p className="text-xs leading-snug text-texto-muted">{aviso.cuerpo}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {permisoNotif === 'granted' && (
+          <div className="flex items-center gap-2 rounded-2xl border border-borde bg-card px-4 py-2.5 text-xs">
+            <BellRing size={15} className="shrink-0 text-acento" />
+            <span className="font-semibold text-texto-muted">
+              Notificaciones activadas — te avisamos por vencimientos, rachas y sorpresas.
             </span>
           </div>
-          <p className="mt-1 text-xs text-texto-muted">
-            Te faltan {formatPuntos(recompensa.pts - cliente.puntos)} pts
-          </p>
-        </div>
-      )}
-
-      {favorito && (
-        <div className="rounded-3xl border border-borde bg-card p-4">
-          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-texto-muted uppercase">
-            <Heart size={13} className="text-acento" /> Tus favoritos
-          </p>
-          <p className="mt-2 text-sm leading-snug">
-            Lo tuyo es <span className="font-bold text-acento">{favorito.categoria}</span>. Te
-            sugerimos: <span className="font-bold text-texto">{favorito.recompensa.descripcion}</span>
-          </p>
-          <p className="mt-1 text-xs text-texto-muted">
-            {favorito.alcanzable
-              ? '¡Ya lo podés canjear!'
-              : `Te faltan ${formatPuntos(favorito.faltan)} pts`}
-          </p>
-        </div>
-      )}
-
-      {/* Ruleta y recompensa sorpresa: código verificable server-side (migración 0026).
-          Detrás de un flag hasta terminar de probarlas en vivo — src/lib/flags.ts. */}
-      {MOSTRAR_RULETA_Y_SORPRESA && (
-        <>
-          <RuletaSemanal ultimaTiradaTs={ultimaRuletaTs} onGirar={onGirarRuleta} premios={data.premiosRuleta} />
-
-          <RecompensaSorpresa
-            key={sorpresasUsadas}
-            disponible={sorpresaDisponible}
-            faltan={faltanSorpresa}
-            onUsar={onUsarSorpresa}
-          />
-        </>
-      )}
+        )}
       </div>
     </div>
   );
