@@ -29,16 +29,19 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
   - **Parte 1 (ruleta/sorpresa)**: `supabase/migrations/0026_juego_ruleta_sorpresa.sql` — tabla
     `tiradas_juego` + RPCs `girar_ruleta`/`usar_sorpresa`/`confirmar_premio_juego`/
     `expirar_mis_tiradas` (mismo patrón que `iniciar_canje`/`confirmar_canje` de 0021).
-    Revisada con ojos frescos antes de commitear (se encontró y corrigió un bug real: `random()`
-    evaluado por fila en vez de una vez por sorteo, rompía el peso real de cada premio).
     Frontend ya conectado: `RuletaSemanal.tsx`/`RecompensaSorpresa.tsx` muestran el premio +
     código que devuelve el server (con cuenta regresiva), no eligen nada localmente;
     `panelCliente.ts` tiene `girarRuletaReal`/`usarSorpresaReal`; el cajero confirma cualquier
     código (canje o premio de juego) con un solo input (`confirmarPremioMostrador`).
-    **`MOSTRAR_RULETA_Y_SORPRESA` (`src/lib/flags.ts`) sigue en `false` a propósito**: falta
-    que Tobías corra `0026` en el SQL Editor de Supabase (checkpoint humano, ningún agente
-    puede hacerlo) y recién ahí probar en vivo de punta a punta (girar real, confirmar con PIN,
-    cooldown sobreviviendo un refresh) antes de activar el flag.
+    **Tobías ya corrió `0026` (27/9) y se probó en vivo contra producción** (cliente demo
+    `premia.latam@gmail.com`, negocio `bavieca`): `usar_sorpresa` y `confirmar_premio_juego`
+    andan bien de punta a punta (revelar, confirmar con PIN, rechazar código repetido/
+    inexistente). **`girar_ruleta` tiró error `column reference "bueno" is ambiguous`** — bug
+    real de PL/pgSQL (`RETURNS TABLE(...)` declara sus columnas como variables de la función, y
+    colisionaba con la columna `bueno` de una CTE) que ninguna revisión estática iba a
+    encontrar. Fix en `0027_fix_girar_ruleta_ambiguo.sql`, ya commiteado — **falta que Tobías
+    corra esta migración nueva también**, y recién ahí reintentar `girar_ruleta` en vivo antes
+    de activar `MOSTRAR_RULETA_Y_SORPRESA` (`src/lib/flags.ts`, sigue en `false`).
   - **Parte 2**: `TabInicio.tsx` reordenado en grupos por relevancia (mismo criterio que el
     Home v2) — sin funcionalidad nueva, solo reagrupado. No depende de la migración 0026.
   - **Parte 3**: Premín pulsa sutil en el header del Home cuando hay un premio listo, y la card
