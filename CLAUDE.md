@@ -39,9 +39,13 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
     inexistente). **`girar_ruleta` tiró error `column reference "bueno" is ambiguous`** — bug
     real de PL/pgSQL (`RETURNS TABLE(...)` declara sus columnas como variables de la función, y
     colisionaba con la columna `bueno` de una CTE) que ninguna revisión estática iba a
-    encontrar. Fix en `0027_fix_girar_ruleta_ambiguo.sql`, ya commiteado — **falta que Tobías
-    corra esta migración nueva también**, y recién ahí reintentar `girar_ruleta` en vivo antes
-    de activar `MOSTRAR_RULETA_Y_SORPRESA` (`src/lib/flags.ts`, sigue en `false`).
+    encontrar. **`0027_fix_girar_ruleta_ambiguo.sql` NO alcanzó** — solo calificó la última de
+    tres referencias ambiguas a `bueno` dentro del mismo statement compuesto, probado en vivo
+    de nuevo (28/9) y falló idéntico. **`0028_fix_girar_ruleta_ambiguo_completo.sql`** es el fix
+    real: usa `#variable_conflict use_column` (mecanismo oficial de Postgres para esto, no
+    depende de cazar cada referencia a mano) + las 3 referencias ya calificadas de refuerzo —
+    **falta que Tobías corra esta migración**, y recién ahí reintentar `girar_ruleta` en vivo
+    antes de activar `MOSTRAR_RULETA_Y_SORPRESA` (`src/lib/flags.ts`, sigue en `false`).
   - **Parte 2**: `TabInicio.tsx` reordenado en grupos por relevancia (mismo criterio que el
     Home v2) — sin funcionalidad nueva, solo reagrupado. No depende de la migración 0026.
   - **Parte 3**: Premín pulsa sutil en el header del Home cuando hay un premio listo, y la card
