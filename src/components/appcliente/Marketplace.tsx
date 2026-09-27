@@ -14,6 +14,7 @@ import {
   PUNTOS_BONUS_REFERIDO,
   VISITAS_PARA_PREMIO,
 } from '../../lib/referidos';
+import { sonidoTap } from '../../lib/sonidos';
 import { supabaseEnabled } from '../../lib/supabase';
 import { gradienteCss } from '../../lib/temaNegocio';
 import CardNivelXp from './CardNivelXp';
@@ -75,13 +76,19 @@ function CardEstado({ senal, onAbrir }: { senal: SenalHome; onAbrir: () => void 
       : senal.cta;
   const conFoto = !!senal.negocio.portadaUrl;
 
+  const abrir = () => {
+    sonidoTap();
+    navigator.vibrate?.(15);
+    onAbrir();
+  };
+
   return (
     <motion.button
       type="button"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       whileTap={{ scale: 0.98 }}
-      onClick={onAbrir}
+      onClick={abrir}
       className="relative flex w-full flex-col gap-4 overflow-hidden rounded-3xl bg-surface-dark p-5 text-left"
     >
       {conFoto && (
@@ -304,6 +311,10 @@ export default function Marketplace({
 }: Props) {
   const heroe = useMemo(() => heroeDelHome(negocios, relaciones), [negocios, relaciones]);
   const xpTotal = useMemo(() => calcularXpTotal(relaciones), [relaciones]);
+  // Premín "reacciona" con un pulso sutil cuando hay un premio listo para canjear — el único
+  // toque de más juego que se suma al header (ver corrección del 15/9: nunca más secciones).
+  const premioListo = !!heroe && GRUPO_SENAL[heroe.tipo] === 'listo';
+  const reducirMovimiento = useReducedMotion();
 
   const misLugares = useMemo(
     () => negocios.filter((negocio) => relaciones[negocio.id]),
@@ -344,9 +355,17 @@ export default function Marketplace({
             Explorá, comprá, sumá puntos y viví nuevas experiencias.
           </p>
         </div>
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-acento-suave">
+        <motion.span
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-acento-suave"
+          animate={premioListo && !reducirMovimiento ? { scale: [1, 1.09, 1] } : { scale: 1 }}
+          transition={
+            premioListo && !reducirMovimiento
+              ? { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+              : undefined
+          }
+        >
           <img src="/premin.png" alt="Premín" className="h-9 w-9 object-contain" />
-        </span>
+        </motion.span>
       </header>
 
       {!esNuevo && nivelCard}

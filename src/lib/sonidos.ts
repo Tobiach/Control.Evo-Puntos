@@ -121,6 +121,26 @@ export function sonidoEvolucion(): void {
 }
 
 /**
+ * Toque en la card de estado del Home: un tick suave y corto, apenas perceptible — feedback de
+ * "acción registrada", no una celebración (eso ya lo cubren `sonidoPuntos`/`sonidoEvolucion`).
+ */
+export function sonidoTap(): void {
+  const audio = contexto();
+  if (!audio) return;
+  const inicio = audio.currentTime;
+  const osc = audio.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = 740;
+  const ganancia = audio.createGain();
+  ganancia.gain.setValueAtTime(0.0001, inicio);
+  ganancia.gain.exponentialRampToValueAtTime(0.08, inicio + 0.008);
+  ganancia.gain.exponentialRampToValueAtTime(0.001, inicio + 0.06);
+  osc.connect(ganancia).connect(audio.destination);
+  osc.start(inicio);
+  osc.stop(inicio + 0.07);
+}
+
+/**
  * Chasquido al revelar la recompensa sorpresa: un "snap" seco (barrido de tono descendente
  * muy rápido) + una chispa de brillos agudos ascendentes justo después — pensado para el
  * momento de "revelar algo", no un click genérico.
