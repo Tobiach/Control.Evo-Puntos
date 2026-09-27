@@ -22,26 +22,28 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 - **🟡 EN CURSO (27/9) — ruleta/rascar con persistencia real + rediseño de `TabInicio.tsx` +
   2 toques de juego en el Home.** Plan completo en
-  `C:\Users\estudiante\.claude\plans\dynamic-sauteeing-pizza.md` (fuera del repo). **Parte 1
-  (ruleta/sorpresa) ya está commiteada y pusheada — falta el checkpoint humano y la prueba en
-  vivo:**
-  - `supabase/migrations/0026_juego_ruleta_sorpresa.sql` — tabla `tiradas_juego` + RPCs
-    `girar_ruleta`/`usar_sorpresa`/`confirmar_premio_juego`/`expirar_mis_tiradas` (mismo patrón
-    que `iniciar_canje`/`confirmar_canje` de 0021). Revisada con ojos frescos (se encontró y
-    corrigió un bug real: `random()` evaluado por fila en vez de una vez por sorteo, rompía el
-    peso real de cada premio). **Falta que Tobías la corra en el SQL Editor de Supabase** —
-    checkpoint humano de siempre, ningún agente puede hacerlo.
-  - Frontend ya conectado a las RPC reales: `RuletaSemanal.tsx`/`RecompensaSorpresa.tsx`
-    muestran el premio + código que devuelve el server (con cuenta regresiva), no eligen nada
-    localmente; `panelCliente.ts` tiene `girarRuletaReal`/`usarSorpresaReal`; el cajero confirma
-    cualquier código (canje o premio de juego) con un solo input (`confirmarPremioMostrador`,
-    `panelCajero.ts` + `ConfirmarCanje.tsx`). Camino demo (sin sesión real) sigue andando igual
-    que antes, sin tocar Supabase.
-  - `MOSTRAR_RULETA_Y_SORPRESA` (`src/lib/flags.ts`) **sigue en `false` a propósito**: falta
-    probar en vivo de punta a punta (girar real, confirmar con PIN, cooldown sobreviviendo un
-    refresh) recién con la migración ya corrida — no verificado todavía, no se asume.
-  - Después de eso: Parte 2 (reordenar `TabInicio.tsx`) y Parte 3 (2 toques de juego en el
-    Home) siguen sin empezar. Si otra sesión retoma esto, releer el archivo de plan primero.
+  `C:\Users\estudiante\.claude\plans\dynamic-sauteeing-pizza.md` (fuera del repo). **Las 3
+  partes del plan ya están commiteadas y pusheadas, deployadas a un preview** (no a
+  producción — falta que Tobías lo revise y, sobre todo, corra la migración):
+  `https://premia-jzgvecoyd-tobiachs-projects.vercel.app`.
+  - **Parte 1 (ruleta/sorpresa)**: `supabase/migrations/0026_juego_ruleta_sorpresa.sql` — tabla
+    `tiradas_juego` + RPCs `girar_ruleta`/`usar_sorpresa`/`confirmar_premio_juego`/
+    `expirar_mis_tiradas` (mismo patrón que `iniciar_canje`/`confirmar_canje` de 0021).
+    Revisada con ojos frescos antes de commitear (se encontró y corrigió un bug real: `random()`
+    evaluado por fila en vez de una vez por sorteo, rompía el peso real de cada premio).
+    Frontend ya conectado: `RuletaSemanal.tsx`/`RecompensaSorpresa.tsx` muestran el premio +
+    código que devuelve el server (con cuenta regresiva), no eligen nada localmente;
+    `panelCliente.ts` tiene `girarRuletaReal`/`usarSorpresaReal`; el cajero confirma cualquier
+    código (canje o premio de juego) con un solo input (`confirmarPremioMostrador`).
+    **`MOSTRAR_RULETA_Y_SORPRESA` (`src/lib/flags.ts`) sigue en `false` a propósito**: falta
+    que Tobías corra `0026` en el SQL Editor de Supabase (checkpoint humano, ningún agente
+    puede hacerlo) y recién ahí probar en vivo de punta a punta (girar real, confirmar con PIN,
+    cooldown sobreviviendo un refresh) antes de activar el flag.
+  - **Parte 2**: `TabInicio.tsx` reordenado en grupos por relevancia (mismo criterio que el
+    Home v2) — sin funcionalidad nueva, solo reagrupado. No depende de la migración 0026.
+  - **Parte 3**: Premín pulsa sutil en el header del Home cuando hay un premio listo, y la card
+    de estado da sonido+vibración al tocarla (`sonidoTap` en `lib/sonidos.ts`).
+  - Si otra sesión retoma esto, releer el archivo de plan primero.
 - ~~P0 — ningún cliente real podía usar la app en producción~~: **RESUELTO (13-14/9/2026),
   todo verificado en vivo, nada pendiente.** `0021`→`0025` aplicadas (`0024` no hizo falta
   completa, era redundante con `0023`). Probado de punta a punta: canje real
