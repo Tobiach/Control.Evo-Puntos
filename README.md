@@ -1,8 +1,10 @@
 # Premia.ar
 
-Club de fidelización real para negocios de barrio (Argentina). Un cliente final suma puntos
-reales en cada negocio afiliado —cada uno con su propio saldo— y los descubre/canjea desde un
-único marketplace. Los dueños de negocio gestionan su local desde un panel propio.
+Red de comercios de barrio (Argentina) que se comunica como un juego, no como un programa de
+puntos tradicional (ver [docs/NIVELES-Y-PREMIN.md](docs/NIVELES-Y-PREMIN.md)). Un cliente final
+sube de nivel visitando negocios afiliados —cada uno con su propio saldo real de puntos— y
+descubre/canjea recompensas reales desde un único marketplace. Los dueños de negocio gestionan
+su local desde un panel propio.
 
 - **Producción:** https://premia-ar.vercel.app
 - **Stack:** React 19 + Vite 6 + TypeScript + Tailwind CSS v4 + Supabase

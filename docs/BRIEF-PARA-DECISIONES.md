@@ -52,8 +52,14 @@ brújula, zapatillas coral):
    brújula dorada en la otra. La forma más relajada, "como en su casa".
 4. **Cráneo del Barrio** (3.000 XP) — capa corta verde oscuro, bandolera verde con "P",
    3-4 esferitas orbitando (representa la red). Sonrisa canchera.
-5. **Prócer del Barrio** (8.000 XP) — forma final: capa larga coral al viento, corona dorada
+5. **Leyenda del Barrio** (8.000 XP) — forma final: capa larga coral al viento, corona dorada
    con gema, halo dorado, destellos.
+
+> **Nota (26/9/2026):** esta sección es el brainstorm de diseño previo a tener assets reales.
+> Los 4 assets reales (niveles 2-5) ya se cargaron el 23/9/2026 y no coinciden exactamente con
+> estas descripciones (son fotos reales aprobadas por Tobías, no este boceto) — ver
+> `docs/NIVELES-Y-PREMIN.md` §3 para la forma final de cada uno. Nivel 5 confirmado como
+> "Leyenda del Barrio", no "Prócer del Barrio".
 
 Formato técnico necesario: PNG transparente, canvas cuadrado, misma altura visual en las 5
 (para que no salte al evolucionar) + una silueta plana de cada una (para los niveles todavía

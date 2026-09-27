@@ -1,9 +1,7 @@
 node_modules
 dist
-.env
-.env.local
-.vercel
-
 .vercel
 .env*
 .claude/worktrees/
+.claude/agent-memory/
+supabase/.temp/

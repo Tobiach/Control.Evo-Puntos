@@ -41,7 +41,7 @@ mensaje** — lidera el progreso y el momento.
 | 2 | **Cliente Fijo** | 200 | Ya vuelve a un par de lugares. |
 | 3 | **Habitué** | 1.000 | "Tu lugar de siempre". El nivel-identidad. |
 | 4 | **Cráneo del Barrio** | 3.000 | Se las sabe todas, lo consultan. |
-| 5 | **Prócer del Barrio** | 8.000 | Es parte del paisaje. Forma final. |
+| 5 | **Leyenda del Barrio** | 8.000 | Es parte del paisaje. Forma final. |
 
 Distinto del **rango por local** (`vipDesdePuntos` → "Nuevo → VIP de ESE comercio", con
 `beneficiosVip` que configura el dueño): eso es "tu estatus en {local}". La evolución de Premín
