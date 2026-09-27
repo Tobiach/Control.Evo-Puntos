@@ -59,11 +59,18 @@ describe('TabPerfilMarketplace', () => {
     expect(screen.getByText('Todavía no canjeaste ningún premio.')).toBeInTheDocument();
   });
 
-  it('no muestra progreso, recorrido ni lugares para un invitado', () => {
+  it('el invitado ve el mismo perfil que un cliente con cuenta (progreso, recorrido, lugares)', () => {
     renderPerfil(CLIENTE_INVITADO);
-    expect(screen.queryByText('Tu recorrido')).toBeNull();
-    expect(screen.queryByText('Mis lugares')).toBeNull();
+    expect(screen.getByText('Tu recorrido')).toBeInTheDocument();
+    expect(screen.getByText('Mis lugares')).toBeInTheDocument();
+    expect(screen.getByText('Café Nardo')).toBeInTheDocument();
     expect(screen.getByText('Navegando sin cuenta')).toBeInTheDocument();
+    expect(screen.getByText('Crear mi cuenta')).toBeInTheDocument();
+  });
+
+  it('el invitado no ve "Invitá a un amigo" (no hay cuenta real a la que asociar el referido)', () => {
+    renderPerfil(CLIENTE_INVITADO);
+    expect(screen.queryByText('Invitá a un amigo')).toBeNull();
   });
 
   it('"Datos personales" muestra nombre, teléfono y cumpleaños reales de un cliente', () => {

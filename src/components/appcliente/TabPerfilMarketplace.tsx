@@ -287,19 +287,20 @@ export default function TabPerfilMarketplace({
             {invitado ? 'Navegando sin cuenta' : `${nivel.actual.nombre} · Nivel ${nivelIndice}`}
           </p>
         </div>
-        {!invitado && (
-          <button
-            type="button"
-            onClick={irACuentaYPreferencias}
-            aria-label="Ir a cuenta y preferencias"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-borde bg-card text-texto-muted"
-          >
-            <Settings size={16} />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={irACuentaYPreferencias}
+          aria-label="Ir a cuenta y preferencias"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-borde bg-card text-texto-muted"
+        >
+          <Settings size={16} />
+        </button>
       </div>
 
-      {invitado ? (
+      {/* El perfil se ve igual haya o no cuenta creada — invitado solo suma este banner
+          arriba de todo, nunca reemplaza el resto (antes el invitado no veía nada de esto:
+          ni su progreso ni sus lugares ni sus badges, aunque los datos ya estaban ahí). */}
+      {invitado && (
         <div className="flex items-start gap-3 rounded-2xl bg-premio-suave px-4 py-3.5">
           <UserPlus size={18} className="mt-0.5 shrink-0 text-acento" strokeWidth={2.4} />
           <div className="min-w-0 flex-1">
@@ -316,150 +317,149 @@ export default function TabPerfilMarketplace({
             </button>
           </div>
         </div>
-      ) : (
-        <>
-          {/* 02 — Tu progreso */}
-          <CardNivelXp xpTotal={xpTotal} />
-          <TrackEvolucion xpTotal={xpTotal} />
+      )}
 
-          {/* 03 — Tu recorrido */}
-          <div>
-            <p className="mb-2 text-sm font-bold text-texto">Tu recorrido</p>
-            <FilaMetricas
-              metricas={[
-                { valor: stats.visitas, label: 'Visitas', color: 'text-acento' },
-                { valor: stats.lugares, label: 'Lugares', color: 'text-texto' },
-                { valor: stats.premios, label: 'Premios', color: 'text-premio' },
-              ]}
-            />
+      {/* 02 — Tu progreso */}
+      <CardNivelXp xpTotal={xpTotal} />
+      <TrackEvolucion xpTotal={xpTotal} />
+
+      {/* 03 — Tu recorrido */}
+      <div>
+        <p className="mb-2 text-sm font-bold text-texto">Tu recorrido</p>
+        <FilaMetricas
+          metricas={[
+            { valor: stats.visitas, label: 'Visitas', color: 'text-acento' },
+            { valor: stats.lugares, label: 'Lugares', color: 'text-texto' },
+            { valor: stats.premios, label: 'Premios', color: 'text-premio' },
+          ]}
+        />
+      </div>
+
+      {/* 04 — Mis lugares */}
+      {misLugares.length > 0 && (
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-bold text-texto">Mis lugares</p>
+            <button
+              type="button"
+              onClick={onIrAMisPremios}
+              className="flex items-center gap-0.5 text-xs font-bold text-premio"
+            >
+              Ver todos <ChevronRight size={13} strokeWidth={2.5} />
+            </button>
           </div>
+          <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {misLugares.map((negocio) => (
+              <TarjetaMiLugar
+                key={negocio.id}
+                negocio={negocio}
+                relacion={relaciones[negocio.id]}
+                onAbrir={onIrAMisPremios}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-          {/* 04 — Mis lugares */}
-          {misLugares.length > 0 && (
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-bold text-texto">Mis lugares</p>
-                <button
-                  type="button"
-                  onClick={onIrAMisPremios}
-                  className="flex items-center gap-0.5 text-xs font-bold text-premio"
+      {/* 05 — Badges y logros */}
+      <div>
+        <p className="mb-2 text-sm font-bold text-texto">Badges y logros</p>
+        <div className="grid grid-cols-4 gap-2">
+          {badges.map(({ icono: Icono, label, sub, desbloqueada, color }) => (
+            <div key={label} className="flex flex-col items-center gap-1.5 text-center">
+              <span
+                className="flex h-14 w-14 items-center justify-center rounded-full"
+                style={
+                  desbloqueada
+                    ? { backgroundColor: `${color}22`, color }
+                    : { backgroundColor: 'var(--color-borde)', color: 'var(--color-texto-muted)' }
+                }
+              >
+                {desbloqueada ? <Icono size={22} strokeWidth={2.2} /> : <Lock size={17} />}
+              </span>
+              <span className="text-[11px] leading-tight font-bold text-texto">{label}</span>
+              <span className="text-[9px] leading-tight text-texto-muted">{sub}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 06 — Premios que ya conseguiste */}
+      <div>
+        <p className="mb-2 text-sm font-bold text-texto">Premios que ya conseguiste</p>
+        {canjesConfirmados.length === 0 ? (
+          <p className="rounded-2xl border border-borde bg-card px-4 py-5 text-center text-sm text-texto-muted">
+            Todavía no canjeaste ningún premio.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {(mostrarTodosCanjes ? canjesConfirmados : canjesConfirmados.slice(0, 3)).map((canje, indice) => {
+              const negocioDelCanje = negocios.find((n) => n.id === canje.negocioId);
+              return (
+                <motion.div
+                  key={`${canje.negocioId}-${canje.confirmadoAt}-${indice}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: indice * 0.04 }}
+                  className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3"
                 >
-                  Ver todos <ChevronRight size={13} strokeWidth={2.5} />
-                </button>
-              </div>
-              <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {misLugares.map((negocio) => (
-                  <TarjetaMiLugar
-                    key={negocio.id}
-                    negocio={negocio}
-                    relacion={relaciones[negocio.id]}
-                    onAbrir={onIrAMisPremios}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 05 — Badges y logros */}
-          <div>
-            <p className="mb-2 text-sm font-bold text-texto">Badges y logros</p>
-            <div className="grid grid-cols-4 gap-2">
-              {badges.map(({ icono: Icono, label, sub, desbloqueada, color }) => (
-                <div key={label} className="flex flex-col items-center gap-1.5 text-center">
-                  <span
-                    className="flex h-14 w-14 items-center justify-center rounded-full"
-                    style={
-                      desbloqueada
-                        ? { backgroundColor: `${color}22`, color }
-                        : { backgroundColor: 'var(--color-borde)', color: 'var(--color-texto-muted)' }
-                    }
-                  >
-                    {desbloqueada ? <Icono size={22} strokeWidth={2.2} /> : <Lock size={17} />}
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-verde-ok/15 text-verde-ok">
+                    <Check size={15} strokeWidth={2.6} />
                   </span>
-                  <span className="text-[11px] leading-tight font-bold text-texto">{label}</span>
-                  <span className="text-[9px] leading-tight text-texto-muted">{sub}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 06 — Premios que ya conseguiste */}
-          <div>
-            <p className="mb-2 text-sm font-bold text-texto">Premios que ya conseguiste</p>
-            {canjesConfirmados.length === 0 ? (
-              <p className="rounded-2xl border border-borde bg-card px-4 py-5 text-center text-sm text-texto-muted">
-                Todavía no canjeaste ningún premio.
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {(mostrarTodosCanjes ? canjesConfirmados : canjesConfirmados.slice(0, 3)).map((canje, indice) => {
-                  const negocioDelCanje = negocios.find((n) => n.id === canje.negocioId);
-                  return (
-                    <motion.div
-                      key={`${canje.negocioId}-${canje.confirmadoAt}-${indice}`}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: indice * 0.04 }}
-                      className="flex items-center gap-3 rounded-2xl border border-borde bg-card px-4 py-3"
-                    >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-verde-ok/15 text-verde-ok">
-                        <Check size={15} strokeWidth={2.6} />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold text-texto">{canje.descripcion}</p>
-                        <p className="truncate text-xs text-texto-muted">
-                          {negocioDelCanje?.nombre ?? 'Negocio'}
-                          {canje.confirmadoAt && ` · Canjeado el ${formatFechaCorta(canje.confirmadoAt)}`}
-                        </p>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-                {canjesConfirmados.length > 3 && !mostrarTodosCanjes && (
-                  <button
-                    type="button"
-                    onClick={() => setMostrarTodosCanjes(true)}
-                    className="self-center py-1 text-xs font-bold text-premio"
-                  >
-                    Ver más
-                  </button>
-                )}
-              </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-texto">{canje.descripcion}</p>
+                    <p className="truncate text-xs text-texto-muted">
+                      {negocioDelCanje?.nombre ?? 'Negocio'}
+                      {canje.confirmadoAt && ` · Canjeado el ${formatFechaCorta(canje.confirmadoAt)}`}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+            {canjesConfirmados.length > 3 && !mostrarTodosCanjes && (
+              <button
+                type="button"
+                onClick={() => setMostrarTodosCanjes(true)}
+                className="self-center py-1 text-xs font-bold text-premio"
+              >
+                Ver más
+              </button>
             )}
           </div>
+        )}
+      </div>
 
-          {/* 07 — Invitá a un amigo */}
-          {anclaInvitar && (
-            <div className="flex items-center gap-3 rounded-3xl bg-premio-suave px-4 py-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-card text-acento">
-                <Users size={20} strokeWidth={2.2} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-texto">Invitá a un amigo</p>
-                <p className="mt-0.5 text-xs leading-snug text-texto-muted">
-                  Cuando vaya {formatVisitas(VISITAS_PARA_PREMIO)} a {anclaInvitar.nombre}, ganan{' '}
-                  {PUNTOS_BONUS_REFERIDO} pts los dos.
-                </p>
-              </div>
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.96 }}
-                onClick={invitar}
-                className="flex shrink-0 items-center gap-1.5 rounded-full bg-acento px-4 py-2.5 text-xs font-bold text-on-acento active:bg-acento-hover"
-              >
-                {invitacionCopiada ? (
-                  <>
-                    <Check size={14} /> Copiado
-                  </>
-                ) : (
-                  <>
-                    Invitar <Share2 size={13} />
-                  </>
-                )}
-              </motion.button>
-            </div>
-          )}
-        </>
+      {/* 07 — Invitá a un amigo: no aplica sin cuenta todavía (no hay identidad real para
+          asociar el bono de referido), a diferencia de todo lo de arriba. */}
+      {!invitado && anclaInvitar && (
+        <div className="flex items-center gap-3 rounded-3xl bg-premio-suave px-4 py-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-card text-acento">
+            <Users size={20} strokeWidth={2.2} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-texto">Invitá a un amigo</p>
+            <p className="mt-0.5 text-xs leading-snug text-texto-muted">
+              Cuando vaya {formatVisitas(VISITAS_PARA_PREMIO)} a {anclaInvitar.nombre}, ganan{' '}
+              {PUNTOS_BONUS_REFERIDO} pts los dos.
+            </p>
+          </div>
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.96 }}
+            onClick={invitar}
+            className="flex shrink-0 items-center gap-1.5 rounded-full bg-acento px-4 py-2.5 text-xs font-bold text-on-acento active:bg-acento-hover"
+          >
+            {invitacionCopiada ? (
+              <>
+                <Check size={14} /> Copiado
+              </>
+            ) : (
+              <>
+                Invitar <Share2 size={13} />
+              </>
+            )}
+          </motion.button>
+        </div>
       )}
 
       {/* 08 — Cuenta y preferencias */}
