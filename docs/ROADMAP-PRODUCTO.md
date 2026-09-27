@@ -47,16 +47,15 @@ Tobías pidió ejecutar sin depender de sus permisos a cada paso. Reglas:
 1. **Aplicar migraciones nuevas en el SQL Editor de Supabase** — no hay CLI conectado. Por cada
    migración nueva dejo el `.sql` en `supabase/migrations/` + aviso con el texto exacto a pegar.
    Bloquea: Fase 3 (tabla `push_subscriptions` + cron), y cualquier cambio de esquema de Fase 4.
-2. **🟡 Deploy a producción — hay código verificado esperando desde el 12/9.** G1, G2 y G9 (Tu
-   Semana en el Home) están en `main`, probados, pero producción (`premia-ar.vercel.app`) sigue
-   sirviendo el build del `319bcd1` (12/9) — lo confirmé comparando el bundle real de prod vs.
-   el preview. `npx vercel --yes --prod` desde PC B; lo corre Tobías o lo autoriza explícito. Un
-   push a `main` no despliega nada solo.
+2. ~~🟡 Deploy a producción — pendiente desde el 12/9~~: **RESUELTO (26/9/2026).** Todo lo
+   acumulado en `main` desde el `319bcd1` (12/9) hasta `1c95e82` (assets de Premín, 23/9) está
+   deployado y verificado en vivo (`premia-ar.vercel.app`: sin errores de consola, `/premin/5.png`
+   responde 200). Incluye G1, G2, G8, G9, G10, G12, Home v2, el fix P0-bis, y los assets de
+   Premín. Nada pendiente de deploy en este checkpoint.
 3. **(Opcional)** Hacer el CI obligatorio para mergear a `main` (branch protection en GitHub).
-4. **Assets de Premín**: las 5 formas están **aprobadas** (hoja del 8/9). Falta el corte fino:
-   5 PNG transparentes por nivel (`public/premin/1..5.png`) + 5 siluetas + subir la hoja a
-   `docs/assets/`. Los produce el diseñador. Sin esto, `TrackEvolucion` y `CardNivelXp` funcionan
-   igual con `/premin.png`; el momento "evolucionó" (2.6b) se puede construir en paralelo.
+4. ~~Assets de Premín~~: **RESUELTO (23/9/2026).** 4 PNG reales cargados (`public/premin/2..5.png`,
+   nivel 1 sigue en `/premin.png`) — detalle en 2.6c y `docs/NIVELES-Y-PREMIN.md`. Nivel 5
+   renombrado a "Leyenda del Barrio". Sin siluetas separadas (innecesarias, ver nota en 2.6c).
 
 ---
 
