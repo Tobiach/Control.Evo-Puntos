@@ -4,13 +4,11 @@
 
 /**
  * Ruleta semanal y recompensa sorpresa en la pantalla de un negocio (`TabInicio`).
- * Ya tienen persistencia real y código verificable en el mostrador (RPC `girar_ruleta`/
- * `usar_sorpresa`/`confirmar_premio_juego`, migración `0026_juego_ruleta_sorpresa.sql`).
- * Apagadas todavía porque esa migración no se corrió contra producción — recién probarlas en
- * vivo (girar de verdad, confirmar con PIN, cooldown sobreviviendo un refresh) y pasar esto a
- * `true`.
+ * Persistencia real y código verificable en el mostrador (RPC `girar_ruleta`/`usar_sorpresa`/
+ * `confirmar_premio_juego`, migraciones `0026`-`0028`). Probadas en vivo contra producción
+ * (28/9/2026): girar de verdad, cooldown real sobreviviendo un refresh, confirmar con PIN.
  */
-export const MOSTRAR_RULETA_Y_SORPRESA = false;
+export const MOSTRAR_RULETA_Y_SORPRESA = true;
 
 /**
  * "Tu grupo esta semana" y "Desafío entre amigos" MOCK de `TabPerfil` (`lib/social.ts`,
