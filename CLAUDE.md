@@ -20,37 +20,21 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
-- **🟡 EN CURSO (27/9) — ruleta/rascar con persistencia real + rediseño de `TabInicio.tsx` +
-  2 toques de juego en el Home.** Plan completo en
-  `C:\Users\estudiante\.claude\plans\dynamic-sauteeing-pizza.md` (fuera del repo). **Las 3
-  partes del plan ya están commiteadas y pusheadas, deployadas a un preview** (no a
-  producción — falta que Tobías lo revise y, sobre todo, corra la migración):
-  `https://premia-jzgvecoyd-tobiachs-projects.vercel.app`.
-  - **Parte 1 (ruleta/sorpresa)**: `supabase/migrations/0026_juego_ruleta_sorpresa.sql` — tabla
-    `tiradas_juego` + RPCs `girar_ruleta`/`usar_sorpresa`/`confirmar_premio_juego`/
-    `expirar_mis_tiradas` (mismo patrón que `iniciar_canje`/`confirmar_canje` de 0021).
-    Frontend ya conectado: `RuletaSemanal.tsx`/`RecompensaSorpresa.tsx` muestran el premio +
-    código que devuelve el server (con cuenta regresiva), no eligen nada localmente;
-    `panelCliente.ts` tiene `girarRuletaReal`/`usarSorpresaReal`; el cajero confirma cualquier
-    código (canje o premio de juego) con un solo input (`confirmarPremioMostrador`).
-    **Tobías ya corrió `0026` (27/9) y se probó en vivo contra producción** (cliente demo
-    `premia.latam@gmail.com`, negocio `bavieca`): `usar_sorpresa` y `confirmar_premio_juego`
-    andan bien de punta a punta (revelar, confirmar con PIN, rechazar código repetido/
-    inexistente). **`girar_ruleta` tiró error `column reference "bueno" is ambiguous`** — bug
-    real de PL/pgSQL (`RETURNS TABLE(...)` declara sus columnas como variables de la función, y
-    colisionaba con la columna `bueno` de una CTE) que ninguna revisión estática iba a
-    encontrar. **`0027_fix_girar_ruleta_ambiguo.sql` NO alcanzó** — solo calificó la última de
-    tres referencias ambiguas a `bueno` dentro del mismo statement compuesto, probado en vivo
-    de nuevo (28/9) y falló idéntico. **`0028_fix_girar_ruleta_ambiguo_completo.sql`** es el fix
-    real: usa `#variable_conflict use_column` (mecanismo oficial de Postgres para esto, no
-    depende de cazar cada referencia a mano) + las 3 referencias ya calificadas de refuerzo —
-    **falta que Tobías corra esta migración**, y recién ahí reintentar `girar_ruleta` en vivo
-    antes de activar `MOSTRAR_RULETA_Y_SORPRESA` (`src/lib/flags.ts`, sigue en `false`).
-  - **Parte 2**: `TabInicio.tsx` reordenado en grupos por relevancia (mismo criterio que el
-    Home v2) — sin funcionalidad nueva, solo reagrupado. No depende de la migración 0026.
-  - **Parte 3**: Premín pulsa sutil en el header del Home cuando hay un premio listo, y la card
-    de estado da sonido+vibración al tocarla (`sonidoTap` en `lib/sonidos.ts`).
-  - Si otra sesión retoma esto, releer el archivo de plan primero.
+- ~~Ruleta/rascar con persistencia real + rediseño de `TabInicio.tsx` + 2 toques de juego en
+  el Home~~: **RESUELTO (28/9/2026), todo verificado en vivo y activado en producción.** Plan
+  completo en `C:\Users\estudiante\.claude\plans\dynamic-sauteeing-pizza.md`. Las 3 partes
+  commiteadas y pusheadas: (1) ruleta/sorpresa con persistencia real —
+  `supabase/migrations/0026_juego_ruleta_sorpresa.sql`/`0027`/`0028` (tabla `tiradas_juego` +
+  RPCs `girar_ruleta`/`usar_sorpresa`/`confirmar_premio_juego`/`expirar_mis_tiradas`, mismo
+  patrón que `iniciar_canje`/`confirmar_canje` de 0021), frontend conectado
+  (`RuletaSemanal.tsx`/`RecompensaSorpresa.tsx`/`panelCliente.ts`/`confirmarPremioMostrador`
+  en el cajero), `MOSTRAR_RULETA_Y_SORPRESA` ya en `true`; (2) `TabInicio.tsx` reordenado en
+  grupos por relevancia (mismo criterio que el Home v2); (3) Premín pulsa cuando hay premio
+  listo + sonido/vibración al tocar la card de estado (`sonidoTap` en `lib/sonidos.ts`). El
+  camino a `girar_ruleta` tuvo 2 rondas de fix (`0027` incompleto, `0028` con
+  `#variable_conflict use_column` lo resolvió del todo) — probado en vivo de punta a punta:
+  premio elegido por el server (respeta pool custom del negocio), código verificable, cooldown
+  persistido sobreviviendo un refresh real. Nada pendiente de este bloque.
 - ~~P0 — ningún cliente real podía usar la app en producción~~: **RESUELTO (13-14/9/2026),
   todo verificado en vivo, nada pendiente.** `0021`→`0025` aplicadas (`0024` no hizo falta
   completa, era redundante con `0023`). Probado de punta a punta: canje real
@@ -77,9 +61,15 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 - ~~Rama `design/explorar-mis-premios-xp`~~: **RESUELTO** (6/9/2026) — ya estaba mergeada a
   `main` (`9d290c0`); el choque del número `0022` se resolvió absorbiendo
   `0022_referidos_una_visita.sql` en `0024_consolidado_rate_limiting.sql`. Nada pendiente.
-- **CLI de Supabase todavía no conectado** — procedimiento en `docs/SUPABASE.md`, requiere
-  login interactivo (no lo puede correr un agente). Toda migración nueva del roadmap se
-  aplica a mano en el SQL Editor (checkpoint humano #1 en `docs/ROADMAP-PRODUCTO.md`).
+- **CLI de Supabase — desbloqueado ad hoc el 28/9/2026, no queda conectado de forma
+  permanente.** El flujo de "correr SQL a mano en el editor" falló 3 veces seguidas con el fix
+  de `girar_ruleta` (se re-corría sin querer el archivo anterior) — Tobías generó un Personal
+  Access Token de Supabase (`supabase.com/dashboard/account/tokens`) y con
+  `SUPABASE_ACCESS_TOKEN=<token> npx supabase db query --project-ref ajydiowgrdtivndthidh
+  --linked -f <archivo>.sql` se aplicó `0028` directo, sin copiar/pegar. El token NO se guardó
+  en ningún archivo del repo ni en memoria — si hace falta aplicar otra migración así, hay que
+  pedirle a Tobías un token nuevo (o uno persistente si prefiere no repetir esto cada vez).
+  Sigue siendo cierto que ningún agente puede hacer el login interactivo de la CLI sin esto.
 - **`main` sin branch protection** — el CI (`.github/workflows/ci.yml`) ya corre en cada
   PR, pero no es obligatorio todavía para poder mergear.
 - **Lote de 73 locales reales de CABA publicados en el marketplace** (`es_muestra = false`
