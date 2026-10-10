@@ -9,7 +9,7 @@
 // Qué hace:
 //   1. Crea (o reutiliza si ya existe) un usuario de Auth para el "dueño" de este negocio
 //      de muestra, mismo patrón que las 8 cuentas demo ya sembradas (email
-//      dueno.<negocio>.demo@gmail.com, password compartida ControlEvo2026!).
+//      dueno.<negocio>.demo@gmail.com, password en DEMO_SEED_PASSWORD_LEGACY de .env.local).
 //   2. Inserta el negocio con activo=true + es_muestra=true + rubro='cafeteria' (funciona
 //      vía el link directo ?carta=<id>, pero queda afuera del marketplace de clientes
 //      reales), horario parado de ejemplo (media tarde) y umbral VIP de ejemplo (300 pts) —
@@ -45,8 +45,9 @@ const env = leerEnvLocal();
 const SUPABASE_URL = env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = env.VITE_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('Faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY en .env.local');
+const PASSWORD_DEMO = env.DEMO_SEED_PASSWORD_LEGACY;
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !PASSWORD_DEMO) {
+  console.error('Faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY / DEMO_SEED_PASSWORD_LEGACY en .env.local');
   process.exit(1);
 }
 
@@ -56,7 +57,6 @@ const clienteNuevo = () => createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const NEGOCIO_ID = 'victoria-cafe-al-paso';
 const EMAIL_DUENO = 'dueno.victoria-cafe.demo@gmail.com';
-const PASSWORD_DEMO = 'ControlEvo2026!';
 
 /** signUp (o signIn si ya existe de una corrida anterior) sobre el cliente Supabase dado. */
 async function autenticar(supabase, email, rol) {

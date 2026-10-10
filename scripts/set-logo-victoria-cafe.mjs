@@ -23,9 +23,13 @@ const NEGOCIO_ID = 'victoria-cafe-al-paso';
 const LOGO_URL = '/logos/victoria-cafe.jpg';
 
 async function main() {
+  if (!env.DEMO_SEED_PASSWORD_VICTORIA) {
+    console.error('Falta DEMO_SEED_PASSWORD_VICTORIA en .env.local');
+    process.exit(1);
+  }
   const { error: errAuth } = await supabase.auth.signInWithPassword({
     email: 'dueno.victoria-cafe.demo@gmail.com',
-    password: 'cafevictoria2026!',
+    password: env.DEMO_SEED_PASSWORD_VICTORIA,
   });
   if (errAuth) {
     console.error('No pude loguearme como dueño:', errAuth.message);

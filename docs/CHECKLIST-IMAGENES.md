@@ -25,8 +25,9 @@ Los campos `logo_url`/`portada_url` de `negocios` son **URLs a una imagen ya alo
 lado** — la app no tiene upload propio todavía. Dos caminos:
 
 1. **Uno por uno, vos como dueño de muestra**: entrando a `?admin` con
-   `dueno.muestras-premia.demo@gmail.com` / `ControlEvo2026!`, elegís el negocio y pegás la URL
-   en el panel (`SeccionNegocio.tsx`). Sirve para 1-2 negocios puntuales.
+   `dueno.muestras-premia.demo@gmail.com` (clave en `.env.local` → `DEMO_SEED_PASSWORD_LEGACY`),
+   elegís el negocio y pegás la URL en el panel (`SeccionNegocio.tsx`). Sirve para 1-2 negocios
+   puntuales.
 2. **En lote, con un script** (igual patrón que
    `scripts/set-logo-victoria-cafe.mjs`): me pasás las fotos (o una carpeta/planilla con
    negocio → link), las subo a algún hosting (o las subís vos donde prefieras — no hace falta

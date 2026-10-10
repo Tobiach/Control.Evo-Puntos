@@ -51,7 +51,8 @@ las dos — ver "Qué es genérico".
 Los 73 comparten una sola cuenta de dueño (sirve para editar cualquiera desde el panel):
 
 - **Usuario:** `dueno.muestras-premia.demo@gmail.com`
-- **Clave:** `ControlEvo2026!`
+- **Clave:** en `.env.local` → `DEMO_SEED_PASSWORD_LEGACY` (no se repite acá — este repo es
+  público, ver `CLAUDE.md`)
 - **Panel:** `https://premia-ar.vercel.app/?admin` (entra directo al login de dueño)
 - **Carta pública de un negocio:** `https://premia-ar.vercel.app/?carta=<id>`
 

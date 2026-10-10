@@ -29,8 +29,12 @@ const clienteNuevo = () => createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE
 
 const NEGOCIO_ID = 'victoria-cafe-al-paso';
 const EMAIL_DUENO = 'dueno.victoria-cafe.demo@gmail.com';
-const PASSWORD_DUENO = 'cafevictoria2026!';
-const PASSWORD_DEMO = 'ControlEvo2026!';
+const PASSWORD_DUENO = env.DEMO_SEED_PASSWORD_VICTORIA;
+const PASSWORD_DEMO = env.DEMO_SEED_PASSWORD_LEGACY;
+if (!PASSWORD_DUENO || !PASSWORD_DEMO) {
+  console.error('Faltan DEMO_SEED_PASSWORD_VICTORIA / DEMO_SEED_PASSWORD_LEGACY en .env.local');
+  process.exit(1);
+}
 
 const MS_DIA = 86_400_000;
 /** Timestamp de hace `dias` días, a la `hora` elegida (para que no quede todo a la misma hora). */

@@ -186,8 +186,8 @@ Para mostrar la app del lado del cliente con actividad de verdad (no el estado "
 llegado" ni el mock de venta), se sembró un cliente real de Supabase con historial en 5
 negocios reales del marketplace (lote de 73, `es_muestra = false`):
 
-- **Login:** `premia.latam@gmail.com` / `premia.startup!` (entrar por `?club`). Nombre del
-  cliente: "Tobias" (así saluda el Home).
+- **Login:** `premia.latam@gmail.com`, clave en `.env.local` → `DEMO_SEED_PASSWORD_PREMIA_LATAM`
+  (entrar por `?club`). Nombre del cliente: "Tobias" (así saluda el Home).
 - 39 visitas reales repartidas en los últimos ~65 días, 2 canjes ya hechos (Bavieca y Hoppe),
   saldos actuales que dejan 4 de los 5 negocios ya canjeables o a menos del 15% de la próxima
   recompensa (Bavieca 602/700, Baum Catrina 679/900, Dársena Bar 363/400, Hoppe 429/500,

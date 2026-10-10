@@ -38,18 +38,21 @@ function leerEnvLocal() {
 const env = leerEnvLocal();
 const SUPABASE_URL = env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = env.VITE_SUPABASE_ANON_KEY;
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('Faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY en .env.local');
+const PASSWORD_DUENO_LOTE = env.DEMO_SEED_PASSWORD_LEGACY;
+const PASSWORD_CLIENTE = env.DEMO_SEED_PASSWORD_PREMIA_LATAM;
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !PASSWORD_DUENO_LOTE || !PASSWORD_CLIENTE) {
+  console.error(
+    'Faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY / DEMO_SEED_PASSWORD_LEGACY / ' +
+      'DEMO_SEED_PASSWORD_PREMIA_LATAM en .env.local',
+  );
   process.exit(1);
 }
 
 const clienteNuevo = () => createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const EMAIL_DUENO_LOTE = 'dueno.muestras-premia.demo@gmail.com';
-const PASSWORD_DUENO_LOTE = 'ControlEvo2026!';
 
 const EMAIL_CLIENTE = 'premia.latam@gmail.com';
-const PASSWORD_CLIENTE = 'premia.startup!';
 const NOMBRE_CLIENTE = 'Tobias';
 const TELEFONO_CLIENTE = '11 9999-0001';
 

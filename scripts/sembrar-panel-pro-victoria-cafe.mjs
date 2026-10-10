@@ -33,8 +33,12 @@ const clienteNuevo = () => createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const NEGOCIO_ID = 'victoria-cafe-al-paso';
 const EMAIL_DUENO = 'dueno.victoria-cafe.demo@gmail.com';
-const PASSWORD_VIEJA = 'ControlEvo2026!';
-const PASSWORD_NUEVA = 'cafevictoria2026!';
+const PASSWORD_VIEJA = env.DEMO_SEED_PASSWORD_LEGACY;
+const PASSWORD_NUEVA = env.DEMO_SEED_PASSWORD_VICTORIA;
+if (!PASSWORD_VIEJA || !PASSWORD_NUEVA) {
+  console.error('Faltan DEMO_SEED_PASSWORD_LEGACY / DEMO_SEED_PASSWORD_VICTORIA en .env.local');
+  process.exit(1);
+}
 
 const CLIENTES = {
   bruno: { email: 'cliente.bruno.victoriacafe.demo@gmail.com', password: PASSWORD_VIEJA },

@@ -22,7 +22,11 @@ const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY)
 
 const NEGOCIO_ID = 'victoria-cafe-al-paso';
 const EMAIL_DUENO = 'dueno.victoria-cafe.demo@gmail.com';
-const PASSWORD = 'cafevictoria2026!';
+const PASSWORD = env.DEMO_SEED_PASSWORD_VICTORIA;
+if (!PASSWORD) {
+  console.error('Falta DEMO_SEED_PASSWORD_VICTORIA en .env.local');
+  process.exit(1);
+}
 const MS_DIA = 86_400_000;
 
 /** `throw` si la query trajo error — nunca seguir de largo con `data: null` silencioso. */

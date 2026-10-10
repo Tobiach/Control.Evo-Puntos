@@ -31,7 +31,11 @@ const supabaseDueno = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON
 
 const NEGOCIO_ID = 'victoria-cafe-al-paso';
 const EMAIL_DUENO = 'dueno.victoria-cafe.demo@gmail.com';
-const PASSWORD_DUENO = 'cafevictoria2026!';
+const PASSWORD_DUENO = env.DEMO_SEED_PASSWORD_VICTORIA;
+if (!PASSWORD_DUENO) {
+  console.error('Falta DEMO_SEED_PASSWORD_VICTORIA en .env.local');
+  process.exit(1);
+}
 const MS_DIA = 86_400_000;
 const haceDias = (d) => new Date(Date.now() - d * MS_DIA).toISOString();
 
