@@ -3,7 +3,7 @@
  * Sin logica de push / VAPID: solo instalabilidad y offline basico.
  */
 
-const CACHE = 'controlevo-shell-v1';
+const CACHE = 'premia-shell-v1';
 const APP_SHELL = ['/', '/index.html', '/manifest.json', '/icons/icon.svg'];
 
 self.addEventListener('install', (event) => {

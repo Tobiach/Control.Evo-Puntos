@@ -20,10 +20,24 @@ gamificación o reenganche, leer esos dos. Estado previo al roadmap guardado en 
 
 ## Pendientes activos (actualizar esta sección a medida que se resuelven)
 
+- ~~Limpieza de "Control.Evo"/"estudiante" + passwords demo expuestas (repo es público)~~:
+  **RESUELTO (10/10/2026).** El repo de GitHub es **público** (`private: false`, confirmado
+  vía API) — hallazgo durante esta limpieza: 11 cuentas demo tenían su password hardcodeada
+  en texto plano en 9 scripts de siembra + 3 docs, visible para cualquiera. Se sacaron del
+  código (ahora viven en `.env.local`, gitignorado, como `DEMO_SEED_PASSWORD_LEGACY`/
+  `_VICTORIA`/`_PREMIA_LATAM`) y **se rotaron las 11 passwords** (las viejas quedan en el
+  historial de git igual — rotarlas es lo que las inutiliza, no alcanzaba con sacarlas del
+  HEAD). Contactar a Tobías para las contraseñas nuevas si hace falta re-sembrar algo.
+  También: "Control.Evo"/"ControlEvo" sacado de `package.json`, el nombre de caché del
+  service worker, specs archivadas, comentarios de las 15 migraciones SQL más viejas y
+  configs de agentes internos; "estudiante" (ruta de máquina local) sacado de todo archivo
+  commiteado. **Pendiente real que sigue abierto, es decisión de Tobías**: el nombre del
+  repo en GitHub sigue siendo `Tobiach/Control.Evo-Puntos` y el repo sigue siendo público —
+  ningún agente puede renombrarlo ni cambiar su visibilidad (no hay `gh` CLI autenticado en
+  este entorno), hay que hacerlo a mano desde GitHub → Settings.
 - ~~Ruleta/rascar con persistencia real + rediseño de `TabInicio.tsx` + 2 toques de juego en
-  el Home~~: **RESUELTO (28/9/2026), todo verificado en vivo y activado en producción.** Plan
-  completo en `C:\Users\estudiante\.claude\plans\dynamic-sauteeing-pizza.md`. Las 3 partes
-  commiteadas y pusheadas: (1) ruleta/sorpresa con persistencia real —
+  el Home~~: **RESUELTO (28/9/2026), todo verificado en vivo y activado en producción.** Las
+  3 partes commiteadas y pusheadas: (1) ruleta/sorpresa con persistencia real —
   `supabase/migrations/0026_juego_ruleta_sorpresa.sql`/`0027`/`0028` (tabla `tiradas_juego` +
   RPCs `girar_ruleta`/`usar_sorpresa`/`confirmar_premio_juego`/`expirar_mis_tiradas`, mismo
   patrón que `iniciar_canje`/`confirmar_canje` de 0021), frontend conectado

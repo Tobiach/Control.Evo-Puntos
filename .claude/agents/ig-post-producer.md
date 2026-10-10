@@ -35,8 +35,8 @@ use.
 
 - Un post = una audiencia (dueño o cliente final), nunca mezclado.
 - Cero datos, cifras o testimonios que no vengan del concepto aprobado o de
-  `DOC-MAESTRO-PREMIA.md` (`C:\Users\estudiante\.claude\controlevo-os\`) — si falta un dato,
-  se marca `[FALTA CONFIRMAR: ...]` en vez de inventarlo.
+  `DOC-MAESTRO-PREMIA.md` (notas internas de desarrollo, fuera de este repo) — si falta un
+  dato, se marca `[FALTA CONFIRMAR: ...]` en vez de inventarlo.
 - Nunca copiar HEX viejos de Brand OS v3 (Drive) — siempre los de la skill.
 - Voz: vos, rioplatense, directo — pasar el copy por el checklist de la skill antes de
   entregarlo (nunca decir / siempre decir).

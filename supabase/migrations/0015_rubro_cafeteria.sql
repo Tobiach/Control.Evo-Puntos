@@ -1,4 +1,4 @@
--- Control.Evo — Nuevo rubro: cafeterías
+-- Premia.ar — Nuevo rubro: cafeterías
 -- Mismo patrón que 0011_rubro_carniceria.sql: se reemplaza el CHECK de `negocios.rubro`
 -- para admitir 'cafeteria' además de los 3 valores existentes.
 

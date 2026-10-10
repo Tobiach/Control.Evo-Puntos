@@ -1,4 +1,4 @@
--- Control.Evo — Fase 4: panel de cajero real con login por PIN
+-- Premia.ar — Fase 4: panel de cajero real con login por PIN
 -- El cajero NO tiene cuenta de Supabase Auth: se identifica con un PIN de 4 dígitos
 -- que el dueño define para su negocio. El PIN nunca se lee desde el cliente anónimo
 -- (la policy pública de SELECT sobre `negocios` NO debe exponerlo): tanto la verificación

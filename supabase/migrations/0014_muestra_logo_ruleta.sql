@@ -1,4 +1,4 @@
--- Control.Evo Puntos (Premia.ar) — Negocios de muestra para venta + logo/portada + ruleta por negocio
+-- Premia.ar — Negocios de muestra para venta + logo/portada + ruleta por negocio
 -- Migración 100% aditiva: columnas nuevas con default (no rompe filas existentes, no toca
 -- ninguna policy de RLS ya creada), tabla nueva con el mismo patrón que `recompensas`.
 -- Backup antes de correr en producción.

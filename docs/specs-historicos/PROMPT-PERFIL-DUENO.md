@@ -1,6 +1,6 @@
 # Spec — Perfil del dueño + bloqueo de nombre + dirección real (sin API key de Google)
 
-Repo: `C:\Users\estudiante\controlevo-puntos`. Stack: React 19 + Vite 6 + TS + Tailwind 4 +
+Repo de Premia.ar. Stack: React 19 + Vite 6 + TS + Tailwind 4 +
 Supabase. Leé `src/components/dueno/PanelDueno.tsx`, `src/components/dueno/SeccionNegocio.tsx`,
 `src/lib/panelDueno.ts` y `src/lib/geo.ts` completos antes de escribir nada — hay convenciones
 ya establecidas (null-safe sin backend, `ResultadoPanel<T>`, patrón `onCambiar(parche)`) que hay

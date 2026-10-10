@@ -1,4 +1,4 @@
--- Control.Evo — Carta digital pública (menú QR por negocio)
+-- Premia.ar — Carta digital pública (menú QR por negocio)
 -- Cada negocio publica su carta: lo que vende normalmente EN PESOS (distinto de las
 -- recompensas, que es "lo que se canjea con puntos"). La carta la ve cualquiera sin
 -- login, tipo menú de restaurante escaneado en la mesa. Backup antes de correr en prod.

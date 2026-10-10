@@ -1,4 +1,4 @@
--- Control.Evo — Perfil del dueño + dirección real del negocio
+-- Premia.ar — Perfil del dueño + dirección real del negocio
 --
 -- Dos cosas en esta migración:
 --   1) Tabla `dueno_perfil`: datos personales del dueño (hoy, solo su nombre), separados

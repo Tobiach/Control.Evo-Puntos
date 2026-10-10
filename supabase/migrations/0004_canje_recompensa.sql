@@ -1,4 +1,4 @@
--- Control.Evo — Fase 8: canje de recompensa del cliente (descuento real de puntos)
+-- Premia.ar — Fase 8: canje de recompensa del cliente (descuento real de puntos)
 -- El cliente final (autenticado por email) canjea una recompensa desde la app y sus puntos
 -- se descuentan de `relaciones_negocio` del lado del servidor, en una transacción atómica.
 -- SECURITY DEFINER siguiendo el mismo patrón que `cobrar_con_pin` (0002): la función valida

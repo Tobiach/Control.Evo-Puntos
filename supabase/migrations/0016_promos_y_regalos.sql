@@ -1,4 +1,4 @@
--- Control.Evo Puntos (Premia.ar) — Promos reales por negocio + regalar puntos real
+-- Premia.ar — Promos reales por negocio + regalar puntos real
 -- Backup antes de correr en producción.
 
 -- ============================================================

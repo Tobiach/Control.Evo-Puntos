@@ -1,4 +1,4 @@
--- Control.Evo — vínculo de cuenta de cliente (email real) con su fila de `clientes` (teléfono)
+-- Premia.ar — vínculo de cuenta de cliente (email real) con su fila de `clientes` (teléfono)
 -- El teléfono sigue siendo el documento único del sistema (lo usa el cajero sin auth), pero
 -- el login del cliente final pasa a ser email+contraseña (el proveedor de teléfono de Supabase
 -- Auth está deshabilitado y requeriría un proveedor SMS de pago). Esta función resuelve el

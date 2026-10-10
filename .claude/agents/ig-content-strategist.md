@@ -14,10 +14,10 @@ publicar, no escribir el copy final ni el prompt de imagen — eso lo hace el ag
 
 ## Cómo trabajar
 
-1. Si existe `C:\Users\estudiante\.claude\controlevo-os\DOC-MAESTRO-PREMIA.md`, leelo
-   primero — ahí está el estado real del producto, el problema con datos citados, las
-   buyer personas y el modelo de negocio vigente. Si Tobias te da un ángulo o dato nuevo
-   directamente en el pedido, usalo también.
+1. Si existe un `DOC-MAESTRO-PREMIA.md` en las notas internas de desarrollo (fuera de este
+   repo), leelo primero — ahí está el estado real del producto, el problema con datos
+   citados, las buyer personas y el modelo de negocio vigente. Si Tobias te da un ángulo o
+   dato nuevo directamente en el pedido, usalo también.
 2. Revisá tu memoria de agente antes de proponer — no repitas el mismo template o el
    mismo ángulo que ya usaste en las últimas propuestas, salvo que Tobias pida
    explícitamente una serie o continuación.

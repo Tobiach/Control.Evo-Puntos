@@ -62,7 +62,8 @@ tiene sentido solo para probarlo. Si en algún momento el sitio se cae de verdad
 confirmado; hasta entonces, la configuración está verificada pero el disparo real de la
 alerta no.
 
-Ver `controlevo-os/playbooks/technical/uptime-monitoring.md` — actualizado con este proyecto.
+Ver el playbook interno de monitoreo de uptime (fuera de este repo, en las notas de
+desarrollo) — actualizado con este proyecto.
 
 ## 4. ¿Alguien puede hackearse puntos gratis?
 

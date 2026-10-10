@@ -39,14 +39,14 @@ describe('leerReferidoDeQuery', () => {
 
 describe('armarLinkInvitacion', () => {
   it('arma el link con ref (en mayúsculas) y negocio', () => {
-    const link = armarLinkInvitacion('https://club.controlevo.com', 'ab3k9m', 'cafe-nardo');
+    const link = armarLinkInvitacion('https://premia-ar.vercel.app', 'ab3k9m', 'cafe-nardo');
     const url = new URL(link);
     expect(url.searchParams.get('ref')).toBe('AB3K9M');
     expect(url.searchParams.get('negocio')).toBe('cafe-nardo');
   });
 
   it('el link generado es reversible con leerReferidoDeQuery', () => {
-    const link = armarLinkInvitacion('https://club.controlevo.com', 'XY7QRS', 'super-ezefran');
+    const link = armarLinkInvitacion('https://premia-ar.vercel.app', 'XY7QRS', 'super-ezefran');
     const search = new URL(link).search;
     expect(leerReferidoDeQuery(search)).toEqual({ codigo: 'XY7QRS', negocioId: 'super-ezefran' });
   });

@@ -1,4 +1,4 @@
--- Control.Evo — CRM del dueño: listar los clientes de su propio negocio
+-- Premia.ar — CRM del dueño: listar los clientes de su propio negocio
 --
 -- Problema de RLS: el dueño necesita ver nombre + teléfono de cada cliente que sumó
 -- puntos en su local. Pero la policy de `clientes` es `auth.uid() = user_id` (solo el

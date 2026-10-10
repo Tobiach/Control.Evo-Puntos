@@ -1,4 +1,4 @@
--- Control.Evo — Desafíos entre amigos (mini red social, primera pieza)
+-- Premia.ar — Desafíos entre amigos (mini red social, primera pieza)
 -- Un cliente (retador) reta a OTRO cliente puntual (retado) dentro de un negocio: "3 visitas
 -- antes de tal fecha" o "probá el producto nuevo". Cuando el retado cumple la meta REAL —
 -- verificada server-side contra la tabla `visitas` — AMBOS ganan puntos bonus en ese negocio.

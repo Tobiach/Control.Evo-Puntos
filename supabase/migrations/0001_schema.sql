@@ -1,4 +1,4 @@
--- Control.Evo — Club de Puntos
+-- Premia.ar — Club de Puntos
 -- Schema diseñado 1:1 sobre los tipos TypeScript ya existentes en src/data/ y src/lib/,
 -- para que migrar de datos mock a Supabase real sea un cambio de capa de datos, no un
 -- rediseño. Siempre RLS activado. Backup antes de correr en producción.

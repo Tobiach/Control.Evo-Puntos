@@ -94,7 +94,7 @@ en una acción concreta, nunca en "¿te interesa?"?
 **Regla dura de contenido**: cero prueba social falsa, nunca inventar cifras/testimonios/
 tracción. Si un dato no está confirmado, se marca como pendiente.
 
-## Buyer personas (resumen — detalle completo en `DOC-MAESTRO-PREMIA.md`, controlevo-os)
+## Buyer personas (resumen — detalle completo en `DOC-MAESTRO-PREMIA.md`, notas internas)
 
 Cada pieza le habla a UNA sola persona, nunca a las dos (regla de oro).
 

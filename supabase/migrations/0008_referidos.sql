@@ -1,4 +1,4 @@
--- Control.Evo — Referidos con beneficio real (invitá a un amigo)
+-- Premia.ar — Referidos con beneficio real (invitá a un amigo)
 -- Distinto de lo "social" (regalar puntos propios, que es 100% demo/local): acá un cliente
 -- comparte el código/link de SU club en un negocio; cuando el invitado se registra con ese
 -- código y visita ESE MISMO negocio al menos 4 veces, AMBOS reciben puntos bonus en ese

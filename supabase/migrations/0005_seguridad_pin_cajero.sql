@@ -1,4 +1,4 @@
--- Control.Evo — FIX DE SEGURIDAD CRÍTICO: el PIN de cajero se filtraba públicamente
+-- Premia.ar — FIX DE SEGURIDAD CRÍTICO: el PIN de cajero se filtraba públicamente
 --
 -- Problema: la policy "Lectura pública del marketplace" en `negocios` filtra FILAS
 -- (activo = true) pero RLS de Postgres no filtra COLUMNAS. Cualquiera con la key
